@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Reportes - MIDIS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         .logo-header {
             background-color: #004884;
@@ -26,6 +27,10 @@
             margin-top: 30px;
             border-top: 2px solid #dee2e6;
             padding-top: 20px;
+        }
+        .btn-whatsapp {
+            background-color: #25D366;
+            color: white;
         }
     </style>
 </head>
@@ -64,10 +69,13 @@
 
             <div class="export-buttons text-end d-none" id="exportButtons">
                 <button class="btn btn-danger me-2" onclick="exportarPDF()">
-                    <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
                 </button>
-                <button class="btn btn-primary" onclick="exportarWord()">
-                    <i class="bi bi-file-earmark-word"></i> Exportar Word
+                <button class="btn btn-primary me-2" onclick="exportarWord()">
+                    <i class="bi bi-file-earmark-word"></i> Word
+                </button>
+                <button class="btn btn-success" onclick="compartirWhatsApp()">
+                    <i class="bi bi-whatsapp"></i> WhatsApp
                 </button>
             </div>
         </div>
@@ -77,10 +85,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"></script>
 
     <script>
-         // Dataset corregido y formateado
+        // Dataset completo (ejemplo con 2 registros, agregar el resto)
         const dataset = [
             {
                 ubigeo: "150101",
@@ -98,23 +105,6 @@
                 fecha: "2024-12-31"
             },
             {
-                ubigeo: "150102",
-                ut: "UT CALLAO",
-                departamento: "LIMA",
-                provincia: "LIMA",
-                distrito: "ANCON",
-                nfamilia_saf: 0,
-                nniños_saf: 0,
-                ngestantes_saf: 0,
-                ejecucion_saf: 0,
-                nniños_scd: 87,
-                nlocales_scd: 4,
-                ejecucion_scd: 504981.534536957,
-                fecha: "2024-12-31"
-            },
-            // ... (agregar todos los registros restantes en el mismo formato)
-            // Ejemplo de otro registro:
-            {
                 ubigeo: "150106",
                 ut: "UT CALLAO",
                 departamento: "LIMA",
@@ -129,15 +119,13 @@
                 ejecucion_scd: 2420428.73450473,
                 fecha: "2024-12-31"
             },
-            // Continuar con todos los demas registros...
+            // Agregar aquí el resto de registros en el mismo formato
         ];
 
-        // Resto del código JavaScript se mantiene igual
+        // Funciones base
         window.onload = function() {
             cargarDepartamentos();
         };
-
-        // ... (las funciones restantes se mantienen igual) ...
 
         function cargarDepartamentos() {
             const departamentos = [...new Set(dataset.map(item => item.departamento))];
@@ -251,18 +239,16 @@
             return value;
         }
 
-        // Exportación a PDF
+        // Funciones de exportación
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const resultado = obtenerDatosActuales();
 
-            // Encabezado
             doc.setFontSize(16);
             doc.setTextColor(0, 72, 132);
             doc.text('Reporte Oficial - MIDIS', 15, 20);
             
-            // Tabla de datos
             const columns = [['Campo', 'Valor']];
             const rows = Object.entries(resultado).map(([key, value]) => [
                 formatearCampo(key),
@@ -281,7 +267,6 @@
             doc.save(`Reporte_${resultado.ubigeo}.pdf`);
         }
 
-        // Exportación a Word
         function exportarWord() {
             const resultado = obtenerDatosActuales();
             const htmlContent = `
@@ -319,6 +304,32 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function compartirWhatsApp() {
+            const resultado = obtenerDatosActuales();
+            const fechaReporte = new Date().toLocaleDateString('es-PE');
+            
+            let mensaje = `*Reporte Territorial MIDIS*\n\n`;
+            mensaje += `🗺️ *Ubigeo:* ${resultado.ubigeo}\n`;
+            mensaje += `🏢 *Unidad Territorial:* ${resultado.ut}\n`;
+            mensaje += `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}\n\n`;
+            
+            mensaje += `*🔵 Datos SAF:*\n`;
+            mensaje += `👨👩👧👦 Familias: ${resultado.nfamilia_saf.toLocaleString()}\n`;
+            mensaje += `🧒 Niños: ${resultado.nniños_saf.toLocaleString()}\n`;
+            mensaje += `🤰 Gestantes: ${resultado.ngestantes_saf.toLocaleString()}\n`;
+            mensaje += `💸 Ejecución: S/ ${resultado.ejecucion_saf.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}\n\n`;
+            
+            mensaje += `*🟡 Datos SCD:*\n`;
+            mensaje += `🧒 Niños: ${resultado.nniños_scd.toLocaleString()}\n`;
+            mensaje += `🏫 Locales: ${resultado.nlocales_scd.toLocaleString()}\n`;
+            mensaje += `💸 Ejecución: S/ ${resultado.ejecucion_scd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}\n\n`;
+            
+            mensaje += `📅 Generado: ${fechaReporte}`;
+
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            window.open(`https://api.whatsapp.com/send?text=${mensajeCodificado}`, '_blank');
         }
 
         function obtenerDatosActuales() {
