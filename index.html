@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reportes - MIDIS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .logo-header {
+            background-color: #004884;
+            padding: 20px;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .report-container {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        .data-table th {
+            background-color: #004884;
+            color: white;
+        }
+        .export-buttons {
+            margin-top: 30px;
+            border-top: 2px solid #dee2e6;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-header text-center">
+            <h3>Ministerio de Desarrollo e Inclusión Social</h3>
+            <h5>Sistema de Reportes Territoriales</h5>
+        </div>
+
+        <div class="report-container">
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Departamento</label>
+                    <select id="departamento" class="form-select" onchange="cargarProvincias()">
+                        <option value="">Seleccionar</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label">Provincia</label>
+                    <select id="provincia" class="form-select" onchange="cargarDistritos()" disabled>
+                        <option value="">Seleccione departamento</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label">Distrito</label>
+                    <select id="distrito" class="form-select" onchange="mostrarResultados()" disabled>
+                        <option value="">Seleccione provincia</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="resultados"></div>
+
+            <div class="export-buttons text-end d-none" id="exportButtons">
+                <button class="btn btn-danger me-2" onclick="exportarPDF()">
+                    <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+                </button>
+                <button class="btn btn-primary" onclick="exportarWord()">
+                    <i class="bi bi-file-earmark-word"></i> Exportar Word
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"></script>
+
+    <script>
+         // Dataset corregido y formateado
+        const dataset = [
+            {
+                ubigeo: "150101",
+                ut: "NO APLICA",
+                departamento: "LIMA",
+                provincia: "LIMA",
+                distrito: "LIMA",
+                nfamilia_saf: 0,
+                nniños_saf: 0,
+                ngestantes_saf: 0,
+                ejecucion_saf: 0,
+                nniños_scd: 0,
+                nlocales_scd: 0,
+                ejecucion_scd: 0,
+                fecha: "2024-12-31"
+            },
+            {
+                ubigeo: "150102",
+                ut: "UT CALLAO",
+                departamento: "LIMA",
+                provincia: "LIMA",
+                distrito: "ANCON",
+                nfamilia_saf: 0,
+                nniños_saf: 0,
+                ngestantes_saf: 0,
+                ejecucion_saf: 0,
+                nniños_scd: 87,
+                nlocales_scd: 4,
+                ejecucion_scd: 504981.534536957,
+                fecha: "2024-12-31"
+            },
+            // ... (agregar todos los registros restantes en el mismo formato)
+            // Ejemplo de otro registro:
+            {
+                ubigeo: "150106",
+                ut: "UT CALLAO",
+                departamento: "LIMA",
+                provincia: "LIMA",
+                distrito: "CARABAYLLO",
+                nfamilia_saf: 213,
+                nniños_saf: 200,
+                ngestantes_saf: 18,
+                ejecucion_saf: 621150.93271645,
+                nniños_scd: 417,
+                nlocales_scd: 16,
+                ejecucion_scd: 2420428.73450473,
+                fecha: "2024-12-31"
+            },
+            // Continuar con todos los demas registros...
+        ];
+
+        // Resto del código JavaScript se mantiene igual
+        window.onload = function() {
+            cargarDepartamentos();
+        };
+
+        // ... (las funciones restantes se mantienen igual) ...
+
+        function cargarDepartamentos() {
+            const departamentos = [...new Set(dataset.map(item => item.departamento))];
+            const select = document.getElementById('departamento');
+            
+            departamentos.sort().forEach(depto => {
+                select.innerHTML += `<option value="${depto}">${depto}</option>`;
+            });
+        }
+
+        function cargarProvincias() {
+            const depto = document.getElementById('departamento').value;
+            const selectProvincia = document.getElementById('provincia');
+            
+            selectProvincia.innerHTML = '<option value="">Seleccionar</option>';
+            selectProvincia.disabled = !depto;
+            
+            const provincias = [...new Set(dataset
+                .filter(item => item.departamento === depto)
+                .map(item => item.provincia))];
+            
+            provincias.sort().forEach(prov => {
+                selectProvincia.innerHTML += `<option value="${prov}">${prov}</option>`;
+            });
+            
+            document.getElementById('distrito').disabled = true;
+            document.getElementById('resultados').innerHTML = '';
+            document.getElementById('exportButtons').classList.add('d-none');
+        }
+
+        function cargarDistritos() {
+            const depto = document.getElementById('departamento').value;
+            const provincia = document.getElementById('provincia').value;
+            const selectDistrito = document.getElementById('distrito');
+            
+            selectDistrito.innerHTML = '<option value="">Seleccionar</option>';
+            selectDistrito.disabled = !provincia;
+            
+            const distritos = [...new Set(dataset
+                .filter(item => item.departamento === depto && item.provincia === provincia)
+                .map(item => item.distrito))];
+            
+            distritos.sort().forEach(dist => {
+                selectDistrito.innerHTML += `<option value="${dist}">${dist}</option>`;
+            });
+            
+            document.getElementById('resultados').innerHTML = '';
+            document.getElementById('exportButtons').classList.add('d-none');
+        }
+
+        function mostrarResultados() {
+            const depto = document.getElementById('departamento').value;
+            const provincia = document.getElementById('provincia').value;
+            const distrito = document.getElementById('distrito').value;
+            
+            const resultado = dataset.find(item => 
+                item.departamento === depto &&
+                item.provincia === provincia &&
+                item.distrito === distrito
+            );
+
+            if(resultado) {
+                const html = `
+                    <div class="table-responsive">
+                        <table class="table data-table table-striped">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="text-center bg-primary text-white">Datos del Territorio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${Object.entries(resultado).map(([key, value]) => `
+                                    <tr>
+                                        <td class="fw-bold">${formatearCampo(key)}</td>
+                                        <td>${formatearValor(value, key)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                document.getElementById('resultados').innerHTML = html;
+                document.getElementById('exportButtons').classList.remove('d-none');
+            }
+        }
+
+        function formatearCampo(key) {
+            const campos = {
+                ubigeo: 'Código UBIGEO',
+                ut: 'Unidad Territorial',
+                nfamilia_saf: 'Familias SAF',
+                nniños_saf: 'Niños SAF',
+                ngestantes_saf: 'Gestantes SAF',
+                ejecucion_saf: 'Ejecución SAF (S/)',
+                nniños_scd: 'Niños SCD',
+                nlocales_scd: 'Locales SCD',
+                ejecucion_scd: 'Ejecución SCD (S/)',
+                fecha: 'Fecha de Reporte'
+            };
+            return campos[key] || key.toUpperCase();
+        }
+
+        function formatearValor(value, key) {
+            if(typeof value === 'number') {
+                if(key.includes('ejecucion')) {
+                    return `S/ ${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+                }
+                return value.toLocaleString();
+            }
+            return value;
+        }
+
+        // Exportación a PDF
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const resultado = obtenerDatosActuales();
+
+            // Encabezado
+            doc.setFontSize(16);
+            doc.setTextColor(0, 72, 132);
+            doc.text('Reporte Oficial - MIDIS', 15, 20);
+            
+            // Tabla de datos
+            const columns = [['Campo', 'Valor']];
+            const rows = Object.entries(resultado).map(([key, value]) => [
+                formatearCampo(key),
+                formatearValor(value, key)
+            ]);
+            
+            doc.autoTable({
+                head: columns,
+                body: rows,
+                startY: 30,
+                theme: 'grid',
+                styles: { fontSize: 10 },
+                headStyles: { fillColor: [0, 72, 132] }
+            });
+
+            doc.save(`Reporte_${resultado.ubigeo}.pdf`);
+        }
+
+        // Exportación a Word
+        function exportarWord() {
+            const resultado = obtenerDatosActuales();
+            const htmlContent = `
+                <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <style>
+                            body { font-family: Arial; }
+                            h1 { color: #004884; }
+                            table { border-collapse: collapse; width: 100%; }
+                            td, th { border: 1px solid #ddd; padding: 8px; }
+                            th { background-color: #004884; color: white; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Reporte Oficial - MIDIS</h1>
+                        <table>
+                            ${Object.entries(resultado).map(([key, value]) => `
+                                <tr>
+                                    <th>${formatearCampo(key)}</th>
+                                    <td>${formatearValor(value, key)}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        <p>Generado: ${new Date().toLocaleDateString()}</p>
+                    </body>
+                </html>
+            `;
+
+            const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Reporte_${resultado.ubigeo}.doc`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function obtenerDatosActuales() {
+            const depto = document.getElementById('departamento').value;
+            const provincia = document.getElementById('provincia').value;
+            const distrito = document.getElementById('distrito').value;
+            
+            return dataset.find(item => 
+                item.departamento === depto &&
+                item.provincia === provincia &&
+                item.distrito === distrito
+            );
+        }
+    </script>
+</body>
+</html>
