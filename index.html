@@ -531,31 +531,47 @@
 
         // Función compartirWhatsApp mejorada
         function compartirWhatsApp() {
-            const resultado = obtenerDatosActuales();
-            const fechaReporte = new Date().toLocaleDateString('es-PE');
-            
-            let mensaje = `*Reporte Territorial MIDIS*\n\n`;
-            mensaje += `🗺️ *Ubigeo:* ${resultado.ubigeo}\n`;
-            mensaje += `🏢 *Unidad Territorial:* ${resultado.ut}\n`;
+            const resultado = obtenerResultadoActual(); // Corregido el nombre de la función
+            if (!resultado) {
+                alert('Primero seleccione y genere un reporte válido');
+                return;
+            }
+        
+            const fechaReporte = new Date().toLocaleDateString('es-PE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        
+            // Formateo de valores numéricos
+            const formatoMoneda = {
+                style: 'currency',
+                currency: 'PEN',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            };
+        
+            let mensaje = `*REPORTE COBERTURA PNCM*\n\n`;
+            mensaje += `🗺️ *Ubigeo:* ${resultado.ubigeo || 'N/A'}\n`;
+            mensaje += `🏢 *Unidad Territorial:* ${resultado.ut || 'N/A'}\n`;
             mensaje += `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}\n`;
-            mensaje += `📅 *Fecha de Reporte:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}\n\n`;
+            mensaje += `📅 *Fecha del Padrón:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}\n\n`;
             
-            mensaje += `*🔵 Datos SAF:*\n`;
-            mensaje += `👨👩👧👦 Familias: ${resultado.nfamilia_saf.toLocaleString()}\n`;
-            mensaje += `🧒 Niños: ${resultado.nniños_saf.toLocaleString()}\n`;
-            mensaje += `🤰 Gestantes: ${resultado.ngestantes_saf.toLocaleString()}\n`;
-            mensaje += `💸 Ejecución: S/ ${resultado.ejecucion_saf.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}\n\n`;
+            mensaje += `*🔵 DATOS SAF*\n`;
+            mensaje += `👨👩👧👦 Familias: ${(resultado.nfamilia_saf || 0).toLocaleString()}\n`;
+            mensaje += `🧒 Niños: ${(resultado.nniños_saf || 0).toLocaleString()}\n`;
+            mensaje += `🤰 Gestantes: ${(resultado.ngestantes_saf || 0).toLocaleString()}\n`;
+            mensaje += `💸 Ejecución: ${(resultado.ejecucion_saf || 0).toLocaleString('es-PE', formatoMoneda)}\n\n`;
             
-            mensaje += `*🟡 Datos SCD:*\n`;
-            mensaje += `🧒 Niños: ${resultado.nniños_scd.toLocaleString()}\n`;
-            mensaje += `🏫 Locales: ${resultado.nlocales_scd.toLocaleString()}\n`;
-            mensaje += `💸 Ejecución: S/ ${resultado.ejecucion_scd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}\n\n`;
+            mensaje += `*🟡 DATOS SCD*\n`;
+            mensaje += `🧒 Niños: ${(resultado.nniños_scd || 0).toLocaleString()}\n`;
+            mensaje += `🏫 Locales: ${(resultado.nlocales_scd || 0).toLocaleString()}\n`;
+            mensaje += `💸 Ejecución: ${(resultado.ejecucion_scd || 0).toLocaleString('es-PE', formatoMoneda)}\n\n`;
             
             mensaje += `📅 Generado: ${fechaReporte}`;
-
+        
             const mensajeCodificado = encodeURIComponent(mensaje);
-
-            window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+            window.open(`https://wa.me/?text=${mensajeCodificado}`, '_blank');
         }
 
         window.onload = cargarDepartamentos;
