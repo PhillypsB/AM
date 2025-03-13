@@ -531,24 +531,29 @@
 
         // Función compartirWhatsApp mejorada
         function compartirWhatsApp() {
-            const resultado = obtenerResultadoActual();
-            const mensaje = [
-                `*Reporte PNCM - MIDIS*`,
-                `*Departamento:* ${resultado.departamento}`,
-                `*Provincia:* ${resultado.provincia}`,
-                `*Distrito:* ${resultado.distrito}`,
-                `*Fecha Padrón:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}`,
-                ``,
-                `*SAF - Familias:* ${resultado.nfamilia_saf.toLocaleString()}`,
-                `*SAF - Niños:* ${resultado.nniños_saf.toLocaleString()}`,
-                `*SAF - Ejecución:* S/ ${resultado.ejecucion_saf.toLocaleString()}`,
-                ``,
-                `*SCD - Niños:* ${resultado.nniños_scd.toLocaleString()}`,
-                `*SCD - Locales:* ${resultado.nlocales_scd.toLocaleString()}`,
-                `*SCD - Ejecución:* S/ ${resultado.ejecucion_scd.toLocaleString()}`,
-                ``,
-                `Generado el: ${new Date().toLocaleDateString('es-PE')}`
-            ].join('\n');
+            const resultado = obtenerDatosActuales();
+            const fechaReporte = new Date().toLocaleDateString('es-PE');
+            
+            let mensaje = `*Reporte Territorial MIDIS*\n\n`;
+            mensaje += `🗺️ *Ubigeo:* ${resultado.ubigeo}\n`;
+            mensaje += `🏢 *Unidad Territorial:* ${resultado.ut}\n`;
+            mensaje += `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}\n`;
+            mensaje += `📅 *Fecha de Reporte:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}\n\n`;
+            
+            mensaje += `*🔵 Datos SAF:*\n`;
+            mensaje += `👨👩👧👦 Familias: ${resultado.nfamilia_saf.toLocaleString()}\n`;
+            mensaje += `🧒 Niños: ${resultado.nniños_saf.toLocaleString()}\n`;
+            mensaje += `🤰 Gestantes: ${resultado.ngestantes_saf.toLocaleString()}\n`;
+            mensaje += `💸 Ejecución: S/ ${resultado.ejecucion_saf.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}\n\n`;
+            
+            mensaje += `*🟡 Datos SCD:*\n`;
+            mensaje += `🧒 Niños: ${resultado.nniños_scd.toLocaleString()}\n`;
+            mensaje += `🏫 Locales: ${resultado.nlocales_scd.toLocaleString()}\n`;
+            mensaje += `💸 Ejecución: S/ ${resultado.ejecucion_scd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}\n\n`;
+            
+            mensaje += `📅 Generado: ${fechaReporte}`;
+
+            const mensajeCodificado = encodeURIComponent(mensaje);
 
             window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
         }
