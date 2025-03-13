@@ -3,91 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Reportes - MIDIS</title>
+    <title>Sistema de Padrones - MIDIS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
+        :root {
+            --color-primario: #004884;
+            --color-secundario: #007bff;
+            --color-fondo: #f8f9fc;
+        }
+
+        body {
+            background-color: var(--color-fondo);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
         .logo-header {
-            background-color: #004884;
-            padding: 20px;
+            background: linear-gradient(135deg, var(--color-primario) 0%, #002349 100%);
+            padding: 1.5rem;
             color: white;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
         .report-container {
-            background-color: #f8f9fa;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 24px rgba(0,72,132,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-card {
+            background: rgba(0,72,132,0.03);
             border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
         }
+
+        .data-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
         .data-table th {
-            background-color: #004884;
+            background-color: var(--color-primario);
             color: white;
+            padding: 1rem;
+            font-weight: 600;
         }
-        .export-buttons {
-            margin-top: 30px;
-            border-top: 2px solid #dee2e6;
-            padding-top: 20px;
+
+        .data-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #dee2e6;
         }
-        .btn-whatsapp {
-            background-color: #25D366;
-            color: white;
+
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
         }
-        @media (max-width: 768px) {
-            .col-md-3 {
-                margin-bottom: 15px;
-            }
+
+        .btn-export {
+            transition: all 0.3s ease;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .form-select {
+            border-radius: 6px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            border-color: var(--color-primario);
+            box-shadow: 0 0 0 3px rgba(0,72,132,0.25);
+        }
+
+        .header-title {
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .logo-img {
+            height: 60px;
+            margin-right: 1rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo-header text-center">
-            <h3>Ministerio de Desarrollo e Inclusión Social</h3>
-            <h5>Sistema de Reportes Territoriales</h5>
+    <div class="container-lg py-4">
+        <div class="logo-header rounded-3">
+            <div class="d-flex align-items-center justify-content-center">
+                <img src="https://cdn.www.gob.pe/uploads/document/file/2728785/cuna%20mas.jpg.jpg" alt="Logo" class="logo-img">
+                <div>
+                    <h2 class="header-title mb-1">COBERTURA DE ATENCIÓN PNCM</h2>
+                    <h5 class="header-subtitle">PADRONES 2023 | 2024 | 2025</h5>
+                </div>
+            </div>
         </div>
 
         <div class="report-container">
-            <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                    <label class="form-label">Departamento</label>
-                    <select id="departamento" class="form-select" onchange="cargarProvincias()">
-                        <option value="">Seleccionar</option>
-                    </select>
-                </div>
-                
-                <div class="col-md-3">
-                    <label class="form-label">Provincia</label>
-                    <select id="provincia" class="form-select" onchange="cargarDistritos()" disabled>
-                        <option value="">Seleccione departamento</option>
-                    </select>
-                </div>
-                
-                <div class="col-md-3">
-                    <label class="form-label">Distrito</label>
-                    <select id="distrito" class="form-select" onchange="cargarFechas()" disabled>
-                        <option value="">Seleccione provincia</option>
-                    </select>
-                </div>
+            <div class="filter-card">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Departamento</label>
+                        <select id="departamento" class="form-select" onchange="cargarProvincias()">
+                            <option value="">Seleccionar</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Provincia</label>
+                        <select id="provincia" class="form-select" onchange="cargarDistritos()" disabled>
+                            <option value="">Seleccione departamento</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Distrito</label>
+                        <select id="distrito" class="form-select" onchange="cargarFechas()" disabled>
+                            <option value="">Seleccione provincia</option>
+                        </select>
+                    </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Fecha</label>
-                    <select id="fecha" class="form-select" onchange="mostrarResultados()" disabled>
-                        <option value="">Seleccione distrito</option>
-                    </select>
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Fecha del Padrón</label>
+                        <select id="fecha" class="form-select" onchange="mostrarResultados()" disabled>
+                            <option value="">Seleccione distrito</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
             <div id="resultados"></div>
 
             <div class="export-buttons text-end d-none" id="exportButtons">
-                <button class="btn btn-danger me-2" onclick="exportarPDF()">
-                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                <button class="btn btn-export btn-danger me-2" onclick="exportarPDF()">
+                    <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
                 </button>
-                <button class="btn btn-primary me-2" onclick="exportarWord()">
-                    <i class="bi bi-file-earmark-word"></i> Word
+                <button class="btn btn-export btn-primary me-2" onclick="exportarWord()">
+                    <i class="bi bi-file-earmark-word me-2"></i>Exportar Word
                 </button>
-                <button class="btn btn-success" onclick="compartirWhatsApp()">
-                    <i class="bi bi-whatsapp"></i> WhatsApp
+                <button class="btn btn-export btn-success" onclick="compartirWhatsApp()">
+                    <i class="bi bi-whatsapp me-2"></i>Compartir
                 </button>
             </div>
         </div>
@@ -172,8 +240,11 @@
                 )
                 .map(item => item.fecha))];
             
+            // Corrección para mostrar fechas correctas
             fechas.sort().reverse().forEach(fecha => {
-                selectFecha.innerHTML += `<option value="${fecha}">${new Date(fecha).toLocaleDateString('es-PE')}</option>`;
+                const fechaObj = new Date(fecha);
+                const fechaCorregida = new Date(fechaObj.getTime() + (fechaObj.getTimezoneOffset() * 60000));
+                selectFecha.innerHTML += `<option value="${fecha}">${fechaCorregida.toLocaleDateString('es-PE')}</option>`;
             });
 
             document.getElementById('resultados').innerHTML = '';
@@ -230,7 +301,7 @@
                 nniños_scd: 'Niños SCD',
                 nlocales_scd: 'Locales SCD',
                 ejecucion_scd: 'Ejecución SCD (S/)',
-                fecha: 'Fecha de Reporte'
+                fecha: 'PADRON AL'  // Cambio de texto aquí
             };
             return campos[key] || key.toUpperCase();
         }
@@ -243,7 +314,9 @@
                 return value.toLocaleString();
             }
             if(key === 'fecha') {
-                return new Date(value).toLocaleDateString('es-PE');
+                const fechaObj = new Date(value);
+                const fechaCorregida = new Date(fechaObj.getTime() + (fechaObj.getTimezoneOffset() * 60000));
+                return fechaCorregida.toLocaleDateString('es-PE');
             }
             return value;
         }
@@ -319,10 +392,12 @@
             const fechaReporte = new Date().toLocaleDateString('es-PE');
             
             let mensaje = `*Reporte Territorial MIDIS*\n\n`;
+            mensaje += `*COBERTURA DE ATENCIÓN PNCM*\n`;
+            mensaje += `*MIDIS - CUNAMAS -UPPM*\n\n`;
             mensaje += `🗺️ *Ubigeo:* ${resultado.ubigeo}\n`;
             mensaje += `🏢 *Unidad Territorial:* ${resultado.ut}\n`;
             mensaje += `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}\n`;
-            mensaje += `📅 *Fecha de Reporte:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}\n\n`;
+            mensaje += `📅 *PADRON AL:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}\n\n`;
             
             mensaje += `*🔵 Datos SAF:*\n`;
             mensaje += `👨👩👧👦 Familias: ${resultado.nfamilia_saf.toLocaleString()}\n`;
