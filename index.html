@@ -134,13 +134,13 @@
                     <h5 class="mb-3">Evolución SAF - Familias Atendidas</h5>
                     <canvas id="chartSAF"></canvas>
                 </div>
-                
+                <br><br>
                 <div class="chart-container">
                     <h5 class="mb-3">Evolución SCD - Niños Atendidos</h5>
                     <canvas id="chartSCD"></canvas>
                 </div>
             </div>
-
+                <br><br>
             <div class="export-buttons text-end d-none" id="exportButtons">
                 <button class="btn btn-danger me-2" onclick="exportarPDF()">
                     <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
@@ -391,12 +391,90 @@
             return value;
         }
 
+        // Nuevas funciones para exportación y compartir
+        function obtenerResultadoActual() {
+            const depto = document.getElementById('departamento').value;
+            const provincia = document.getElementById('provincia').value;
+            const distrito = document.getElementById('distrito').value;
+            const fecha = document.getElementById('fecha').value;
+
+            return dataset.find(item => 
+                item.departamento === depto &&
+                item.provincia === provincia &&
+                item.distrito === distrito &&
+                item.fecha === fecha
+            );
+        }
+
         function exportarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const resultado = obtenerDatosActuales();
+            const resultado = obtenerResultadoActual();
+            const doc = new jspdf.jsPDF();
             
-            // Lógica de exportación PDF...
+            // Encabezado
+            doc.setFontSize(18);
+            doc.text('Reporte de Cobertura PNCM', 15, 20);
+            doc.setFontSize(12);
+            doc.text(`Ubicación: ${resultado.departamento}, ${resultado.provincia}, ${resultado.distrito}`, 15, 30);
+            doc.text(`Fecha del padrón: ${new Date(resultado.fecha).toLocaleDateString('es-PE')}`, 15, 40);
+
+            // Datos principales
+            let yPos = 50;
+            Object.entries(resultado).forEach(([key, value]) => {
+                if(key === 'fecha') return;
+                doc.text(`${formatearCampo(key)}: ${formatearValor(value, key)}`, 15, yPos);
+                yPos += 10;
+            });
+
+            // Gráficos
+            const safImg = document.getElementById('chartSAF').toDataURL('image/png');
+            const scdImg = document.getElementById('chartSCD').toDataURL('image/png');
+
+            doc.addPage();
+            doc.text('Evolución SAF - Familias Atendidas', 15, 20);
+            doc.addImage(safImg, 'PNG', 15, 30, 180, 80);
+
+            doc.addPage();
+            doc.text('Evolución SCD - Niños Atendidos', 15, 20);
+            doc.addImage(scdImg, 'PNG', 15, 30, 180, 80);
+
+            doc.save('reporte-cobertura.pdf');
+        }
+
+        function exportarWord() {
+            const resultado = obtenerResultadoActual();
+            const html = `
+                <h1>Reporte de Cobertura PNCM</h1>
+                <h3>${resultado.departamento}, ${resultado.provincia}, ${resultado.distrito}</h3>
+                <table border="1">
+                    ${Object.entries(resultado).map(([key, value]) => `
+                        <tr>
+                            <td><strong>${formatearCampo(key)}</strong></td>
+                            <td>${formatearValor(value, key)}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+            `;
+
+            const blob = new Blob([html], { type: 'application/msword' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'reporte-cobertura.doc';
+            link.click();
+        }
+
+        function compartirWhatsApp() {
+            const resultado = obtenerResultadoActual();
+            const mensaje = encodeURIComponent(
+                `*Reporte de Cobertura PNCM*\n\n` +
+                `*Departamento:* ${resultado.departamento}\n` +
+                `*Provincia:* ${resultado.provincia}\n` +
+                `*Distrito:* ${resultado.distrito}\n` +
+                `*Familias SAF:* ${resultado.nfamilia_saf.toLocaleString()}\n` +
+                `*Niños SCD:* ${resultado.nniños_scd.toLocaleString()}\n` +
+                `*Actualizado al:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}`
+            );
+            
+            window.open(`https://wa.me/?text=${mensaje}`, '_blank');
         }
 
         // Inicialización
