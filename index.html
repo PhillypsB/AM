@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         :root {
             --color-primario: rgba(255, 140, 0, 1);
@@ -71,12 +72,13 @@
             border-radius: 12px;
             padding: 1.5rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            height: 300px;
+            height: 350px;
+            position: relative;
         }
 
         .chart-container canvas {
+            max-height: 280px !important;
             max-width: 100% !important;
-            height: auto !important;
         }
 
         .data-table th {
@@ -139,14 +141,13 @@
                     <h5 class="mb-3">Evolución SAF - Familias Atendidas</h5>
                     <canvas id="chartSAF"></canvas>
                 </div>
-                <br><br>
                 <div class="chart-container">
                     <h5 class="mb-3">Evolución SCD - Niños Atendidos</h5>
                     <canvas id="chartSCD"></canvas>
                 </div>
             </div>
-                <br><br>
-            <div class="export-buttons text-end d-none" id="exportButtons">
+
+            <div class="export-buttons text-end d-none mt-4" id="exportButtons">
                 <button class="btn btn-danger me-2" onclick="exportarPDF()">
                     <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
                 </button>
@@ -162,7 +163,8 @@
 
     <script>
         let chartSAF, chartSCD;
-        
+        Chart.register(ChartDataLabels);
+
         // Cargar departamentos iniciales
         function cargarDepartamentos() {
             const departamentos = [...new Set(dataset.map(item => item.departamento))];
@@ -173,7 +175,6 @@
             });
         }
 
-        // Resto de funciones de carga...
         function cargarProvincias() {
             const depto = document.getElementById('departamento').value;
             const selectProvincia = document.getElementById('provincia');
@@ -233,7 +234,9 @@
             
             fechas.sort().reverse().forEach(fecha => {
                 const fechaObj = new Date(fecha);
-                selectFecha.innerHTML += `<option value="${fecha}">${fechaObj.toLocaleDateString('es-PE')}</option>`;
+                selectFecha.innerHTML += `<option value="${fecha}">${
+                    fechaObj.toLocaleDateString('es-PE', {month: '2-digit', year: 'numeric'})
+                }</option>`;
             });
 
             resetearResultados();
@@ -293,41 +296,61 @@
 
             const datos = obtenerDatosHistoricos();
             
-            // Configuración común
             const config = {
                 type: 'line',
+                plugins: [ChartDataLabels],
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => value.toLocaleString(),
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            }
+                        }
+                    },
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            max: (ctx) => Math.max(...ctx.chart.data.datasets[0].data) * 1.2
+                        } 
+                    }
                 }
             };
 
-            // Gráfico SAF
             chartSAF = new Chart(document.getElementById('chartSAF'), {
                 ...config,
                 data: {
-                    labels: ['2023', '2024', '2025'],
+                    labels: datos.labels,
                     datasets: [{
                         data: datos.saf,
                         borderColor: 'rgb(255, 140, 0)',
                         backgroundColor: 'rgba(255, 140, 0, 0.1)',
-                        tension: 0.4
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     }]
                 }
             });
 
-            // Gráfico SCD
             chartSCD = new Chart(document.getElementById('chartSCD'), {
                 ...config,
                 data: {
-                    labels: ['2023', '2024', '2025'],
+                    labels: datos.labels,
                     datasets: [{
                         data: datos.scd,
                         borderColor: 'rgb(119, 136, 153)',
                         backgroundColor: 'rgba(119, 136, 153, 0.1)',
-                        tension: 0.4
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     }]
                 }
             });
@@ -346,27 +369,32 @@
                 item.distrito === ubicacion.distrito
             );
 
-            const datosPorAnio = {
-                '2023': { saf: 0, scd: 0 },
-                '2024': { saf: 0, scd: 0 },
-                '2025': { saf: 0, scd: 0 }
-            };
-
+            const datosPorPeriodo = {};
             datosFiltrados.forEach(item => {
-                const anio = new Date(item.fecha).getFullYear().toString();
-                if(datosPorAnio[anio]) {
-                    datosPorAnio[anio].saf += item.nfamilia_saf || 0;
-                    datosPorAnio[anio].scd += item.nniños_scd || 0;
+                const fecha = new Date(item.fecha);
+                const periodo = `${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
+                
+                if(!datosPorPeriodo[periodo]) {
+                    datosPorPeriodo[periodo] = { saf: 0, scd: 0 };
                 }
+                
+                datosPorPeriodo[periodo].saf += item.nfamilia_saf || 0;
+                datosPorPeriodo[periodo].scd += item.nniños_scd || 0;
+            });
+
+            const periodosOrdenados = Object.keys(datosPorPeriodo).sort((a, b) => {
+                const [mesA, añoA] = a.split('/');
+                const [mesB, añoB] = b.split('/');
+                return new Date(añoA, mesA - 1) - new Date(añoB, mesB - 1);
             });
 
             return {
-                saf: Object.values(datosPorAnio).map(a => a.saf),
-                scd: Object.values(datosPorAnio).map(a => a.scd)
+                saf: periodosOrdenados.map(p => datosPorPeriodo[p].saf),
+                scd: periodosOrdenados.map(p => datosPorPeriodo[p].scd),
+                labels: periodosOrdenados
             };
         }
 
-        // Funciones de formato y exportación
         function formatearCampo(key) {
             const campos = {
                 ubigeo: 'Código UBIGEO',
@@ -391,12 +419,11 @@
                 return value.toLocaleString();
             }
             if(key === 'fecha') {
-                return new Date(value).toLocaleDateString('es-PE');
+                return new Date(value).toLocaleDateString('es-PE', {month: '2-digit', year: 'numeric'});
             }
             return value;
         }
 
-        // Función corregida para obtener datos actuales
         function obtenerResultadoActual() {
             const depto = document.getElementById('departamento').value;
             const provincia = document.getElementById('provincia').value;
@@ -410,7 +437,6 @@
                 item.fecha === fecha
             );
         }
-
         
         // Función exportarPDF mejorada
         function exportarPDF() {
