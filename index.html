@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Sistema de Padrones - MIDIS</title>
+    <title>BRAVO</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        /* Estilos anteriores se mantienen igual */
         :root {
             --color-primario: rgba(255, 140, 0, 1);
             --color-secundario: rgba(119, 136, 153, 1);
@@ -21,7 +21,8 @@
 
         body {
             background-color: var(--color-fondo);
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .logo-header {
@@ -32,23 +33,175 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* ... resto de estilos ... */
+        .logo-img {
+            height: 45px;
+            margin-right: 1rem;
+            border-radius: 8px;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .report-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-card {
+            background: rgba(0,72,132,0.03);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .graficos-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            height: 350px;
+            position: relative;
+        }
+
+        .chart-container canvas {
+            max-height: 280px !important;
+            max-width: 100% !important;
+        }
+
+        .data-table th {
+            background-color: var(--color-primario);
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <!-- Contenido HTML anterior se mantiene igual -->
     <div class="container-lg py-4">
-        <!-- ... misma estructura HTML ... -->
+        <div class="logo-header rounded-3">
+            <div class="d-flex align-items-center justify-content-center">
+                <img src="https://previews.123rf.com/images/mrcocoa/mrcocoa1605/mrcocoa160500291/55924712-consulta-online-icono-adecuado-para-informaci%C3%B3n-de-gr%C3%A1ficos-p%C3%A1ginas-web-y-medios-impresos-vector.jpg" 
+                     alt="Logo" 
+                     class="logo-img">
+                <div>
+                    <h2 class="header-title mb-1">COBERTURA DE ATENCIÓN PNCM</h2>
+                    <h5 class="header-subtitle">2023 | 2024 | 2025</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-container">
+            <div class="filter-card">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Departamento</label>
+                        <select id="departamento" class="form-select" onchange="cargarProvincias()">
+                            <option value="">Seleccionar</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Provincia</label>
+                        <select id="provincia" class="form-select" onchange="cargarDistritos()" disabled>
+                            <option value="">Seleccione departamento</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Distrito</label>
+                        <select id="distrito" class="form-select" onchange="cargarFechas()" disabled>
+                            <option value="">Seleccione provincia</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Fecha del Padrón</label>
+                        <select id="fecha" class="form-select" onchange="mostrarResultados()" disabled>
+                            <option value="">Seleccione distrito</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resultados"></div>
+
+            <div class="graficos-section d-none" id="graficosSection">
+                <div class="chart-container">
+                    <h5 class="mb-3">Evolución SAF - Familias Atendidas</h5>
+                    <canvas id="chartSAF"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h5 class="mb-3">Evolución SCD - Niños Atendidos</h5>
+                    <canvas id="chartSCD"></canvas>
+                </div>
+            </div>
+
+            <div class="export-buttons text-end d-none mt-4" id="exportButtons">
+                <button class="btn btn-danger me-2" onclick="exportarPDF()">
+                    <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
+                </button>
+                <button class="btn btn-primary me-2" onclick="exportarWord()">
+                    <i class="bi bi-file-earmark-word me-2"></i>Exportar Word
+                </button>
+                <button class="btn btn-success" onclick="compartirWhatsApp()">
+                    <i class="bi bi-whatsapp me-2"></i>Compartir
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Configuración inicial y funciones anteriores se mantienen
         let chartSAF, chartSCD;
         Chart.register(ChartDataLabels);
 
-        // ... funciones cargarDepartamentos, cargarProvincias, etc ... 
+        // Datos de ejemplo (debes reemplazar con tu dataset real)
+        const dataset = [
+            {
+                "ubigeo": "150101",
+                "departamento": "Lima",
+                "provincia": "Lima",
+                "distrito": "Cercado de Lima",
+                "ut": "UT01",
+                "nfamilia_saf": 1500,
+                "nniños_saf": 2500,
+                "ngestantes_saf": 300,
+                "ejecucion_saf": 150000.50,
+                "nniños_scd": 1800,
+                "nlocales_scd": 15,
+                "ejecucion_scd": 75000.75,
+                "fecha": "2023-01-15"
+            }
+            // ... más datos ...
+        ];
 
-        // Función exportarPDF modificada
+        function cargarDepartamentos() {
+            const departamentos = [...new Set(dataset.map(item => item.departamento))];
+            const select = document.getElementById('departamento');
+            
+            departamentos.sort().forEach(depto => {
+                select.innerHTML += `<option value="${depto}">${depto}</option>`;
+            });
+        }
+
+        // ... funciones cargarProvincias, cargarDistritos, cargarFechas se mantienen igual ...
+
         async function exportarPDF() {
             const resultado = obtenerResultadoActual();
             if (!resultado) {
@@ -56,22 +209,20 @@
                 return;
             }
 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
             try {
-                // Encabezado
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Contenido principal
                 doc.setFontSize(16);
                 doc.setTextColor(0, 72, 132);
                 doc.text('Reporte Oficial - MIDIS', 15, 20);
                 
                 // Tabla de datos
                 const columns = [['Campo', 'Valor']];
-                const filteredData = Object.entries(resultado).filter(([key]) => key !== 'fecha');
-                const rows = filteredData.map(([key, value]) => [
-                    formatearCampo(key),
-                    formatearValor(value, key)
-                ]);
+                const rows = Object.entries(resultado)
+                    .filter(([key]) => key !== 'fecha')
+                    .map(([key, value]) => [formatearCampo(key), formatearValor(value, key)]);
                 
                 doc.autoTable({
                     head: columns,
@@ -81,128 +232,96 @@
                     styles: { fontSize: 10 }
                 });
 
-                // Capturar gráficos como imágenes
-                const safCanvas = document.getElementById('chartSAF');
-                const scdCanvas = document.getElementById('chartSCD');
-                
-                const safImage = await html2canvas(safCanvas);
-                const scdImage = await html2canvas(scdCanvas);
-                
-                // Añadir gráficos al PDF
+                // Capturar gráficos
+                const [safImg, scdImg] = await Promise.all([
+                    html2canvas(document.querySelector('#chartSAF')),
+                    html2canvas(document.querySelector('#chartSCD'))
+                ]);
+
+                // Añadir gráficos
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const imgWidth = pageWidth - 30;
-                const imgHeight = (safCanvas.height * imgWidth) / safCanvas.width;
-                
-                doc.addPage();
-                doc.addImage(safImage, 'PNG', 15, 20, imgWidth, imgHeight);
-                
-                doc.addPage();
-                doc.addImage(scdImage, 'PNG', 15, 20, imgWidth, imgHeight);
+                const imgHeight = (safImg.height * imgWidth) / safImg.width;
 
-                // Manejo para iOS
-                if(/iPhone|iPad/i.test(navigator.userAgent)) {
-                    const pdfBlob = doc.output('blob');
-                    const pdfUrl = URL.createObjectURL(pdfBlob);
-                    window.open(pdfUrl, '_blank');
+                doc.addPage();
+                doc.addImage(safImg, 'PNG', 15, 20, imgWidth, imgHeight);
+                
+                doc.addPage();
+                doc.addImage(scdImg, 'PNG', 15, 20, imgWidth, imgHeight);
+
+                // Guardar PDF
+                const pdfBlob = doc.output('blob');
+                if(window.navigator.userAgent.match(/iPhone|iPad/i)) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        window.open(reader.result, '_blank');
+                    };
+                    reader.readAsDataURL(pdfBlob);
                 } else {
-                    doc.save(`Reporte_${resultado.ubigeo}.pdf`);
+                    saveAs(pdfBlob, `Reporte_${resultado.ubigeo}.pdf`);
                 }
             } catch (error) {
                 console.error('Error al generar PDF:', error);
-                alert('Error al generar el PDF: ' + error.message);
+                alert('Error al generar PDF: ' + error.message);
             }
         }
 
-        // Función exportarWord modificada
         function exportarWord() {
             const resultado = obtenerResultadoActual();
             if (!resultado) return;
 
-            const htmlContent = `
-                <!DOCTYPE html>
+            const html = `
                 <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <style>
-                            body { font-family: Arial; margin: 2rem; }
-                            h1 { color: #004884; border-bottom: 2px solid #004884; }
-                            table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-                            th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-                            th { background-color: #f8f9fc; }
-                        </style>
-                    </head>
                     <body>
-                        <h1>Reporte PNCM - MIDIS</h1>
-                        <h3>${resultado.departamento}, ${resultado.provincia}, ${resultado.distrito}</h3>
-                        <table>
-                            ${Object.entries(resultado).map(([key, value]) => `
-                                <tr>
-                                    <th>${formatearCampo(key)}</th>
-                                    <td>${formatearValor(value, key)}</td>
-                                </tr>
-                            `).join('')}
-                        </table>
-                        <p><em>Generado el ${new Date().toLocaleDateString('es-PE')}</em></p>
+                        <h1>Reporte PNCM</h1>
+                        ${Object.entries(resultado).map(([key, value]) => `
+                            <p><strong>${formatearCampo(key)}:</strong> ${formatearValor(value, key)}</p>
+                        `).join('')}
                     </body>
                 </html>
             `;
 
-            const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
-            const url = URL.createObjectURL(blob);
+            const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
             
-            if(/iPhone|iPad/i.test(navigator.userAgent)) {
+            if(window.navigator.userAgent.match(/iPhone|iPad/i)) {
+                const url = URL.createObjectURL(blob);
                 window.open(url, '_blank');
             } else {
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `Reporte_${resultado.ubigeo}.doc`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                saveAs(blob, `Reporte_${resultado.ubigeo}.doc`);
             }
         }
 
-        // Función compartirWhatsApp modificada
         function compartirWhatsApp() {
             const resultado = obtenerResultadoActual();
-            if (!resultado) {
-                alert('Primero seleccione y genere un reporte válido');
-                return;
-            }
+            if (!resultado) return;
 
-            const fechaReporte = new Date().toLocaleDateString('es-PE');
-            const formatoMoneda = {
-                style: 'currency',
-                currency: 'PEN',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            };
+            const mensaje = `*REPORTE PNCM*%0A%0A` +
+                `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}%0A` +
+                `📅 *Fecha:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}%0A` +
+                `👨👩👧👦 *Familias SAF:* ${resultado.nfamilia_saf?.toLocaleString() || '0'}%0A` +
+                `🧒 *Niños SCD:* ${resultado.nniños_scd?.toLocaleString() || '0'}%0A%0A` +
+                `📊 *Detalles completos en:* [Enlace a la app]`;
 
-            let mensaje = `*REPORTE PNCM - ${resultado.distrito.toUpperCase()}*\n\n`;
-            mensaje += `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}\n`;
-            mensaje += `📅 *Fecha del Padrón:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}\n\n`;
-            mensaje += `👨👩👧👦 Familias SAF: ${(resultado.nfamilia_saf || 0).toLocaleString()}\n`;
-            mensaje += `🧒 Niños SCD: ${(resultado.nniños_scd || 0).toLocaleString()}\n\n`;
-            mensaje += `📊 Ver detalles completos en: [Enlace a la app]`;
-
-            const mensajeCodificado = encodeURIComponent(mensaje);
-            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
+            const isAndroid = /Android/i.test(navigator.userAgent);
             
             if (isIOS) {
-                window.location.href = `whatsapp://send?text=${mensajeCodificado}`;
+                window.location.href = `whatsapp://send?text=${mensaje}`;
                 setTimeout(() => {
-                    window.location.href = `https://api.whatsapp.com/send?text=${mensajeCodencoded}`;
+                    window.location.href = `https://api.whatsapp.com/send?text=${mensaje}`;
                 }, 1000);
+            } else if (isAndroid) {
+                window.open(`https://wa.me/?text=${mensaje}`, '_blank');
             } else {
-                window.open(`https://wa.me/?text=${mensajeCodificado}`, '_blank');
+                window.open(`https://web.whatsapp.com/send?text=${mensaje}`, '_blank');
             }
         }
 
         // ... resto de funciones se mantienen igual ...
+
+        window.onload = cargarDepartamentos;
     </script>
 
-    <!-- Scripts adicionales -->
-    <script src="dataset.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
