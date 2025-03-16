@@ -2,16 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BRAVO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Padrones - MIDIS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         :root {
             --color-primario: rgba(255, 140, 0, 1);
@@ -21,8 +17,7 @@
 
         body {
             background-color: var(--color-fondo);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
 
         .logo-header {
@@ -36,7 +31,6 @@
         .logo-img {
             height: 45px;
             margin-right: 1rem;
-            border-radius: 8px;
         }
 
         .header-title {
@@ -171,26 +165,7 @@
         let chartSAF, chartSCD;
         Chart.register(ChartDataLabels);
 
-        // Datos de ejemplo (debes reemplazar con tu dataset real)
-        const dataset = [
-            {
-                "ubigeo": "150101",
-                "departamento": "Lima",
-                "provincia": "Lima",
-                "distrito": "Cercado de Lima",
-                "ut": "UT01",
-                "nfamilia_saf": 1500,
-                "nniños_saf": 2500,
-                "ngestantes_saf": 300,
-                "ejecucion_saf": 150000.50,
-                "nniños_scd": 1800,
-                "nlocales_scd": 15,
-                "ejecucion_scd": 75000.75,
-                "fecha": "2023-01-15"
-            }
-            // ... más datos ...
-        ];
-
+        // Cargar departamentos iniciales
         function cargarDepartamentos() {
             const departamentos = [...new Set(dataset.map(item => item.departamento))];
             const select = document.getElementById('departamento');
@@ -200,97 +175,387 @@
             });
         }
 
-        // ... funciones cargarProvincias, cargarDistritos, cargarFechas se mantienen igual ...
+        function cargarProvincias() {
+            const depto = document.getElementById('departamento').value;
+            const selectProvincia = document.getElementById('provincia');
+            
+            selectProvincia.innerHTML = '<option value="">Seleccionar</option>';
+            selectProvincia.disabled = !depto;
+            
+            const provincias = [...new Set(dataset
+                .filter(item => item.departamento === depto)
+                .map(item => item.provincia))];
+            
+            provincias.sort().forEach(prov => {
+                selectProvincia.innerHTML += `<option value="${prov}">${prov}</option>`;
+            });
+            
+            document.getElementById('distrito').disabled = true;
+            document.getElementById('fecha').disabled = true;
+            resetearResultados();
+        }
 
-        async function exportarPDF() {
+        function cargarDistritos() {
+            const depto = document.getElementById('departamento').value;
+            const provincia = document.getElementById('provincia').value;
+            const selectDistrito = document.getElementById('distrito');
+            
+            selectDistrito.innerHTML = '<option value="">Seleccionar</option>';
+            selectDistrito.disabled = !provincia;
+            
+            const distritos = [...new Set(dataset
+                .filter(item => item.departamento === depto && item.provincia === provincia)
+                .map(item => item.distrito))];
+            
+            distritos.sort().forEach(dist => {
+                selectDistrito.innerHTML += `<option value="${dist}">${dist}</option>`;
+            });
+            
+            document.getElementById('fecha').disabled = true;
+            resetearResultados();
+        }
+
+        function cargarFechas() {
+            const depto = document.getElementById('departamento').value;
+            const provincia = document.getElementById('provincia').value;
+            const distrito = document.getElementById('distrito').value;
+            const selectFecha = document.getElementById('fecha');
+
+            selectFecha.innerHTML = '<option value="">Seleccionar</option>';
+            selectFecha.disabled = !distrito;
+            
+            const fechas = [...new Set(dataset
+                .filter(item => 
+                    item.departamento === depto &&
+                    item.provincia === provincia &&
+                    item.distrito === distrito
+                )
+                .map(item => item.fecha))];
+            
+            fechas.sort().reverse().forEach(fecha => {
+                const fechaObj = new Date(fecha);
+                selectFecha.innerHTML += `<option value="${fecha}">${
+                    fechaObj.toLocaleDateString('es-PE', {month: '2-digit', year: 'numeric'})
+                }</option>`;
+            });
+
+            resetearResultados();
+        }
+
+        function resetearResultados() {
+            document.getElementById('resultados').innerHTML = '';
+            document.getElementById('exportButtons').classList.add('d-none');
+            document.getElementById('graficosSection').classList.add('d-none');
+        }
+
+        function mostrarResultados() {
+            const fechaSeleccionada = document.getElementById('fecha').value;
+            if(!fechaSeleccionada) return;
+
+            const resultado = dataset.find(item => 
+                item.departamento === document.getElementById('departamento').value &&
+                item.provincia === document.getElementById('provincia').value &&
+                item.distrito === document.getElementById('distrito').value &&
+                item.fecha === fechaSeleccionada
+            );
+
+            if(resultado) {
+                mostrarTablaResultados(resultado);
+                actualizarGraficos();
+                document.getElementById('exportButtons').classList.remove('d-none');
+                document.getElementById('graficosSection').classList.remove('d-none');
+            }
+        }
+
+        function mostrarTablaResultados(resultado) {
+            const html = `
+                <div class="table-responsive">
+                    <table class="table data-table table-striped">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="text-center bg-primary text-white">Datos del Territorio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(resultado).map(([key, value]) => `
+                                <tr>
+                                    <td class="fw-bold">${formatearCampo(key)}</td>
+                                    <td>${formatearValor(value, key)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('resultados').innerHTML = html;
+        }
+
+        function actualizarGraficos() {
+            if(chartSAF) chartSAF.destroy();
+            if(chartSCD) chartSCD.destroy();
+
+            const datos = obtenerDatosHistoricos();
+            
+            const config = {
+                type: 'line',
+                plugins: [ChartDataLabels],
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => value.toLocaleString(),
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            }
+                        }
+                    },
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            max: (ctx) => Math.max(...ctx.chart.data.datasets[0].data) * 1.2
+                        } 
+                    }
+                }
+            };
+
+            chartSAF = new Chart(document.getElementById('chartSAF'), {
+                ...config,
+                data: {
+                    labels: datos.labels,
+                    datasets: [{
+                        data: datos.saf,
+                        borderColor: 'rgb(255, 140, 0)',
+                        backgroundColor: 'rgba(255, 140, 0, 0.1)',
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                }
+            });
+
+            chartSCD = new Chart(document.getElementById('chartSCD'), {
+                ...config,
+                data: {
+                    labels: datos.labels,
+                    datasets: [{
+                        data: datos.scd,
+                        borderColor: 'rgb(119, 136, 153)',
+                        backgroundColor: 'rgba(119, 136, 153, 0.1)',
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                }
+            });
+        }
+
+        function obtenerDatosHistoricos() {
+            const ubicacion = {
+                depto: document.getElementById('departamento').value,
+                provincia: document.getElementById('provincia').value,
+                distrito: document.getElementById('distrito').value
+            };
+
+            const datosFiltrados = dataset.filter(item => 
+                item.departamento === ubicacion.depto &&
+                item.provincia === ubicacion.provincia &&
+                item.distrito === ubicacion.distrito
+            );
+
+            const datosPorPeriodo = {};
+            datosFiltrados.forEach(item => {
+                const fecha = new Date(item.fecha);
+                const periodo = `${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
+                
+                if(!datosPorPeriodo[periodo]) {
+                    datosPorPeriodo[periodo] = { saf: 0, scd: 0 };
+                }
+                
+                datosPorPeriodo[periodo].saf += item.nfamilia_saf || 0;
+                datosPorPeriodo[periodo].scd += item.nniños_scd || 0;
+            });
+
+            const periodosOrdenados = Object.keys(datosPorPeriodo).sort((a, b) => {
+                const [mesA, añoA] = a.split('/');
+                const [mesB, añoB] = b.split('/');
+                return new Date(añoA, mesA - 1) - new Date(añoB, mesB - 1);
+            });
+
+            return {
+                saf: periodosOrdenados.map(p => datosPorPeriodo[p].saf),
+                scd: periodosOrdenados.map(p => datosPorPeriodo[p].scd),
+                labels: periodosOrdenados
+            };
+        }
+
+        function formatearCampo(key) {
+            const campos = {
+                ubigeo: 'Código UBIGEO',
+                ut: 'Unidad Territorial',
+                nfamilia_saf: 'Familias SAF',
+                nniños_saf: 'Niños SAF',
+                ngestantes_saf: 'Gestantes SAF',
+                ejecucion_saf: 'Ejecución SAF (S/)',
+                nniños_scd: 'Niños SCD',
+                nlocales_scd: 'Locales SCD',
+                ejecucion_scd: 'Ejecución SCD (S/)',
+                fecha: 'PADRON AL'
+            };
+            return campos[key] || key.toUpperCase();
+        }
+
+        function formatearValor(value, key) {
+            if(typeof value === 'number') {
+                if(key.includes('ejecucion')) {
+                    return `S/ ${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+                }
+                return value.toLocaleString();
+            }
+            if(key === 'fecha') {
+                return new Date(value).toLocaleDateString('es-PE', {month: '2-digit', year: 'numeric'});
+            }
+            return value;
+        }
+
+        function obtenerResultadoActual() {
+            const depto = document.getElementById('departamento').value;
+            const provincia = document.getElementById('provincia').value;
+            const distrito = document.getElementById('distrito').value;
+            const fecha = document.getElementById('fecha').value;
+
+            return dataset.find(item => 
+                item.departamento === depto &&
+                item.provincia === provincia &&
+                item.distrito === distrito &&
+                item.fecha === fecha
+            );
+        }
+        
+        // Función exportarPDF mejorada
+        function exportarPDF() {
             const resultado = obtenerResultadoActual();
             if (!resultado) {
                 alert('Seleccione todos los filtros antes de exportar');
                 return;
             }
-
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
+        
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Configuración inicial
+            doc.setFontSize(16);
+            doc.setTextColor(0, 72, 132);
+            doc.text('Reporte Oficial - MIDIS', 15, 20);
+            
+            // Configurar tabla
+            const columns = [['Campo', 'Valor']];
+            const filteredData = Object.entries(resultado).filter(([key]) => key !== 'fecha');
+            const rows = filteredData.map(([key, value]) => [
+                formatearCampo(key),
+                formatearValor(value, key)
+            ]);
+            
+            // Generar tabla
+            doc.autoTable({
+                head: columns,
+                body: rows,
+                startY: 30,
+                theme: 'grid',
+                styles: { 
+                    fontSize: 10,
+                    cellPadding: 3,
+                    valign: 'middle'
+                },
+                headStyles: { 
+                    fillColor: [0, 72, 132],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                margin: { horizontal: 15 },
+                tableWidth: 'auto'
+            });
+        
+            // Captura asincrónica de gráficos
+            setTimeout(() => {
+                const safCanvas = document.getElementById('chartSAF');
+                const scdCanvas = document.getElementById('chartSCD');
                 
-                // Contenido principal
-                doc.setFontSize(16);
-                doc.setTextColor(0, 72, 132);
-                doc.text('Reporte Oficial - MIDIS', 15, 20);
-                
-                // Tabla de datos
-                const columns = [['Campo', 'Valor']];
-                const rows = Object.entries(resultado)
-                    .filter(([key]) => key !== 'fecha')
-                    .map(([key, value]) => [formatearCampo(key), formatearValor(value, key)]);
-                
-                doc.autoTable({
-                    head: columns,
-                    body: rows,
-                    startY: 30,
-                    theme: 'grid',
-                    styles: { fontSize: 10 }
-                });
-
-                // Capturar gráficos
-                const [safImg, scdImg] = await Promise.all([
-                    html2canvas(document.querySelector('#chartSAF')),
-                    html2canvas(document.querySelector('#chartSCD'))
-                ]);
-
-                // Añadir gráficos
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const imgWidth = pageWidth - 30;
-                const imgHeight = (safImg.height * imgWidth) / safImg.width;
-
-                doc.addPage();
-                doc.addImage(safImg, 'PNG', 15, 20, imgWidth, imgHeight);
-                
-                doc.addPage();
-                doc.addImage(scdImg, 'PNG', 15, 20, imgWidth, imgHeight);
-
-                // Guardar PDF
-                const pdfBlob = doc.output('blob');
-                if(window.navigator.userAgent.match(/iPhone|iPad/i)) {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        window.open(reader.result, '_blank');
-                    };
-                    reader.readAsDataURL(pdfBlob);
-                } else {
-                    saveAs(pdfBlob, `Reporte_${resultado.ubigeo}.pdf`);
+                if (safCanvas && scdCanvas) {
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const imgWidth = pageWidth - 30;
+                    const imgHeight = 100;
+                    
+                    // Gráfico SAF
+                    doc.addPage();
+                    const safImg = safCanvas.toDataURL('image/png', 1.0);
+                    doc.text('Evolución SAF - Familias Atendidas', 15, 20);
+                    doc.addImage(safImg, 'PNG', 15, 30, imgWidth, imgHeight);
+                    
+                    // Gráfico SCD
+                    doc.addPage();
+                    const scdImg = scdCanvas.toDataURL('image/png', 1.0);
+                    doc.text('Evolución SCD - Niños Atendidos', 15, 20);
+                    doc.addImage(scdImg, 'PNG', 15, 30, imgWidth, imgHeight);
                 }
-            } catch (error) {
-                console.error('Error al generar PDF:', error);
-                alert('Error al generar PDF: ' + error.message);
-            }
+        
+                // Guardar PDF
+                doc.save(`Reporte_${resultado.ubigeo}_${new Date().toISOString().slice(0,10)}.pdf`);
+            }, 500); // Retardo aumentado para asegurar renderizado
         }
 
+        // Función exportarWord mejorada
         function exportarWord() {
             const resultado = obtenerResultadoActual();
-            if (!resultado) return;
-
-            const html = `
+            const htmlContent = `
+                <!DOCTYPE html>
                 <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <style>
+                            body { font-family: Arial; margin: 2rem; }
+                            h1 { color: #004884; border-bottom: 2px solid #004884; }
+                            table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+                            th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                            th { background-color: #f8f9fc; }
+                        </style>
+                    </head>
                     <body>
-                        <h1>Reporte PNCM</h1>
-                        ${Object.entries(resultado).map(([key, value]) => `
-                            <p><strong>${formatearCampo(key)}:</strong> ${formatearValor(value, key)}</p>
-                        `).join('')}
+                        <h1>Reporte PNCM - MIDIS</h1>
+                        <h3>${resultado.departamento}, ${resultado.provincia}, ${resultado.distrito}</h3>
+                        <table>
+                            ${Object.entries(resultado).map(([key, value]) => `
+                                <tr>
+                                    <th>${formatearCampo(key)}</th>
+                                    <td>${formatearValor(value, key)}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        <p><em>Generado el ${new Date().toLocaleDateString('es-PE')}</em></p>
                     </body>
                 </html>
             `;
 
-            const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
-            
-            if(window.navigator.userAgent.match(/iPhone|iPad/i)) {
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank');
-            } else {
-                saveAs(blob, `Reporte_${resultado.ubigeo}.doc`);
-            }
+            const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Reporte_${resultado.ubigeo}.doc`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
+        // Función compartirWhatsApp mejorada
         function compartirWhatsApp() {
             const resultado = obtenerResultadoActual();
             if (!resultado) return;
@@ -317,13 +582,13 @@
             }
         }
 
-        // ... resto de funciones se mantienen igual ...
-
         window.onload = cargarDepartamentos;
     </script>
 
+    <!-- Scripts adicionales -->
+    <script src="dataset.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
