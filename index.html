@@ -560,37 +560,47 @@
     const resultado = obtenerResultadoActual();
     if (!resultado) return;
 
-    const formatoMoneda = { style: 'currency', currency: 'PEN' };
-    const fechaGeneracion = new Date().toLocaleDateString('es-PE', {
+    // 1. Construcción del mensaje multiplataforma
+    const mensaje = `
+*REPORTE COBERTURA PNCM*
+
+🗺️ *Ubigeo:* ${resultado.ubigeo || 'N/A'}
+🏢 *Unidad Territorial:* ${resultado.ut || 'N/A'}
+📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}
+📅 *Fecha del Padrón:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}
+
+*🔵 DATOS SAF*
+👨👩👧👦 *Familias:* ${(resultado.nfamilia_saf || 0).toLocaleString()}
+🧒 *Niños:* ${(resultado.nniños_saf || 0).toLocaleString()}
+🤰 *Gestantes:* ${(resultado.ngestantes_saf || 0).toLocaleString()}
+💸 *Ejecución:* ${(resultado.ejecucion_saf || 0).toLocaleString('es-PE', {
+        style: 'currency',
+        currency: 'PEN'
+    })}
+
+*🟡 DATOS SCD*
+🧒 *Niños:* ${(resultado.nniños_scd || 0).toLocaleString()}
+🏫 *Locales:* ${(resultado.nlocales_scd || 0).toLocaleString()}
+💸 *Ejecución:* ${(resultado.ejecucion_scd || 0).toLocaleString('es-PE', {
+        style: 'currency',
+        currency: 'PEN'
+    })}
+
+📅 *Generado:* ${new Date().toLocaleDateString('es-PE', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
-    });
+    })}
+    `.trim();
 
-    const mensaje = `*REPORTE COBERTURA PNCM*%0A%0A` +
-        `🗺️ *Ubigeo:* ${resultado.ubigeo || 'N/A'}%0A` +
-        `🏢 *Unidad Territorial:* ${resultado.ut || 'N/A'}%0A` +
-        `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}%0A` +
-        `📅 *Fecha del Padrón:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}%0A%0A` +
-
-        `*🔵 DATOS SAF*%0A` +
-        `👨👩👧👦 *Familias:* ${(resultado.nfamilia_saf || 0).toLocaleString()}%0A` +
-        `🧒 *Niños:* ${(resultado.nniños_saf || 0).toLocaleString()}%0A` +
-        `🤰 *Gestantes:* ${(resultado.ngestantes_saf || 0).toLocaleString()}%0A` +
-        `💸 *Ejecución:* ${(resultado.ejecucion_saf || 0).toLocaleString('es-PE', formatoMoneda)}%0A%0A` +
-
-        `*🟡 DATOS SCD*%0A` +
-        `🧒 *Niños:* ${(resultado.nniños_scd || 0).toLocaleString()}%0A` +
-        `🏫 *Locales:* ${(resultado.nlocales_scd || 0).toLocaleString()}%0A` +
-        `💸 *Ejecución:* ${(resultado.ejecucion_scd || 0).toLocaleString('es-PE', formatoMoneda)}%0A%0A` +
-
-        `📅 *Generado:* ${fechaGeneracion}%0A%0A`;
-
-    const enlaceBase = navigator.userAgent.match(/iPhone|iPad/i) ? 
-        `whatsapp://send?text=${mensaje}` : 
-        `https://api.whatsapp.com/send?text=${mensaje}`;
-
-    window.open(encodeURI(enlaceBase), '_blank');
+    // 2. Codificación universal
+    const textoCodificado = encodeURIComponent(mensaje);
+    
+    // 3. Enlace único multiplataforma
+    const enlaceWhatsApp = `https://api.whatsapp.com/send?text=${textoCodificado}`;
+    
+    // 4. Método de apertura inteligente
+    window.open(enlaceWhatsApp, '_blank', 'noopener,noreferrer');
 }
 
         window.onload = cargarDepartamentos;
