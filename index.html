@@ -556,44 +556,42 @@
         }
 
         // Función compartirWhatsApp mejorada
-        function compartirWhatsApp() {
-            const resultado = obtenerResultadoActual();
-            if (!resultado) return;
+       function compartirWhatsApp() {
+    const resultado = obtenerResultadoActual();
+    if (!resultado) return;
 
-            const formatoMoneda = { style: 'currency', currency: 'PEN' };
-const mensaje = `*REPORTE COBERTURA PNCM*%0A%0A` +
-                `🗺️ *Ubigeo:* ${resultado.ubigeo || 'N/A'}%0A` +
-                `🏢 *Unidad Territorial:* ${resultado.ut || 'N/A'}%0A` +
-                `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}%0A` +
-                `📅 *Fecha del Padrón:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}%0A%0A` +
+    const formatoMoneda = { style: 'currency', currency: 'PEN' };
+    const fechaGeneracion = new Date().toLocaleDateString('es-PE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
 
-                `*🔵 DATOS SAF*%0A` +
-                `👨👩👧👦 *Familias:* ${(resultado.nfamilia_saf || 0).toLocaleString()}%0A` +
-                `🧒 *Niños:* ${(resultado.nniños_saf || 0).toLocaleString()}%0A` +
-                `🤰 *Gestantes:* ${(resultado.ngestantes_saf || 0).toLocaleString()}%0A` +
-                `💸 *Ejecución:* ${(resultado.ejecucion_saf || 0).toLocaleString('es-PE', formatoMoneda)}%0A%0A` +
+    const mensaje = `*REPORTE COBERTURA PNCM*%0A%0A` +
+        `🗺️ *Ubigeo:* ${resultado.ubigeo || 'N/A'}%0A` +
+        `🏢 *Unidad Territorial:* ${resultado.ut || 'N/A'}%0A` +
+        `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}%0A` +
+        `📅 *Fecha del Padrón:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}%0A%0A` +
 
-                `*🟡 DATOS SCD*%0A` +
-                `🧒 *Niños:* ${(resultado.nniños_scd || 0).toLocaleString()}%0A` +
-                `🏫 *Locales:* ${(resultado.nlocales_scd || 0).toLocaleString()}%0A` +
-                `💸 *Ejecución:* ${(resultado.ejecucion_scd || 0).toLocaleString('es-PE', formatoMoneda)}%0A%0A` +
+        `*🔵 DATOS SAF*%0A` +
+        `👨👩👧👦 *Familias:* ${(resultado.nfamilia_saf || 0).toLocaleString()}%0A` +
+        `🧒 *Niños:* ${(resultado.nniños_saf || 0).toLocaleString()}%0A` +
+        `🤰 *Gestantes:* ${(resultado.ngestantes_saf || 0).toLocaleString()}%0A` +
+        `💸 *Ejecución:* ${(resultado.ejecucion_saf || 0).toLocaleString('es-PE', formatoMoneda)}%0A%0A` +
 
-                `📅 *Generado:* ${fechaReporte}%0A%0A`;
+        `*🟡 DATOS SCD*%0A` +
+        `🧒 *Niños:* ${(resultado.nniños_scd || 0).toLocaleString()}%0A` +
+        `🏫 *Locales:* ${(resultado.nlocales_scd || 0).toLocaleString()}%0A` +
+        `💸 *Ejecución:* ${(resultado.ejecucion_scd || 0).toLocaleString('es-PE', formatoMoneda)}%0A%0A` +
 
-            const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
-            const isAndroid = /Android/i.test(navigator.userAgent);
-            
-            if (isIOS) {
-                window.location.href = `whatsapp://send?text=${mensaje}`;
-                setTimeout(() => {
-                    window.location.href = `https://api.whatsapp.com/send?text=${mensaje}`;
-                }, 1000);
-            } else if (isAndroid) {
-                window.open(`https://wa.me/?text=${mensaje}`, '_blank');
-            } else {
-                window.open(`https://web.whatsapp.com/send?text=${mensaje}`, '_blank');
-            }
-        }
+        `📅 *Generado:* ${fechaGeneracion}%0A%0A`;
+
+    const enlaceBase = navigator.userAgent.match(/iPhone|iPad/i) ? 
+        `whatsapp://send?text=${mensaje}` : 
+        `https://api.whatsapp.com/send?text=${mensaje}`;
+
+    window.open(encodeURI(enlaceBase), '_blank');
+}
 
         window.onload = cargarDepartamentos;
     </script>
