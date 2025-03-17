@@ -560,12 +560,25 @@
             const resultado = obtenerResultadoActual();
             if (!resultado) return;
 
-            const mensaje = `*REPORTE PNCM*%0A%0A` +
+            const formatoMoneda = { style: 'currency', currency: 'PEN' };
+const mensaje = `*REPORTE COBERTURA PNCM*%0A%0A` +
+                `🗺️ *Ubigeo:* ${resultado.ubigeo || 'N/A'}%0A` +
+                `🏢 *Unidad Territorial:* ${resultado.ut || 'N/A'}%0A` +
                 `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}%0A` +
-                `📅 *Fecha:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}%0A` +
-                `👨👩👧👦 *Familias SAF:* ${resultado.nfamilia_saf?.toLocaleString() || '0'}%0A` +
-                `🧒 *Niños SCD:* ${resultado.nniños_scd?.toLocaleString() || '0'}%0A%0A` +
-                `📊 *Detalles completos en:* [Enlace a la app]`;
+                `📅 *Fecha del Padrón:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}%0A%0A` +
+
+                `*🔵 DATOS SAF*%0A` +
+                `👨👩👧👦 *Familias:* ${(resultado.nfamilia_saf || 0).toLocaleString()}%0A` +
+                `🧒 *Niños:* ${(resultado.nniños_saf || 0).toLocaleString()}%0A` +
+                `🤰 *Gestantes:* ${(resultado.ngestantes_saf || 0).toLocaleString()}%0A` +
+                `💸 *Ejecución:* ${(resultado.ejecucion_saf || 0).toLocaleString('es-PE', formatoMoneda)}%0A%0A` +
+
+                `*🟡 DATOS SCD*%0A` +
+                `🧒 *Niños:* ${(resultado.nniños_scd || 0).toLocaleString()}%0A` +
+                `🏫 *Locales:* ${(resultado.nlocales_scd || 0).toLocaleString()}%0A` +
+                `💸 *Ejecución:* ${(resultado.ejecucion_scd || 0).toLocaleString('es-PE', formatoMoneda)}%0A%0A` +
+
+                `📅 *Generado:* ${fechaReporte}%0A%0A`;
 
             const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
             const isAndroid = /Android/i.test(navigator.userAgent);
