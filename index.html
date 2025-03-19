@@ -80,7 +80,17 @@
             max-height: 280px !important;
             max-width: 100% !important;
         }
-
+        .badge-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge i {
+            vertical-align: middle;
+            font-size: 1.1em;
+        }
         .data-table th {
             background-color: var(--color-primario);
             color: white;
@@ -414,6 +424,8 @@
                 nniños_scd: 'Niños SCD',
                 nlocales_scd: 'Locales SCD',
                 ejecucion_scd: 'Ejecución SCD (S/)',
+                CUMPLE_SAF: 'Focalización SAF',
+                CUMPLE_SCD: 'Focalización SCD',
                 fecha: 'PADRON AL'
             };
             return campos[key] || key.toUpperCase();
@@ -425,6 +437,17 @@
                     return `S/ ${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
                 }
                 return value.toLocaleString();
+            }
+            if (key === 'CUMPLE_SAF') {
+                return value === "1" 
+                    ? '<span class="badge bg-success"><i class="bi bi-check-circle me-2"></i>FOCALIZADO</span>' 
+                    : '<span class="badge bg-danger"><i class="bi bi-x-circle me-2"></i>NO FOCALIZADO</span>';
+            }
+            
+            if (key === 'CUMPLE_SCD') {
+                return value === "1" 
+                    ? '<span class="badge bg-success"><i class="bi bi-check-circle me-2"></i>FOCALIZADO</span>' 
+                    : '<span class="badge bg-danger"><i class="bi bi-x-circle me-2"></i>NO FOCALIZADO</span>';
             }
             if(key === 'fecha') {
                 return new Date(value).toLocaleDateString('es-PE', {month: '2-digit', year: 'numeric'});
@@ -593,6 +616,10 @@
         style: 'currency',
         currency: 'PEN'
     })}
+
+*📍 ESTADO DE FOCALIZACIÓN*
+        🔵 SAF: ${resultado.CUMPLE_SAF === "1" ? '✅ FOCALIZADO' : '❌ NO FOCALIZADO'}
+        🟡 SCD: ${resultado.CUMPLE_SCD === "1" ? '✅ FOCALIZADO' : '❌ NO FOCALIZADO'}
 
 📅 *Generado:* ${new Date().toLocaleDateString('es-PE', {
         day: '2-digit',
