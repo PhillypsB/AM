@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Padrones - MIDIS</title>
+    <title>BRAVO</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
     <style>
         :root {
             --color-primario: rgba(255, 140, 0, 1);
@@ -18,6 +19,64 @@
         body {
             background-color: var(--color-fondo);
             font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        /* Actualizar el encabezado */
+    .encabezado-resultados {
+        background: linear-gradient(135deg, var(--color-secundario) 0%, #616161 100%);
+        padding: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .encabezado-resultados h5 {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+        .grupo-saf {
+            --color-grupo: #EC0889;
+            background: rgba(236, 8, 137, 0.05);
+            border-left: 4px solid var(--color-grupo);
+        }
+    
+        .grupo-scd {
+            --color-grupo: #00B050;
+            background: rgba(0, 176, 80, 0.05);
+            border-left: 4px solid var(--color-grupo);
+        }
+    
+        .grupo-titulo {
+            background: linear-gradient(90deg, rgba(var(--color-grupo-rgb), 0.1) 0%, transparent 100%);
+            color: var(--color-grupo);
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+    
+        .grupo-titulo i {
+            font-size: 1.25rem;
+        }
+    
+        .dato-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+    
+        .dato-item:hover {
+            background: rgba(255,255,255,0.7);
+            transform: translateX(5px);
+        }
+    
+        .valor-destacado {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-grupo);
+        }
+    
+        .badge-estado {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
         }
 
         .logo-header {
@@ -94,6 +153,44 @@
         .data-table th {
             background-color: var(--color-primario);
             color: white;
+        }
+        .list-group-item {
+            border: none;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+        
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 576px) {
+            .report-container {
+                padding: 1rem;
+            }
+            
+            .filter-card {
+                padding: 1rem;
+            }
+            
+            .header-title {
+                font-size: 1.2rem;
+            }
+            
+            .badge-status {
+                padding: 0.35rem 0.75rem;
+                font-size: 0.8rem;
+            }
+            
+            .list-group-item {
+                flex-direction: column;
+                align-items: flex-start !important;
+                padding: 0.75rem 1rem;
+            }
+            
+            .list-group-item div:last-child {
+                margin-top: 0.25rem;
+            }
         }
     </style>
 </head><!-- Google tag (gtag.js) -->
@@ -180,6 +277,16 @@
     </div>
 
     <script>
+        function formatearFechaHumana(fechaStr) {
+            const meses = {
+                '01': 'ENE', '02': 'FEB', '03': 'MAR', '04': 'ABR',
+                '05': 'MAY', '06': 'JUN', '07': 'JUL', '08': 'AGO',
+                '09': 'SEP', '10': 'OCT', '11': 'NOV', '12': 'DIC'
+            };
+            const [año, mes] = fechaStr.split('-');
+            return `${año}-${meses[mes]}`;
+        }
+        
         let chartSAF, chartSCD;
         Chart.register(ChartDataLabels);
 
@@ -250,12 +357,10 @@
                 )
                 .map(item => item.fecha))];
             
-            fechas.sort().reverse().forEach(fecha => {
-                const fechaObj = new Date(fecha);
-                selectFecha.innerHTML += `<option value="${fecha}">${
-                    fechaObj.toLocaleDateString('es-PE', {month: '2-digit', year: 'numeric'})
-                }</option>`;
-            });
+                fechas.sort().reverse().forEach(fecha => {
+                    const fechaFormateada = formatearFechaHumana(fecha.split('-')[0] + '-' + fecha.split('-')[1]);
+                    selectFecha.innerHTML += `<option value="${fecha}">${fechaFormateada}</option>`;
+                });
 
             resetearResultados();
         }
@@ -287,22 +392,53 @@
 
         function mostrarTablaResultados(resultado) {
             const html = `
-                <div class="table-responsive">
-                    <table class="table data-table table-striped">
-                        <thead>
-                            <tr>
-                                <th colspan="2" class="text-center bg-primary text-white">Datos del Territorio</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${Object.entries(resultado).map(([key, value]) => `
-                                <tr>
-                                    <td class="fw-bold">${formatearCampo(key)}</td>
-                                    <td>${formatearValor(value, key)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                <div class="mt-4 rounded-3 overflow-hidden shadow-sm">
+                    <!-- Encabezado Naranja -->
+            <div class="encabezado-resultados text-white">
+                <div class="d-flex flex-column text-center">
+                    <small ">UBIGEO: ${resultado.ubigeo}</small>
+                    <h5 class="mb-0 fw-bold">${resultado.distrito}</h5>
+                    <div class="small opacity-85">
+                        ${resultado.provincia}, ${resultado.departamento}
+                    </div>
+                </div>
+            </div>
+        
+                    <!-- Grupo SAF -->
+                    <div class="grupo-saf">
+                        <div class="grupo-titulo">
+                            <i class="bi bi-people-fill"></i>
+                            SERVICIO ALIMENTARIO SAF
+                        </div>
+                        
+                        ${['nfamilia_saf', 'nniños_saf', 'ngestantes_saf', 'ejecucion_saf', 'CUMPLE_SAF']
+                        .map(key => `
+                            <div class="dato-item d-flex justify-content-between align-items-center">
+                                <div>${formatearCampo(key)}</div>
+                                <div class="valor-destacado">
+                                    ${formatearValor(resultado[key], key)}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+        
+                    <!-- Grupo SCD -->
+                    <div class="grupo-scd">
+                        <div class="grupo-titulo">
+                            <i class="bi bi-bandaid-fill"></i>
+                            SERVICIO CUIDADO DIURNO SCD
+                        </div>
+                        
+                        ${['nniños_scd', 'nlocales_scd', 'ejecucion_scd', 'CUMPLE_SCD']
+                        .map(key => `
+                            <div class="dato-item d-flex justify-content-between align-items-center">
+                                <div>${formatearCampo(key)}</div>
+                                <div class="valor-destacado">
+                                    ${formatearValor(resultado[key], key)}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             `;
             document.getElementById('resultados').innerHTML = html;
@@ -438,21 +574,20 @@
                 }
                 return value.toLocaleString();
             }
-            if (key === 'CUMPLE_SAF') {
+            if(key === 'CUMPLE_SAF' || key === 'CUMPLE_SCD') {
+                const color = key === 'CUMPLE_SAF' ? '#EC0889' : '#00B050';
                 return value === "1" 
-                    ? '<span class="badge bg-success"><i class="bi bi-check-circle me-2"></i>FOCALIZADO</span>' 
-                    : '<span class="badge bg-danger"><i class="bi bi-x-circle me-2"></i>NO FOCALIZADO</span>';
-            }
-            
-            if (key === 'CUMPLE_SCD') {
-                return value === "1" 
-                    ? '<span class="badge bg-success"><i class="bi bi-check-circle me-2"></i>FOCALIZADO</span>' 
-                    : '<span class="badge bg-danger"><i class="bi bi-x-circle me-2"></i>NO FOCALIZADO</span>';
+                    ? `<span class="badge-estado" style="background: ${color}20; color: ${color};">
+                        <i class="bi bi-check-circle-fill me-1"></i>FOCALIZADO
+                       </span>` 
+                    : `<span class="badge-estado" style="background: #FF000020; color: #FF0000;">
+                        <i class="bi bi-x-circle-fill me-1"></i>NO FOCALIZADO
+                       </span>`;
             }
             if(key === 'fecha') {
-                return new Date(value).toLocaleDateString('es-PE', {month: '2-digit', year: 'numeric'});
+                return formatearFechaHumana(value.split('T')[0].substring(0, 7));
             }
-            return value;
+            return value; // <-- Esta línea faltaba
         }
 
         function obtenerResultadoActual() {
@@ -598,7 +733,7 @@
 🗺️ *Ubigeo:* ${resultado.ubigeo || 'N/A'}
 🏢 *Unidad Territorial:* ${resultado.ut || 'N/A'}
 📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}
-📅 *Fecha del Padrón:* ${new Date(resultado.fecha).toLocaleDateString('es-PE')}
+📅 *Padrón:* ${formatearFechaHumana(resultado.fecha.split('T')[0].substring(0, 7))}
 
 *🔵 DATOS SAF*
 👨👩👧👦 *Familias:* ${(resultado.nfamilia_saf || 0).toLocaleString()}
