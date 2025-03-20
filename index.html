@@ -26,7 +26,53 @@
         padding: 1rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+/* Estilos profesionales */
+.grupo-saf, .grupo-scd {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
+.grupo-saf:hover, .grupo-scd:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+}
+
+.metric-card {
+    padding: 1rem;
+    background: rgba(255,255,255,0.9);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.metric-card:hover {
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: scale(1.02);
+}
+
+.metric-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.bg-soft-pink {
+    background: rgba(236, 8, 137, 0.1);
+}
+
+.bg-soft-green {
+    background: rgba(0, 176, 80, 0.1);
+}
+
+.ejecucion-presupuestal {
+    background: rgba(0,0,0,0.02);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
     .encabezado-resultados h5 {
         text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
@@ -222,57 +268,107 @@
     </div>
 
     <div class="row g-4">
-        <!-- Tarjeta SAF -->
+        <!-- Tarjeta SAF Mejorada -->
         <div class="col-md-6">
-            <div class="grupo-saf p-3 rounded-3 h-100">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0"><i class="bi bi-people-fill me-2"></i><B>SERVICIO DE ACOMPAÑAMIENTO 
-                        A FAMILIAS (SAF)</B>
-                        </h6>
-                    <span id="estadoSAF" class="badge-status"></span>
+            <div class="grupo-saf h-100 shadow-lg" style="border-radius: 15px;">
+                <div class="card-header bg-gradient-primary text-white py-3" 
+                     style="border-radius: 15px 15px 0 0; background: linear-gradient(135deg, #EC0889 0%, #BD0670 100%);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-house-heart fs-4 me-3"></i>
+                            <h5 class="mb-0 fw-semibold">SERVICIO DE ACOMPAÑAMIENTO A FAMILIAS</h5>
+                        </div>
+                        <span id="estadoSAF" class="badge bg-white text-primary fs-6 py-2 px-3">
+                            <i class="bi bi-clipboard2-data me-2"></i>SAF
+                        </span>
+                    </div>
                 </div>
-                <div class="row">
-                    <div class="col-4">
-                        <div class="small text-muted">Familias</div>
-                        <div id="nacionalSAFfamilias" class="h4">0</div>
-                    </div>
-                    <div class="col-4">
-                        <div class="small text-muted">Niños</div>
-                        <div id="nacionalSAFninos" class="h4">0</div>
-                    </div>
-                    <div class="col-4">
-                        <div class="small text-muted">Gestantes</div>
-                        <div id="nacionalSAFgestantes" class="h4">0</div>
-                    </div>
-                    <div class="col-12 mt-2">
-                        <div class="small text-muted">Ejecución Presupuestal</div>
-                        <div id="nacionalSAFejecucion" class="h5">S/ 0.00</div>
+                
+                <div class="card-body px-4 py-3">
+                    <div class="row g-3">
+                        <!-- Métricas -->
+                        <div class="col-4 text-center metric-card">
+                            <div class="metric-icon bg-soft-pink mb-2">
+                                <i class="bi bi-people-fill fs-5 text-primary"></i>
+                            </div>
+                            <div class="text-muted small fw-medium mb-1">FAMILIAS</div>
+                            <div id="nacionalSAFfamilias" class="h4 mb-0 fw-bold text-dark">0</div>
+                        </div>
+                        
+                        <div class="col-4 text-center metric-card">
+                            <div class="metric-icon bg-soft-pink mb-2">
+                                <i class="bi bi-balloon fs-5 text-primary"></i>
+                            </div>
+                            <div class="text-muted small fw-medium mb-1">NIÑOS</div>
+                            <div id="nacionalSAFninos" class="h4 mb-0 fw-bold text-dark">0</div>
+                        </div>
+                        
+                        <div class="col-4 text-center metric-card">
+                            <div class="metric-icon bg-soft-pink mb-2">
+                                <i class="bi bi-gender-female fs-5 text-primary"></i>
+                            </div>
+                            <div class="text-muted small fw-medium mb-1">GESTANTES</div>
+                            <div id="nacionalSAFgestantes" class="h4 mb-0 fw-bold text-dark">0</div>
+                        </div>
+                        
+                        <!-- Ejecución Presupuestal -->
+                        <div class="col-12 mt-3 pt-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-muted small fw-medium">
+                                    <i class="bi bi-cash-coin me-2"></i>EJECUCIÓN PRESUPUESTAL
+                                </div>
+                                <div id="nacionalSAFejecucion" class="h5 mb-0 fw-bold text-success">S/ 0.00</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Tarjeta SCD -->
+    
+        <!-- Tarjeta SCD Mejorada -->
         <div class="col-md-6">
-            <div class="grupo-scd p-3 rounded-3 h-100">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0"><i class="bi bi-bandaid-fill me-2"></i><B>SERVICIO DE 
-                        CUIDADO DIURNO (SCD)
-                        </B></h6>
-                    <span id="estadoSCD" class="badge-status"></span>
+            <div class="grupo-scd h-100 shadow-lg" style="border-radius: 15px;">
+                <div class="card-header bg-gradient-success text-white py-3" 
+                     style="border-radius: 15px 15px 0 0; background: linear-gradient(135deg, #00B050 0%, #008C3A 100%);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-building fs-4 me-3"></i>
+                            <h5 class="mb-0 fw-semibold">SERVICIO DE CUIDADO DIURNO</h5>
+                        </div>
+                        <span id="estadoSCD" class="badge bg-white text-success fs-6 py-2 px-3">
+                            <i class="bi bi-clipboard2-check me-2"></i>SCD
+                        </span>
+                    </div>
                 </div>
-                <div class="row">
-                    <div class="col-6">
-                        <div class="small text-muted">Niños</div>
-                        <div id="nacionalSCDninos" class="h4">0</div>
-                    </div>
-                    <div class="col-6">
-                        <div class="small text-muted">Locales</div>
-                        <div id="nacionalSCDlocales" class="h4">0</div>
-                    </div>
-                    <div class="col-12 mt-2">
-                        <div class="small text-muted">Ejecución Presupuestal</div>
-                        <div id="nacionalSCDejecucion" class="h5">S/ 0.00</div>
+                
+                <div class="card-body px-4 py-3">
+                    <div class="row g-3">
+                        <!-- Métricas -->
+                        <div class="col-6 text-center metric-card">
+                            <div class="metric-icon bg-soft-green mb-2">
+                                <i class="bi bi-balloon fs-5 text-success"></i>
+                            </div>
+                            <div class="text-muted small fw-medium mb-1">NIÑOS ATENDIDOS</div>
+                            <div id="nacionalSCDninos" class="h4 mb-0 fw-bold text-dark">0</div>
+                        </div>
+                        
+                        <div class="col-6 text-center metric-card">
+                            <div class="metric-icon bg-soft-green mb-2">
+                                <i class="bi bi-house-door fs-5 text-success"></i>
+                            </div>
+                            <div class="text-muted small fw-medium mb-1">LOCALES</div>
+                            <div id="nacionalSCDlocales" class="h4 mb-0 fw-bold text-dark">0</div>
+                        </div>
+                        
+                        <!-- Ejecución Presupuestal -->
+                        <div class="col-12 mt-3 pt-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-muted small fw-medium">
+                                    <i class="bi bi-cash-coin me-2"></i>EJECUCIÓN PRESUPUESTAL
+                                </div>
+                                <div id="nacionalSCDejecucion" class="h5 mb-0 fw-bold text-success">S/ 0.00</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
