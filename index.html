@@ -232,13 +232,17 @@
                     <span id="estadoSAF" class="badge-status"></span>
                 </div>
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-4">
                         <div class="small text-muted">Familias</div>
                         <div id="nacionalSAFfamilias" class="h4">0</div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-4">
                         <div class="small text-muted">Niños</div>
                         <div id="nacionalSAFninos" class="h4">0</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="small text-muted">Gestantes</div>
+                        <div id="nacionalSAFgestantes" class="h4">0</div>
                     </div>
                     <div class="col-12 mt-2">
                         <div class="small text-muted">Ejecución Presupuestal</div>
@@ -378,6 +382,7 @@
         ['Indicador', 'Valor'],
         ['Familias SAF', nacionalData.safFamilias.toLocaleString()],
         ['Niños SAF', nacionalData.safNinos.toLocaleString()],
+        ['Gestantes SAF', nacionalData.safGestantes.toLocaleString()],
         ['Ejecución SAF', `S/ ${nacionalData.ejecucionSAF.toFixed(2)}`],
         ['Niños SCD', nacionalData.scdNinos.toLocaleString()],
         ['Locales SCD', nacionalData.scdLocales.toLocaleString()],
@@ -439,6 +444,7 @@ function compartirWhatsAppNacional() {
         `🔵 *SAF*\n` +
         `👨👩👧👦 Familias: ${nacionalData.safFamilias?.toLocaleString() || '0'}\n` +
         `🧒 Niños: ${nacionalData.safNinos?.toLocaleString() || '0'}\n` +
+        `🤰 Gestantes: ${nacionalData.safGestantes?.toLocaleString() || '0'}\n` +
         `💸 Ejecución: S/ ${nacionalData.ejecucionSAF?.toFixed(2) || '0.00'}\n\n` +
         `🟢 *SCD*\n` +
         `🏫 Locales: ${nacionalData.scdLocales?.toLocaleString() || '0'}\n` +
@@ -461,6 +467,7 @@ function actualizarResumenNacional() {
             acumulador[mes] = {
                 safFamilias: 0,
                 safNinos: 0,
+                safGestantes: 0, 
                 scdNinos: 0,
                 scdLocales: 0,
                 ejecucionSAF: 0,
@@ -470,6 +477,7 @@ function actualizarResumenNacional() {
         
         acumulador[mes].safFamilias += registro.nfamilia_saf || 0;
         acumulador[mes].safNinos += registro.nniños_saf || 0;
+        acumulador[mes].safGestantes += registro.ngestantes_saf || 0;
         acumulador[mes].scdNinos += registro.nniños_scd || 0;
         acumulador[mes].scdLocales += registro.nlocales_scd || 0;
         acumulador[mes].ejecucionSAF += registro.ejecucion_saf || 0;
@@ -492,6 +500,8 @@ function actualizarResumenNacional() {
         datosUltimoMes.safFamilias.toLocaleString();
     document.getElementById('nacionalSAFninos').textContent = 
         datosUltimoMes.safNinos.toLocaleString();
+    document.getElementById('nacionalSAFgestantes').textContent = 
+        datosUltimoMes.safGestantes.toLocaleString();
     document.getElementById('nacionalSAFejecucion').textContent = 
         formatearMoneda(datosUltimoMes.ejecucionSAF);
 
@@ -522,6 +532,7 @@ function actualizarResumenNacional() {
     nacionalData = {
         safFamilias: datosUltimoMes.safFamilias,
         safNinos: datosUltimoMes.safNinos,
+        safGestantes: datosUltimoMes.safGestantes, 
         ejecucionSAF: datosUltimoMes.ejecucionSAF,
         scdNinos: datosUltimoMes.scdNinos,
         scdLocales: datosUltimoMes.scdLocales,
