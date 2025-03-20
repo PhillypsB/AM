@@ -210,7 +210,7 @@
                      alt="Logo" 
                      class="logo-img">
                 <div>
-                    <h2 class="header-title mb-1">COBERTURA DE ATENCIÓN PNCM</h2>
+                    <h2 class="header-title mb-1">COBERTURA PROGRAMA NACIONAL CUNAMAS</h2>
                     <h5 class="header-subtitle">2023 | 2024 | 2025</h5>
                 </div>
             </div>
@@ -218,7 +218,7 @@
 <!-- Resumen Nacional -->
 <div class="report-container mb-4" id="resumenNacional">
     <div class="encabezado-resultados text-white mb-4">
-        <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>RESUMEN NACIONAL</h5>
+        <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>COBERTURA A NIVEL NACIONAL - FEB 2025</h5>
     </div>
 
     <div class="row g-4">
@@ -226,7 +226,9 @@
         <div class="col-md-6">
             <div class="grupo-saf p-3 rounded-3 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0"><i class="bi bi-people-fill me-2"></i>SAF</h6>
+                    <h6 class="mb-0"><i class="bi bi-people-fill me-2"></i><B>SERVICIO DE ACOMPAÑAMIENTO 
+                        A FAMILIAS (SAF)</B>
+                        </h6>
                     <span id="estadoSAF" class="badge-status"></span>
                 </div>
                 <div class="row">
@@ -250,7 +252,9 @@
         <div class="col-md-6">
             <div class="grupo-scd p-3 rounded-3 h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0"><i class="bi bi-bandaid-fill me-2"></i>SCD</h6>
+                    <h6 class="mb-0"><i class="bi bi-bandaid-fill me-2"></i><B>SERVICIO DE 
+                        CUIDADO DIURNO (SCD)
+                        </B></h6>
                     <span id="estadoSCD" class="badge-status"></span>
                 </div>
                 <div class="row">
@@ -283,17 +287,19 @@
         </div>
     </div>
 	<!-- Dentro del div#resumenNacional después de los gráficos -->
-<div class="export-buttons text-end mt-4">
-    <button class="btn btn-danger me-2" onclick="exportarPDFNacional()">
-        <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
-    </button>
-    <button class="btn btn-primary me-2" onclick="exportarWordNacional()">
-        <i class="bi bi-file-earmark-word me-2"></i>Exportar Word
-    </button>
-    <button class="btn btn-success" onclick="compartirWhatsAppNacional()">
-        <i class="bi bi-whatsapp me-2"></i>Compartir
-    </button>
-</div>
+    <div class="text-center mt-4">
+        <div class="export-buttons d-flex justify-content-center gap-2">
+            <button class="btn btn-danger" onclick="exportarPDFNacional()">
+                <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
+            </button>
+            <button class="btn btn-primary" onclick="exportarWordNacional()">
+                <i class="bi bi-file-earmark-word me-2"></i>Exportar Word
+            </button>
+            <button class="btn btn-success" onclick="compartirWhatsAppNacional()">
+                <i class="bi bi-whatsapp me-2"></i>Compartir
+            </button>
+        </div>
+    </div>
 </div>
         <div class="report-container">
             <div class="filter-card">
@@ -423,24 +429,25 @@ function exportarWordNacional() {
     link.click();
     document.body.removeChild(link);
 }
+
 function compartirWhatsAppNacional() {
-    const mensaje = `*RESUMEN NACIONAL PNCM*
+    const mensaje = `*RESUMEN NACIONAL PNCM*\n\n` +
+        `📅 Período: ${nacionalData.ultimoMes ? formatearFechaHumana(nacionalData.ultimoMes) : 'N/A'}\n\n` +
+        `🔵 *SAF*\n` +
+        `👨👩👧👦 Familias: ${nacionalData.safFamilias?.toLocaleString() || '0'}\n` +
+        `🧒 Niños: ${nacionalData.safNinos?.toLocaleString() || '0'}\n` +
+        `💸 Ejecución: S/ ${nacionalData.ejecucionSAF?.toFixed(2) || '0.00'}\n\n` +
+        `🟢 *SCD*\n` +
+        `🏫 Locales: ${nacionalData.scdLocales?.toLocaleString() || '0'}\n` +
+        `🧒 Niños: ${nacionalData.scdNinos?.toLocaleString() || '0'}\n` +
+        `💸 Ejecución: S/ ${nacionalData.ejecucionSCD?.toFixed(2) || '0.00'}\n\n` +
+        `📊 Datos actualizados al ${new Date().toLocaleDateString('es-PE', {day: '2-digit', month: '2-digit', year: 'numeric'})}`;
+
+    const esIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const urlBase = esIOS ? 'whatsapp://send' : 'https://api.whatsapp.com/send';
     
-📅 Período: ${new Date().toLocaleDateString('es-PE', {year: 'numeric', month: 'long'})}
-    
-🔵 *SAF*
-👨👩👧👦 Familias: ${nacionalData.safFamilias.toLocaleString()}
-🧒 Niños: ${nacionalData.safNinos.toLocaleString()}
-💸 Ejecución: S/ ${nacionalData.ejecucionSAF.toFixed(2)}
-
-🟢 *SCD*
-🏫 Locales: ${nacionalData.scdLocales.toLocaleString()}
-🧒 Niños: ${nacionalData.scdNinos.toLocaleString()}
-💸 Ejecución: S/ ${nacionalData.ejecucionSCD.toFixed(2)}
-
-📊 Datos actualizados al ${new Date().toLocaleDateString('es-PE')}`;
-
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`, '_blank');
+    const urlCompleta = `${urlBase}?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlCompleta, '_blank');
 }
 	// Función para actualizar el resumen nacional
 function actualizarResumenNacional() {
@@ -515,7 +522,8 @@ function actualizarResumenNacional() {
         ejecucionSAF: datosUltimoMes.ejecucionSAF,
         scdNinos: datosUltimoMes.scdNinos,
         scdLocales: datosUltimoMes.scdLocales,
-        ejecucionSCD: datosUltimoMes.ejecucionSCD
+        ejecucionSCD: datosUltimoMes.ejecucionSCD,
+        ultimoMes: ultimoMes // Agregar esta línea
     };
 }
 
