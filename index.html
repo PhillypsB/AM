@@ -129,14 +129,14 @@
         .chart-container {
             background: white;
             border-radius: 12px;
-            padding: 1.5rem;
+            padding: 1.5rem 1.5rem 2.5rem 1.5rem; /* Más espacio abajo */
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            height: 350px;
+            height: 380px;
             position: relative;
         }
 
         .chart-container canvas {
-            max-height: 280px !important;
+            max-height: 320px !important;
             max-width: 100% !important;
         }
         .badge-status {
@@ -210,12 +210,97 @@
                      alt="Logo" 
                      class="logo-img">
                 <div>
-                    <h2 class="header-title mb-1">COBERTURA DE ATENCIÓN PNCM</h2>
+                    <h2 class="header-title mb-1">COBERTURA PROGRAMA NACIONAL CUNAMAS</h2>
                     <h5 class="header-subtitle">2023 | 2024 | 2025</h5>
                 </div>
             </div>
         </div>
+<!-- Resumen Nacional -->
+<div class="report-container mb-4" id="resumenNacional">
+    <div class="encabezado-resultados text-white mb-4">
+        <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>COBERTURA A NIVEL NACIONAL - FEB 2025</h5>
+    </div>
 
+    <div class="row g-4">
+        <!-- Tarjeta SAF -->
+        <div class="col-md-6">
+            <div class="grupo-saf p-3 rounded-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0"><i class="bi bi-people-fill me-2"></i><B>SERVICIO DE ACOMPAÑAMIENTO 
+                        A FAMILIAS (SAF)</B>
+                        </h6>
+                    <span id="estadoSAF" class="badge-status"></span>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="small text-muted">Familias</div>
+                        <div id="nacionalSAFfamilias" class="h4">0</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="small text-muted">Niños</div>
+                        <div id="nacionalSAFninos" class="h4">0</div>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <div class="small text-muted">Ejecución Presupuestal</div>
+                        <div id="nacionalSAFejecucion" class="h5">S/ 0.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta SCD -->
+        <div class="col-md-6">
+            <div class="grupo-scd p-3 rounded-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0"><i class="bi bi-bandaid-fill me-2"></i><B>SERVICIO DE 
+                        CUIDADO DIURNO (SCD)
+                        </B></h6>
+                    <span id="estadoSCD" class="badge-status"></span>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="small text-muted">Niños</div>
+                        <div id="nacionalSCDninos" class="h4">0</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="small text-muted">Locales</div>
+                        <div id="nacionalSCDlocales" class="h4">0</div>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <div class="small text-muted">Ejecución Presupuestal</div>
+                        <div id="nacionalSCDejecucion" class="h5">S/ 0.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos Históricos Nacionales -->
+    <div class="graficos-section mt-4">
+        <div class="chart-container">
+            <h5 class="mb-3"><i class="bi bi-graph-up me-2"></i>Evolución Nacional SAF - Familias</h5>
+            <canvas id="chartHistorialSAF"></canvas>
+        </div>
+        <div class="chart-container">
+            <h5 class="mb-3"><i class="bi bi-graph-up me-2"></i>Evolución Nacional SCD - Niños</h5>
+            <canvas id="chartHistorialSCD"></canvas>
+        </div>
+    </div>
+	<!-- Dentro del div#resumenNacional después de los gráficos -->
+    <div class="text-center mt-4">
+        <div class="export-buttons d-flex justify-content-center gap-2">
+            <button class="btn btn-danger" onclick="exportarPDFNacional()">
+                <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
+            </button>
+            <button class="btn btn-primary" onclick="exportarWordNacional()">
+                <i class="bi bi-file-earmark-word me-2"></i>Exportar Word
+            </button>
+            <button class="btn btn-success" onclick="compartirWhatsAppNacional()">
+                <i class="bi bi-whatsapp me-2"></i>Compartir
+            </button>
+        </div>
+    </div>
+</div>
         <div class="report-container">
             <div class="filter-card">
                 <div class="row g-4">
@@ -277,6 +362,235 @@
     </div>
 
     <script>
+	let nacionalData = {}; // Añadir al inicio del script
+
+	function exportarPDFNacional() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(16);
+    doc.text('Resumen Nacional - PNCM', 15, 20);
+    
+    const data = [
+        ['Indicador', 'Valor'],
+        ['Familias SAF', nacionalData.safFamilias.toLocaleString()],
+        ['Niños SAF', nacionalData.safNinos.toLocaleString()],
+        ['Ejecución SAF', `S/ ${nacionalData.ejecucionSAF.toFixed(2)}`],
+        ['Niños SCD', nacionalData.scdNinos.toLocaleString()],
+        ['Locales SCD', nacionalData.scdLocales.toLocaleString()],
+        ['Ejecución SCD', `S/ ${nacionalData.ejecucionSCD.toFixed(2)}`]
+    ];
+    
+    doc.autoTable({
+        head: [data[0]],
+        body: data.slice(1),
+        startY: 30,
+        theme: 'grid'
+    });
+    
+    doc.save('Resumen_Nacional_PNCM.pdf');
+}
+function exportarWordNacional() {
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial; margin: 2rem; }
+                    h1 { color: #004884; border-bottom: 2px solid #004884; }
+                    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+                    th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                    th { background-color: #f8f9fc; }
+                </style>
+            </head>
+            <body>
+                <h1>Resumen Nacional PNCM</h1>
+                <h3>Reporte Consolidado</h3>
+                <table>
+                    ${Object.entries(nacionalData).map(([key, value]) => `
+                        <tr>
+                            <th>${formatearCampo(key)}</th>
+                            <td>${formatearValor(value, key)}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+                <p><em>Generado el ${new Date().toLocaleDateString('es-PE')}</em></p>
+            </body>
+        </html>
+    `;
+
+    const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Resumen_Nacional_PNCM.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function compartirWhatsAppNacional() {
+    const mensaje = `*RESUMEN NACIONAL PNCM*\n\n` +
+        `📅 Período: ${nacionalData.ultimoMes ? formatearFechaHumana(nacionalData.ultimoMes) : 'N/A'}\n\n` +
+        `🔵 *SAF*\n` +
+        `👨👩👧👦 Familias: ${nacionalData.safFamilias?.toLocaleString() || '0'}\n` +
+        `🧒 Niños: ${nacionalData.safNinos?.toLocaleString() || '0'}\n` +
+        `💸 Ejecución: S/ ${nacionalData.ejecucionSAF?.toFixed(2) || '0.00'}\n\n` +
+        `🟢 *SCD*\n` +
+        `🏫 Locales: ${nacionalData.scdLocales?.toLocaleString() || '0'}\n` +
+        `🧒 Niños: ${nacionalData.scdNinos?.toLocaleString() || '0'}\n` +
+        `💸 Ejecución: S/ ${nacionalData.ejecucionSCD?.toFixed(2) || '0.00'}\n\n` +
+        `📊 Datos actualizados al ${new Date().toLocaleDateString('es-PE', {day: '2-digit', month: '2-digit', year: 'numeric'})}`;
+
+    const esIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const urlBase = esIOS ? 'whatsapp://send' : 'https://api.whatsapp.com/send';
+    
+    const urlCompleta = `${urlBase}?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlCompleta, '_blank');
+}
+	// Función para actualizar el resumen nacional
+function actualizarResumenNacional() {
+    // Calcular totales nacionales por mes
+    const datosMensuales = dataset.reduce((acumulador, registro) => {
+        const mes = registro.fecha.substring(0, 7); // Formato YYYY-MM
+        if (!acumulador[mes]) {
+            acumulador[mes] = {
+                safFamilias: 0,
+                safNinos: 0,
+                scdNinos: 0,
+                scdLocales: 0,
+                ejecucionSAF: 0,
+                ejecucionSCD: 0
+            };
+        }
+        
+        acumulador[mes].safFamilias += registro.nfamilia_saf || 0;
+        acumulador[mes].safNinos += registro.nniños_saf || 0;
+        acumulador[mes].scdNinos += registro.nniños_scd || 0;
+        acumulador[mes].scdLocales += registro.nlocales_scd || 0;
+        acumulador[mes].ejecucionSAF += registro.ejecucion_saf || 0;
+        acumulador[mes].ejecucionSCD += registro.ejecucion_scd || 0;
+        
+        return acumulador;
+    }, {});
+
+    // Obtener el último mes disponible
+    const meses = Object.keys(datosMensuales).sort();
+    const ultimoMes = meses[meses.length - 1];
+    const datosUltimoMes = datosMensuales[ultimoMes];
+
+    // Formatear valores (corregido)
+    const formatearMoneda = (valor) => 
+        `S/ ${valor.toLocaleString('es-PE', {minimumFractionDigits: 2})}`; // ✅ Se eliminó el paréntesis extra
+
+    // Actualizar valores SAF
+    document.getElementById('nacionalSAFfamilias').textContent = 
+        datosUltimoMes.safFamilias.toLocaleString();
+    document.getElementById('nacionalSAFninos').textContent = 
+        datosUltimoMes.safNinos.toLocaleString();
+    document.getElementById('nacionalSAFejecucion').textContent = 
+        formatearMoneda(datosUltimoMes.ejecucionSAF);
+
+    // Actualizar valores SCD
+    document.getElementById('nacionalSCDninos').textContent = 
+        datosUltimoMes.scdNinos.toLocaleString();
+    document.getElementById('nacionalSCDlocales').textContent = 
+        datosUltimoMes.scdLocales.toLocaleString();
+    document.getElementById('nacionalSCDejecucion').textContent = 
+        formatearMoneda(datosUltimoMes.ejecucionSCD);
+
+    // Actualizar estados
+    //document.getElementById('estadoSAF').innerHTML = //datosUltimoMes.ejecucionSAF >= 50000 
+    //    ? '<i class="bi bi-check-circle me-1"></i>CUMPLE' 
+    //    : '<i class="bi bi-x-circle me-1"></i>NO CUMPLE';
+    
+    //document.getElementById('estadoSCD').innerHTML = //datosUltimoMes.ejecucionSCD >= 30000 
+    //    ? '<i class="bi bi-check-circle me-1"></i>CUMPLE' 
+     //   : '<i class="bi bi-x-circle me-1"></i>NO CUMPLE';
+
+    // Actualizar gráficos históricos
+    actualizarGraficosHistoricosNacionales(
+        meses.map(m => formatearFechaHumana(m)),
+        meses.map(m => datosMensuales[m].safFamilias),
+        meses.map(m => datosMensuales[m].scdNinos)
+    );
+	// Al final de la función, guardar los datos
+    nacionalData = {
+        safFamilias: datosUltimoMes.safFamilias,
+        safNinos: datosUltimoMes.safNinos,
+        ejecucionSAF: datosUltimoMes.ejecucionSAF,
+        scdNinos: datosUltimoMes.scdNinos,
+        scdLocales: datosUltimoMes.scdLocales,
+        ejecucionSCD: datosUltimoMes.ejecucionSCD,
+        ultimoMes: ultimoMes // Agregar esta línea
+    };
+}
+
+// Función para actualizar los gráficos nacionales
+function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
+    const opcionesComunes = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+        legend: { display: false },
+        datalabels: {
+            anchor: 'end',
+            align: 'top',
+            offset: 6,
+            formatter: (value) => value.toLocaleString(),
+            font: { weight: 'bold', size: 10 }
+        }
+    },
+    animation: {
+        duration: 1000,
+        easing: 'easeOutBack'
+    },
+    elements: {
+        line: {
+            tension: 0.4
+        }
+    },
+        scales: {
+            x: { grid: { display: false } },
+            y: { beginAtZero: true }
+        }
+    };
+
+    // Gráfico SAF
+    new Chart(document.getElementById('chartHistorialSAF'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Familias SAF',
+                data: safData,
+                borderColor: '#EC0889',
+                backgroundColor: '#EC088920',
+                tension: 0.3,
+                borderWidth: 2
+            }]
+        },
+        options: opcionesComunes
+    });
+
+    // Gráfico SCD
+    new Chart(document.getElementById('chartHistorialSCD'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Niños SCD',
+                data: scdData,
+                borderColor: '#00B050',
+                backgroundColor: '#00B05020',
+                tension: 0.3,
+                borderWidth: 2
+            }]
+        },
+        options: opcionesComunes
+    });
+}
         function formatearFechaHumana(fechaStr) {
             const meses = {
                 '01': 'ENE', '02': 'FEB', '03': 'MAR', '04': 'ABR',
@@ -391,12 +705,12 @@
         }
 
         function mostrarTablaResultados(resultado) {
-            const html = `
-                <div class="mt-4 rounded-3 overflow-hidden shadow-sm">
-                    <!-- Encabezado Naranja -->
+    const html = `
+        <div class="mt-4 rounded-3 overflow-hidden shadow-sm">
+            <!-- Encabezado Naranja -->
             <div class="encabezado-resultados text-white">
                 <div class="d-flex flex-column text-center">
-                    <small ">UBIGEO: ${resultado.ubigeo}</small>
+                    <small>UBIGEO: ${resultado.ubigeo}</small>
                     <h5 class="mb-0 fw-bold">${resultado.distrito}</h5>
                     <div class="small opacity-85">
                         ${resultado.provincia}, ${resultado.departamento}
@@ -404,45 +718,45 @@
                 </div>
             </div>
         
-                    <!-- Grupo SAF -->
-                    <div class="grupo-saf">
-                        <div class="grupo-titulo">
-                            <i class="bi bi-people-fill"></i>
-                            SERVICIO ACOMPAÑAMIENTO FAMILIA - SAF
-                        </div>
-                        
-                        ${['nfamilia_saf', 'nniños_saf', 'ngestantes_saf', 'ejecucion_saf', 'CUMPLE_SAF']
-                        .map(key => `
-                            <div class="dato-item d-flex justify-content-between align-items-center">
-                                <div>${formatearCampo(key)}</div>
-                                <div class="valor-destacado">
-                                    ${formatearValor(resultado[key], key)}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-        
-                    <!-- Grupo SCD -->
-                    <div class="grupo-scd">
-                        <div class="grupo-titulo">
-                            <i class="bi bi-bandaid-fill"></i>
-                            SERVICIO CUIDADO DIURNO - SCD
-                        </div>
-                        
-                        ${['nniños_scd', 'nlocales_scd', 'ejecucion_scd', 'CUMPLE_SCD']
-                        .map(key => `
-                            <div class="dato-item d-flex justify-content-between align-items-center">
-                                <div>${formatearCampo(key)}</div>
-                                <div class="valor-destacado">
-                                    ${formatearValor(resultado[key], key)}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
+            <!-- Grupo SAF -->
+            <div class="grupo-saf">
+                <div class="grupo-titulo">
+                    <i class="bi bi-people-fill"></i>
+                    SERVICIO ACOMPAÑAMIENTO FAMILIA - SAF
                 </div>
-            `;
-            document.getElementById('resultados').innerHTML = html;
-        }
+                
+                ${['nfamilia_saf', 'nniños_saf', 'ngestantes_saf', 'ejecucion_saf', 'CUMPLE_SAF']
+                .map(key => `
+                    <div class="dato-item d-flex justify-content-between align-items-center">
+                        <div>${formatearCampo(key)}</div>
+                        <div class="valor-destacado">
+                            ${formatearValor(resultado[key], key)}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        
+            <!-- Grupo SCD -->
+            <div class="grupo-scd">
+                <div class="grupo-titulo">
+                    <i class="bi bi-bandaid-fill"></i>
+                    SERVICIO CUIDADO DIURNO - SCD
+                </div>
+                
+                ${['nniños_scd', 'nlocales_scd', 'ejecucion_scd', 'CUMPLE_SCD']
+                .map(key => `
+                    <div class="dato-item d-flex justify-content-between align-items-center">
+                        <div>${formatearCampo(key)}</div>
+                        <div class="valor-destacado">
+                            ${formatearValor(resultado[key], key)}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    document.getElementById('resultados').innerHTML = html;
+}
 
         function actualizarGraficos() {
             if(chartSAF) chartSAF.destroy();
@@ -461,6 +775,7 @@
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
+							offset: 6, // Añadir offset
                             formatter: (value) => value.toLocaleString(),
                             font: {
                                 weight: 'bold',
@@ -773,11 +1088,15 @@
     window.open(enlaceWhatsApp, '_blank', 'noopener,noreferrer');
 }
 
-        window.onload = cargarDepartamentos;
+        window.onload = () => {
+    actualizarResumenNacional();
+    cargarDepartamentos();
+};
     </script>
 
     <!-- Scripts adicionales -->
     <script src="dataset.js"></script>
+	
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
