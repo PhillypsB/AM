@@ -828,45 +828,59 @@ function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
                         </div>
                     </div>
                 
-                    <!-- Grupo SAF -->
-                    <div class="grupo-saf">
-                        <div class="grupo-titulo">
-                            <i class="bi bi-people-fill"></i>
-                            SERVICIO ACOMPAÑAMIENTO FAMILIA - SAF
-                        </div>
-                        
-                        ${['nfamilia_saf', 'nniños_saf', 'ngestantes_saf', 'CG_SAF', 'FACILITADOR_SAF', 'ejecucion_saf', 'CUMPLE_SAF']
-                        .map(key => `
-                            <div class="dato-item d-flex justify-content-between align-items-center">
-                                <div>${formatearCampo(key)}</div>
-                                <div class="valor-destacado">
-                                    ${formatearValor(resultado[key], key)}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                
-                    <!-- Grupo SCD -->
-                    <div class="grupo-scd">
-                        <div class="grupo-titulo">
-                            <i class="bi bi-bandaid-fill"></i>
-                            SERVICIO CUIDADO DIURNO - SCD
-                        </div>
-                        
-                        ${['nniños_scd', 'nlocales_scd', 'CIAI_SCD', 'SA_SCD', 'MadresCuidadoras_SCD', 'CG_SCD', 'ejecucion_scd', 'CUMPLE_SCD']
-                        .map(key => `
-                            <div class="dato-item d-flex justify-content-between align-items-center">
-                                <div>${formatearCampo(key)}</div>
-                                <div class="valor-destacado">
-                                    ${formatearValor(resultado[key], key)}
-                                </div>
-                            </div>
-                        `).join('')}
+                     <!-- Grupo SAF -->
+        <div class="grupo-saf">
+            <div class="grupo-titulo">
+                <i class="bi bi-people-fill"></i>
+                SERVICIO ACOMPAÑAMIENTO FAMILIA - SAF
+            </div>
+            
+            ${[
+                { key: 'nfamilia_saf', label: 'Familias SAF' },
+                { key: 'nniños_saf', label: 'Niños SAF' },
+                { key: 'ngestantes_saf', label: 'Gestantes SAF' },
+                { key: 'CG_SAF', label: 'Comité Gestión SAF', default: 0 },
+                { key: 'FACILITADOR_SAF', label: 'Facilitadores SAF', default: 0 },
+                { key: 'ejecucion_saf', label: 'Ejecución SAF' },
+                { key: 'CUMPLE_SAF', label: 'Focalización SAF' }
+            ].map(({ key, label, defaultVal = 0 }) => `
+                <div class="dato-item d-flex justify-content-between align-items-center">
+                    <div>${label}</div>
+                    <div class="valor-destacado">
+                        ${formatearValor(resultado[key] ?? defaultVal, key)}
                     </div>
                 </div>
-            `;
-            document.getElementById('resultados').innerHTML = html;
-        }
+            `).join('')}
+        </div>
+
+        <!-- Grupo SCD -->
+        <div class="grupo-scd">
+            <div class="grupo-titulo">
+                <i class="bi bi-bandaid-fill"></i>
+                SERVICIO CUIDADO DIURNO - SCD
+            </div>
+            
+            ${[
+                { key: 'nniños_scd', label: 'Niños SCD' },
+                { key: 'nlocales_scd', label: 'Locales SCD' },
+                { key: 'CIAI_SCD', label: 'CIAI SCD', default: 0 },
+                { key: 'SA_SCD', label: 'SA SCD', default: 0 },
+                { key: 'MadresCuidadoras_SCD', label: 'Madres Cuidadoras', default: 0 },
+                { key: 'CG_SCD', label: 'Comité Gestión SCD', default: 0 },
+                { key: 'ejecucion_scd', label: 'Ejecución SCD' },
+                { key: 'CUMPLE_SCD', label: 'Focalización SCD' }
+            ].map(({ key, label, defaultVal = 0 }) => `
+                <div class="dato-item d-flex justify-content-between align-items-center">
+                    <div>${label}</div>
+                    <div class="valor-destacado">
+                        ${formatearValor(resultado[key] ?? defaultVal, key)}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    document.getElementById('resultados').innerHTML = html;
+}
 
         function actualizarGraficos() {
             if(chartSAF) chartSAF.destroy();
