@@ -264,7 +264,7 @@
 <!-- Resumen Nacional -->
 <div class="report-container mb-4" id="resumenNacional">
     <div class="encabezado-resultados text-white mb-4">
-        <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>COBERTURA A NIVEL NACIONAL - MAR 2025</h5>
+        <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>COBERTURA A NIVEL NACIONAL - MARZO 2025</h5>
     </div>
 
     <div class="row g-4">
@@ -815,58 +815,58 @@ function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
         }
 
         function mostrarTablaResultados(resultado) {
-    const html = `
-        <div class="mt-4 rounded-3 overflow-hidden shadow-sm">
-            <!-- Encabezado Naranja -->
-            <div class="encabezado-resultados text-white">
-                <div class="d-flex flex-column text-center">
-                    <small>${resultado.ut}</small>
-                    <h5 class="mb-0 fw-bold">${resultado.distrito}</h5>
-                    <div class="small opacity-85">
-                        ${resultado.provincia}, ${resultado.departamento}
-                    </div>
-                </div>
-            </div>
-        
-            <!-- Grupo SAF -->
-            <div class="grupo-saf">
-                <div class="grupo-titulo">
-                    <i class="bi bi-people-fill"></i>
-                    SERVICIO ACOMPAÑAMIENTO FAMILIA - SAF
-                </div>
-                
-                ${['nfamilia_saf', 'nniños_saf', 'ngestantes_saf', 'ejecucion_saf', 'CUMPLE_SAF']
-                .map(key => `
-                    <div class="dato-item d-flex justify-content-between align-items-center">
-                        <div>${formatearCampo(key)}</div>
-                        <div class="valor-destacado">
-                            ${formatearValor(resultado[key], key)}
+            const html = `
+                <div class="mt-4 rounded-3 overflow-hidden shadow-sm">
+                    <!-- Encabezado Naranja -->
+                    <div class="encabezado-resultados text-white">
+                        <div class="d-flex flex-column text-center">
+                            <small>${resultado.ut}</small>
+                            <h5 class="mb-0 fw-bold">${resultado.distrito}</h5>
+                            <div class="small opacity-85">
+                                ${resultado.provincia}, ${resultado.departamento}
+                            </div>
                         </div>
                     </div>
-                `).join('')}
-            </div>
-        
-            <!-- Grupo SCD -->
-            <div class="grupo-scd">
-                <div class="grupo-titulo">
-                    <i class="bi bi-bandaid-fill"></i>
-                    SERVICIO CUIDADO DIURNO - SCD
-                </div>
                 
-                ${['nniños_scd', 'nlocales_scd', 'ejecucion_scd', 'CUMPLE_SCD']
-                .map(key => `
-                    <div class="dato-item d-flex justify-content-between align-items-center">
-                        <div>${formatearCampo(key)}</div>
-                        <div class="valor-destacado">
-                            ${formatearValor(resultado[key], key)}
+                    <!-- Grupo SAF -->
+                    <div class="grupo-saf">
+                        <div class="grupo-titulo">
+                            <i class="bi bi-people-fill"></i>
+                            SERVICIO ACOMPAÑAMIENTO FAMILIA - SAF
                         </div>
+                        
+                        ${['nfamilia_saf', 'nniños_saf', 'ngestantes_saf', 'CG_SAF', 'FACILITADOR_SAF', 'ejecucion_saf', 'CUMPLE_SAF']
+                        .map(key => `
+                            <div class="dato-item d-flex justify-content-between align-items-center">
+                                <div>${formatearCampo(key)}</div>
+                                <div class="valor-destacado">
+                                    ${formatearValor(resultado[key], key)}
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
-    document.getElementById('resultados').innerHTML = html;
-}
+                
+                    <!-- Grupo SCD -->
+                    <div class="grupo-scd">
+                        <div class="grupo-titulo">
+                            <i class="bi bi-bandaid-fill"></i>
+                            SERVICIO CUIDADO DIURNO - SCD
+                        </div>
+                        
+                        ${['nniños_scd', 'nlocales_scd', 'CIAI_SCD', 'SA_SCD', 'MadresCuidadoras_SCD', 'CG_SCD', 'ejecucion_scd', 'CUMPLE_SCD']
+                        .map(key => `
+                            <div class="dato-item d-flex justify-content-between align-items-center">
+                                <div>${formatearCampo(key)}</div>
+                                <div class="valor-destacado">
+                                    ${formatearValor(resultado[key], key)}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('resultados').innerHTML = html;
+        }
 
         function actualizarGraficos() {
             if(chartSAF) chartSAF.destroy();
@@ -982,9 +982,15 @@ function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
                 nniños_saf: 'Niños SAF',
                 ngestantes_saf: 'Gestantes SAF',
                 ejecucion_saf: 'Ejecución SAF (S/)',
+                CG_SAF: 'Comité Gestión SAF',
+                FACILITADOR_SAF: 'Facilitadores SAF',
                 nniños_scd: 'Niños SCD',
                 nlocales_scd: 'Locales SCD',
                 ejecucion_scd: 'Ejecución SCD (S/)',
+                CIAI_SCD: 'CIAI SCD',
+                SA_SCD: 'SA SCD',
+                MadresCuidadoras_SCD: 'Madres Cuidadoras',
+                CG_SCD: 'Comité Gestión SCD',
                 CUMPLE_SAF: 'Focalización SAF',
                 CUMPLE_SCD: 'Focalización SCD',
                 fecha: 'PADRON AL'
@@ -1164,6 +1170,8 @@ function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
 👨👩👧👦 *Familias:* ${(resultado.nfamilia_saf || 0).toLocaleString()}
 🧒 *Niños:* ${(resultado.nniños_saf || 0).toLocaleString()}
 🤰 *Gestantes:* ${(resultado.ngestantes_saf || 0).toLocaleString()}
+🏛 *Comité Gestión:* ${resultado.CG_SAF || 0}
+👥*Facilitadores:* ${resultado.FACILITADOR_SAF || 0}
 💸 *Ejecución:* ${(resultado.ejecucion_saf || 0).toLocaleString('es-PE', {
         style: 'currency',
         currency: 'PEN'
@@ -1172,6 +1180,10 @@ function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
 *🟡 DATOS SCD*
 🧒 *Niños:* ${(resultado.nniños_scd || 0).toLocaleString()}
 🏫 *Locales:* ${(resultado.nlocales_scd || 0).toLocaleString()}
+🏘 *CIAI:* ${resultado.CIAI_SCD || 0}
+🏠 *SA:* ${resultado.SA_SCD || 0}
+👩 *Madres Cuidadoras:* ${resultado.MadresCuidadoras_SCD || 0}
+🏛 *Comité Gestión:* ${resultado.CG_SCD || 0}
 💸 *Ejecución:* ${(resultado.ejecucion_scd || 0).toLocaleString('es-PE', {
         style: 'currency',
         currency: 'PEN'
@@ -1212,3 +1224,4 @@ function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
