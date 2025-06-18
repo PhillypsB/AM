@@ -264,7 +264,7 @@
 <!-- Resumen Nacional -->
 <div class="report-container mb-4" id="resumenNacional">
     <div class="encabezado-resultados text-white mb-4">
-        <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>COBERTURA A NIVEL NACIONAL - ABRIL 2025</h5>
+        <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>COBERTURA A NIVEL NACIONAL - MAYO 2025</h5>
     </div>
 
     <div class="row g-4">
@@ -319,6 +319,10 @@
                                 </div>
                                 <div id="nacionalSAFejecucion" class="h5 mb-0 fw-bold text-success">S/ 0.00</div>
                             </div>
+                                <div><small><br>
+                                <b>Distritos Atendidos/Focalizados:</b> 1,357 / 1,837 (73.87%)<BR>
+                                <b>Meta:</b> 277,283 (100.9%)<BR>
+                                <b>Población Objetivo:</b> 601,141</small></div>
                         </div>
                     </div>
                 </div>
@@ -368,6 +372,12 @@
                                 </div>
                                 <div id="nacionalSCDejecucion" class="h5 mb-0 fw-bold text-success">S/ 0.00</div>
                             </div>
+                            
+                                <div><small><br>
+                                <b>Distritos Atendidos/Focalizados:</b> 456 / 1,697 (26.87%)<br>
+                                <b>Continuidad:</b> 74/77(96.10%)<BR>
+                                <b>Meta:</b> 67,387 (97.1%)<BR>
+                                <b>Población Objetivo:</b> 281,334</small></div>
                         </div>
                     </div>
                 </div>
@@ -1019,16 +1029,23 @@ function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
                 }
                 return value.toLocaleString();
             }
-            if(key === 'CUMPLE_SAF' || key === 'CUMPLE_SCD') {
-                const color = key === 'CUMPLE_SAF' ? '#EC0889' : '#00B050';
-                return value === "1" 
-                    ? `<span class="badge-estado" style="background: ${color}20; color: ${color};">
-                        <i class="bi bi-check-circle-fill me-1"></i>FOCALIZADO
-                       </span>` 
-                    : `<span class="badge-estado" style="background: #FF000020; color: #FF0000;">
-                        <i class="bi bi-x-circle-fill me-1"></i>NO FOCALIZADO
-                       </span>`;
-            }
+            if (key === 'CUMPLE_SAF' || key === 'CUMPLE_SCD') {
+    const color = key === 'CUMPLE_SAF' ? '#EC0889' : '#00B050';
+
+    if (value === "1") {
+        return `<span class="badge-estado" style="background: ${color}20; color: ${color};">
+                    <i class="bi bi-check-circle-fill me-1"></i>FOCALIZADO
+                </span>`;
+    } else if (value === "2") {
+        return `<span class="badge-estado" style="background: ${color}20; color: ${color};">
+                    <i class="bi bi-arrow-repeat me-1"></i>CONTINUIDAD
+                </span>`;
+    } else {
+        return `<span class="badge-estado" style="background: #FF000020; color: #FF0000;">
+                    <i class="bi bi-x-circle-fill me-1"></i>NO FOCALIZADO
+                </span>`;
+    }
+}
             if(key === 'fecha') {
                 return formatearFechaHumana(value.split('T')[0].substring(0, 7));
             }
@@ -1193,7 +1210,6 @@ function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
 
 *🟡 DATOS SCD*
 🧒 *Niños:* ${(resultado.nniños_scd || 0).toLocaleString()}
-🏫 *Locales:* ${(resultado.nlocales_scd || 0).toLocaleString()}
 🏘 *CIAI:* ${resultado.CIAI_SCD || 0}
 🏠 *SA:* ${resultado.SA_SCD || 0}
 👩 *Madres Cuidadoras:* ${resultado.MadresCuidadoras_SCD || 0}
@@ -1204,8 +1220,20 @@ function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
     })}
 
 *📍 ESTADO DE FOCALIZACIÓN*
-        🔵 SAF: ${resultado.CUMPLE_SAF === "1" ? '✅ FOCALIZADO' : '❌ NO FOCALIZADO'}
-        🟡 SCD: ${resultado.CUMPLE_SCD === "1" ? '✅ FOCALIZADO' : '❌ NO FOCALIZADO'}
+        🔵 SAF: ${
+            resultado.CUMPLE_SAF === "1" 
+                ? '✅ FOCALIZADO' 
+                : resultado.CUMPLE_SAF === "2" 
+                    ? '🔁 CONTINUIDAD' 
+                    : '❌ NO FOCALIZADO'
+        }
+        🟡 SCD: ${
+            resultado.CUMPLE_SCD === "1" 
+                ? '✅ FOCALIZADO' 
+                : resultado.CUMPLE_SCD === "2" 
+                    ? '🔁 CONTINUIDAD' 
+                    : '❌ NO FOCALIZADO'
+        }
 
 📅 *Generado:* ${new Date().toLocaleDateString('es-PE', {
         day: '2-digit',
@@ -1231,7 +1259,7 @@ function actualizarGraficosHistoricosNacionales(labels, safData, scdData) {
     </script>
 
     <!-- Scripts adicionales -->
-    <script src="dataset3.js"></script>
+    <script src="dataset_mayo.js"></script>
 	
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
