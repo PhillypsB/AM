@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Consulta PNCM</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f2f4f7; padding: 20px; color: #333; }
+    select, button { padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+    button { cursor: pointer; background-color: #007bff; color: white; border: none; transition: background-color 0.2s ease; }
+    button:hover { background-color: #0056b3; }
+    h2 { color: #1c1c1c; }
+    .container { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
+    .card {
+      flex: 1 1 45%;
+      border-radius: 10px;
+      background-color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    .card h3 { margin-top: 0; color: #007bff; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    th, td { padding: 8px; border: 1px solid #ddd; }
+    th { background-color: #f8f9fa; text-align: left; }
+    .actions { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Consulta por Departamento, Provincia o Distrito</h2>
+
+  <label>Departamento:</label>
+  <select id="selectDepartamento">
+    <option value="">-- Elegir --</option>
+  </select>
+
+  <label>Provincia:</label>
+  <select id="selectProvincia">
+    <option value="">-- Todas --</option>
+  </select>
+
+  <label>Distrito:</label>
+  <select id="selectDistrito">
+    <option value="">-- Todas --</option>
+  </select>
+
+  <button onclick="filtrar()">Consultar</button>
+
+  <div class="actions">
+    <button onclick="exportarExcel()">Exportar a Excel</button>
+    <button onclick="exportarWord()">Exportar a Word</button>
+    <button onclick="compartirWhatsApp()">Compartir por WhatsApp</button>
+  </div>
+
+  <div class="container" id="resultados"></div>
+
+  <script src="dataset_junio.js"></script>
+  <script>
+    const departamentos = [...new Set(dataset.map(d => d.departamento))];
+    const selectDep = document.getElementById('selectDepartamento');
+    const selectProv = document.getElementById('selectProvincia');
+    const selectDist = document.getElementById('selectDistrito');
+
+    departamentos.forEach(dep => {
+      const opt = document.createElement('option');
+      opt.value = opt.text = dep;
+      selectDep.add(opt);
+    });
+
+    selectDep.addEventListener('change', () => {
+      const dep = selectDep.value;
+      selectProv.innerHTML = '<option value="">-- Todas --</option>';
+      selectDist.innerHTML = '<option value="">-- Todas --</option>';
+      const provincias = [...new Set(dataset.filter(d => d.departamento === dep).map(d => d.provincia))];
+      provincias.forEach(prov => {
+        const opt = document.createElement('option');
+        opt.value = opt.text = prov;
+        selectProv.add(opt);
+      });
+    });
+
+    selectProv.addEventListener('change', () => {
+      const dep = selectDep.value;
+      const prov = selectProv.value;
+      selectDist.innerHTML = '<option value="">-- Todas --</option>';
+      const distritos = [...new Set(dataset.filter(d => d.departamento === dep && d.provincia === prov).map(d => d.distrito))];
+      distritos.forEach(dist => {
+        const opt = document.createElement('option');
+        opt.value = opt.text = dist;
+        selectDist.add(opt);
+      });
+    });
+
+    function filtrar() {
+      const dep = selectDep.value;
+      const prov = selectProv.value;
+      const dist = selectDist.value;
+
+      const datosFiltrados = dataset.filter(d =>
+        d.departamento === dep &&
+        (!prov || d.provincia === prov) &&
+        (!dist || d.distrito === dist)
+      );
+
+      if (datosFiltrados.length === 0) {
+        document.getElementById('resultados').innerHTML = '<p>No se encontraron datos.</p>';
+        return;
+      }
+
+      const total = datosFiltrados.reduce((acc, d) => {
+        for (let key in acc) {
+          acc[key] += d[key] || 0;
+        }
+        return acc;
+      }, {
+        nfamilia_saf: 0, nniños_saf: 0, ngestantes_saf: 0, ejecucion_saf: 0,
+        nniños_scd: 0, nlocales_scd: 0, ejecucion_scd: 0,
+        CG_SAF: 0, FACILITADOR_SAF: 0, CIAI_SCD: 0, SA_SCD: 0,
+        MadresCuidadoras_SCD: 0, CG_SCD: 0
+      });
+
+      window.ultimoResultado = {
+        departamento: dep,
+        provincia: prov || 'Todas',
+        distrito: dist || 'Todas',
+        fecha: datosFiltrados[0]?.fecha || '2025-06',
+        ubigeo: datosFiltrados[0]?.ubigeo || '',
+        ut: datosFiltrados[0]?.ut || '',
+        ...total,
+        CUMPLE_SAF: datosFiltrados[0]?.CUMPLE_SAF || '',
+        CUMPLE_SCD: datosFiltrados[0]?.CUMPLE_SCD || ''
+      };
+
+      document.getElementById('resultados').innerHTML = `
+        <div class="card">
+          <h3>Servicio de Acompañamiento a Familias (SAF)</h3>
+          <table>
+            <tr><th>Indicador</th><th>Valor</th></tr>
+            <tr><td>Familias atendidas</td><td>${total.nfamilia_saf}</td></tr>
+            <tr><td>Niños</td><td>${total.nniños_saf}</td></tr>
+            <tr><td>Gestantes</td><td>${total.ngestantes_saf}</td></tr>
+            <tr><td>CG</td><td>${total.CG_SAF}</td></tr>
+            <tr><td>Facilitadores</td><td>${total.FACILITADOR_SAF}</td></tr>
+            <tr><td>Ejecución</td><td>S/. ${total.ejecucion_saf.toFixed(2)}</td></tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Servicio de Cuidado Diurno (SCD)</h3>
+          <table>
+            <tr><th>Indicador</th><th>Valor</th></tr>
+            <tr><td>Niños atendidos</td><td>${total.nniños_scd}</td></tr>
+            <tr><td>Locales</td><td>${total.nlocales_scd}</td></tr>
+            <tr><td>CIAI</td><td>${total.CIAI_SCD}</td></tr>
+            <tr><td>SA</td><td>${total.SA_SCD}</td></tr>
+            <tr><td>Madres Cuidadoras</td><td>${total.MadresCuidadoras_SCD}</td></tr>
+            <tr><td>CG</td><td>${total.CG_SCD}</td></tr>
+            <tr><td>Ejecución</td><td>S/. ${total.ejecucion_scd.toFixed(2)}</td></tr>
+          </table>
+        </div>`;
+    }
+
+    function exportarExcel() {
+      const table = document.querySelector('#resultados');
+      const wb = XLSX.utils.table_to_book(table, {sheet:"Consulta PNCM"});
+      XLSX.writeFile(wb, 'consulta_pncm.xlsx');
+    }
+
+    function exportarWord() {
+      const contenido = document.getElementById('resultados').innerHTML;
+      const blob = new Blob(['<html><head><meta charset="UTF-8"></head><body>' + contenido + '</body></html>'], {
+        type: 'application/msword'
+      });
+      saveAs(blob, 'consulta_pncm.doc');
+    }
+
+    function compartirWhatsApp() {
+      if (!window.ultimoResultado) return alert('Primero realice una consulta.');
+      const resultado = window.ultimoResultado;
+      const mensaje = `*REPORTE COBERTURA PNCM*\n\n` +
+        `🗺️ *Ubigeo:* ${resultado.ubigeo || 'N/A'}\n` +
+        `🏢 *Unidad Territorial:* ${resultado.ut || 'N/A'}\n` +
+        `📍 *Ubicación:* ${resultado.distrito}, ${resultado.provincia}, ${resultado.departamento}\n` +
+        `📅 *Padrón:* ${resultado.fecha || 'N/A'}\n\n` +
+        `*🔵 DATOS SAF*\n` +
+        `👨👩👧👦 *Familias:* ${resultado.nfamilia_saf.toLocaleString()}\n` +
+        `🧒 *Niños:* ${resultado.nniños_saf.toLocaleString()}\n` +
+        `🤰 *Gestantes:* ${resultado.ngestantes_saf.toLocaleString()}\n` +
+        `🏛 *Comité Gestión:* ${resultado.CG_SAF}\n` +
+        `👥 *Facilitadores:* ${resultado.FACILITADOR_SAF}\n` +
+        `💸 *Ejecución:* S/. ${resultado.ejecucion_saf.toLocaleString('es-PE')}\n\n` +
+        `*🟡 DATOS SCD*\n` +
+        `🧒 *Niños:* ${resultado.nniños_scd.toLocaleString()}\n` +
+        `🏘 *CIAI:* ${resultado.CIAI_SCD}\n` +
+        `🏠 *SA:* ${resultado.SA_SCD}\n` +
+        `👩 *Madres Cuidadoras:* ${resultado.MadresCuidadoras_SCD}\n` +
+        `🏛 *Comité Gestión:* ${resultado.CG_SCD}\n` +
+        `💸 *Ejecución:* S/. ${resultado.ejecucion_scd.toLocaleString('es-PE')}\n\n` +
+        `*📍 ESTADO DE FOCALIZACIÓN*\n` +
+        `🔵 SAF: ${resultado.CUMPLE_SAF === "1" ? '✅ FOCALIZADO' : resultado.CUMPLE_SAF === "2" ? '🔁 CONTINUIDAD' : '❌ NO FOCALIZADO'}\n` +
+        `🟡 SCD: ${resultado.CUMPLE_SCD === "1" ? '✅ FOCALIZADO' : resultado.CUMPLE_SCD === "2" ? '🔁 CONTINUIDAD' : '❌ NO FOCALIZADO'}`;
+      
+      const enlace = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+      window.open(enlace, '_blank');
+    }
+  </script>
+</body>
+</html>
