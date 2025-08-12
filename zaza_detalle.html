@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Reporte Detallado</title>
+<title>BRAVO AM</title>
 <style>
   :root {
     --primary: #2563eb;
@@ -188,7 +188,6 @@
   </style></head>
 <body>
 <div class="container">
-
 <div class="card">
 <h2>Consulta por Departamento, Provincia o Distrito</h2>
 <label>Departamento:</label>
@@ -747,5 +746,135 @@ if (imgHeight > availableHeight) {
   </script>
 </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script></body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script>
+(function(){
+  const N = '__ZAZA_AUTOSORT_V3__';
+  if (window[N]) return;
+  window[N] = true;
+
+  function isPlaceholderText(t) {
+    if (!t) return true;
+    t = t.trim().toLowerCase();
+    return t === '' || t.startsWith('--') || t.includes('elegir') || t.includes('todas') || t.includes('departamento') || t.includes('provincia') || t.includes('distrito');
+  }
+
+  function getOptionTexts(sel) {
+    const opts = Array.from(sel.options || []);
+    // find placeholder index
+    let placeholderIndex = opts.findIndex(o => isPlaceholderText(o.textContent || o.value));
+    if (placeholderIndex === -1) placeholderIndex = 0;
+    const placeholder = opts[placeholderIndex];
+    // rest excluding placeholder
+    const rest = opts.slice(0, placeholderIndex).concat(opts.slice(placeholderIndex+1));
+    return { placeholder, rest };
+  }
+
+  function isSortedArray(arr) {
+    for (let i = 0; i < arr.length - 1; i++) {
+      if ((arr[i].trim().localeCompare(arr[i+1].trim(), 'es', {sensitivity:'base'})) > 0) return false;
+    }
+    return true;
+  }
+
+  function sortSelectIfNeeded(sel) {
+    try {
+      if (!sel || sel.tagName !== 'SELECT') return;
+      if (sel.getAttribute('data-zaza-busy') === '1') return;
+      const { placeholder, rest } = getOptionTexts(sel);
+      if (rest.length <= 1) {
+        if (placeholder) sel.setAttribute('data-zaza-sorted', '1');
+        return;
+      }
+      const texts = rest.map(o => (o.textContent||'').trim());
+      if (isSortedArray(texts)) {
+        sel.setAttribute('data-zaza-sorted', '1');
+        return;
+      }
+      sel.setAttribute('data-zaza-busy', '1');
+      // create sorted unique options by text, keeping original values where possible
+      const map = new Map();
+      rest.forEach(o => {
+        const key = (o.textContent || '').trim();
+        if (!map.has(key)) map.set(key, o);
+      });
+      const unique = Array.from(map.values());
+      unique.sort((a,b) => (a.textContent||'').trim().localeCompare((b.textContent||'').trim(), 'es', {sensitivity:'base'}));
+      // Rebuild options without triggering observer recursion: temporarily disconnect by flag
+      const frag = document.createDocumentFragment();
+      if (placeholder) frag.appendChild(placeholder.cloneNode(true));
+      unique.forEach(o => frag.appendChild(o.cloneNode(true)));
+      // Replace options atomically
+      while (sel.firstChild) sel.removeChild(sel.firstChild);
+      sel.appendChild(frag);
+      sel.setAttribute('data-zaza-sorted', '1');
+    } catch (e) {
+      console.error('ZAZA autosort v3 error', e);
+    } finally {
+      sel.removeAttribute('data-zaza-busy');
+    }
+  }
+
+  function scheduleSort(sel) {
+    if (!sel) return;
+    if (sel.__zaza_timeout) clearTimeout(sel.__zaza_timeout);
+    sel.__zaza_timeout = setTimeout(() => {
+      try { sortSelectIfNeeded(sel); } finally { sel.__zaza_timeout = null; }
+    }, 25);
+  }
+
+  function setupObserversForSelect(sel) {
+    if (!sel || sel.__zaza_observed) return;
+    sel.__zaza_observed = true;
+    const mo = new MutationObserver(muts => {
+      // schedule one sort for this select (mutations may be many)
+      scheduleSort(sel);
+    });
+    mo.observe(sel, { childList: true, subtree: true });
+    // also schedule sorting on focus/blur/change just in case
+    ['change','input','focus'].forEach(e => sel.addEventListener(e, () => scheduleSort(sel)));
+    // initial schedule
+    scheduleSort(sel);
+  }
+
+  function scanAndAttach() {
+    document.querySelectorAll('select').forEach(sel => {
+      // Only consider selects that look like department/province/district OR those with many options
+      const id = (sel.id||'').toLowerCase();
+      const name = (sel.name||'').toLowerCase();
+      const first = ((sel.options[0] && sel.options[0].textContent) || '').toLowerCase();
+      if (id.includes('depart') || id.includes('prov') || id.includes('dist') || name.includes('depart') || name.includes('prov') || name.includes('dist') || first.includes('departamento') || first.includes('provincia') || first.includes('distrito') || sel.options.length > 20) {
+        setupObserversForSelect(sel);
+      }
+    });
+  }
+
+  // Observe document for new selects and attach observer
+  const bodyMo = new MutationObserver(mutations => {
+    for (const m of mutations) {
+      if (m.addedNodes && m.addedNodes.length) {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType !== 1) return;
+          if (node.tagName === 'SELECT') setupObserversForSelect(node);
+          else node.querySelectorAll && node.querySelectorAll('select').forEach(s => setupObserversForSelect(s));
+        });
+      }
+    }
+  });
+  bodyMo.observe(document.body, { childList: true, subtree: true });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    scanAndAttach();
+    // as fallback, try a few times in first 6 seconds
+    let tries = 0;
+    const iv = setInterval(() => {
+      scanAndAttach();
+      tries++;
+      if (tries > 12) clearInterval(iv);
+    }, 500);
+  });
+
+  // Expose for debugging
+  window.__zaza_autosort_v3 = { scheduleSort, sortSelectIfNeeded, scanAndAttach };
+})();
+</script></body>
 </html>
