@@ -1,13 +1,134 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>BRAVO - UPPM 2025</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reporte Detallado</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --bg: #f3f4f6;
+    --text: #1f2937;
+    --radius: 14px;
+    --shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+    --shadow-hover: 0 12px 35px rgba(0, 0, 0, 0.12);
+    --transition: all 0.25s ease;
+  }
+  body {
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    color: var(--text);
+  }
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 16px 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: fadeInDown 0.5s ease;
+  }
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--primary-dark);
+  }
+  .controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  select, button {
+    border: none;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+    background: white;
+  }
+  select:hover, button:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+  }
+  button.primary {
+    background: var(--primary);
+    color: white;
+  }
+  button.primary:hover {
+    background: var(--primary-dark);
+  }
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    animation: fadeInUp 0.6s ease;
+  }
+  .card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-3px);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+  table th, table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  table th {
+    background: #f9fafb;
+    text-align: left;
+    font-weight: 600;
+  }
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 0.8rem;
+  }
+  .badge.ok { background: #dcfce7; color: #166534; }
+  .badge.warn { background: #fef9c3; color: #854d0e; }
+  .badge.no { background: #fee2e2; color: #991b1b; }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (max-width: 768px) {
+    header {
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+    }
+    .controls {
+      justify-content: center;
+    }
+  }
+</style>
+<style>
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #f4f6f9;
@@ -64,26 +185,27 @@
     }
     th { background-color: #f0f2f5; }
     .actions { margin-top: 20px; }
-  </style>
-</head>
+  </style></head>
 <body>
-  <h2>Consulta por Departamento, Provincia o Distrito</h2>
-  <label>Departamento:</label>
-  <select id="selectDepartamento"></select>
-  <label>Provincia:</label>
-  <select id="selectProvincia"></select>
-  <label>Distrito:</label>
-  <select id="selectDistrito"></select>
-  <button onclick="filtrar()">Consultar</button>
-  <div class="actions">
-    <button onclick="exportarPDF()">Exportar a PDF</button>
-    <button onclick="exportarWord()">Exportar a Word</button>
-    <button onclick="compartirWhatsApp()">Compartir por WhatsApp</button>
-  </div>
-  <div class="container" id="resultados"></div>
+<div class="container">
 
-  <script src="dataset_june.js"></script>
-  <script>
+<div class="card">
+<h2>Consulta por Departamento, Provincia o Distrito</h2>
+<label>Departamento:</label>
+<select id="selectDepartamento"></select>
+<label>Provincia:</label>
+<select id="selectProvincia"></select>
+<label>Distrito:</label>
+<select id="selectDistrito"></select>
+<button onclick="filtrar()">Consultar</button>
+<div class="actions">
+<button onclick="exportarPDF()">Exportar a PDF</button>
+<button onclick="exportarWord()">Exportar a Word</button>
+<button onclick="compartirWhatsApp()">Compartir por WhatsApp</button>
+</div>
+<div class="container" id="resultados"></div>
+<script src="dataset_june.js"></script>
+<script>
     const fechas = dataset.map(d => new Date(d.fecha));
     const ultimaFecha = new Date(Math.max(...fechas));
     const opciones = { month: 'long' };
@@ -277,7 +399,7 @@ function compartirWhatsApp() {
 ${encabezadoUbicacion}  
 📅 *Reporte:* ${mesNombre} ${año}  
 
-*🔴 Servicio de Acompañamiento a Familias (SAF)*  
+*🔴 Servicio de Acompañamiento a Familias (SAF) -* ${dist && d.CUMPLE_SAF !== undefined ? `${getEtiquetaFocalizacion(d.CUMPLE_SAF).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SAF).texto}` : ''}  
 👨‍👩‍👧‍👦 Familias (ENE 2024): ${d.familias_2024.toLocaleString('es-PE')}  
 👨‍👩‍👧‍👦 Familias (${mesNombre} ${año}): ${d.familias_2025.toLocaleString('es-PE')}  
 🏛 Comités de Gestión: ${d.CG_SAF}  
@@ -285,9 +407,9 @@ ${encabezadoUbicacion}
 📌 Distritos con atención: ${d.dist_saf}  
 📌 Provincias con atención: ${d.prov_saf}  
 💰 Ejecución: S/. ${d.ejec_saf.toLocaleString('es-PE', { minimumFractionDigits: 2 })}  
-${dist && d.CUMPLE_SAF !== undefined ? `📍 Estado de focalización: ${getEtiquetaFocalizacion(d.CUMPLE_SAF).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SAF).texto}` : ''}
 
-*🟢 Servicio de Cuidado Diurno (SCD)*  
+
+*🟢 Servicio de Cuidado Diurno (SCD) -* ${dist && d.CUMPLE_SCD !== undefined ? `${getEtiquetaFocalizacion(d.CUMPLE_SCD).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SCD).texto}` : ''}  
 🧒 Niños (ENE 2024): ${d.niños_2024.toLocaleString('es-PE')}  
 🧒 Niños (${mesNombre} ${año}): ${d.niños_2025.toLocaleString('es-PE')}  
 🏛 Comités de Gestión: ${d.CG_SCD}  
@@ -296,7 +418,7 @@ ${dist && d.CUMPLE_SAF !== undefined ? `📍 Estado de focalización: ${getEtiqu
 📌 Distritos con atención: ${d.dist_scd}  
 📌 Provincias con atención: ${d.prov_scd}  
 💰 Ejecución: S/. ${d.ejec_scd.toLocaleString('es-PE', { minimumFractionDigits: 2 })}  
-${dist && d.CUMPLE_SCD !== undefined ? `📍 Estado de focalización: ${getEtiquetaFocalizacion(d.CUMPLE_SCD).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SCD).texto}` : ''}
+
 
 🕐 Generado: ${fecha}
 `;
@@ -538,8 +660,7 @@ async function exportarWord() {
 
   const nombreArchivo = `Reporte_PNCM_${dep.replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}_${mesNombre}_${año}.doc`;
 
-  const blob = new Blob([contenido], {
-    type: 'application/msword'
+  const blob = new Blob([contenido], {    type: 'application/msword'
   });
 
   saveAs(blob, nombreArchivo);
@@ -624,7 +745,7 @@ if (imgHeight > availableHeight) {
 
 
   </script>
-  
-</body>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script></body>
 </html>
-
