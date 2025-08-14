@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>BRAVO AM</title>
+<title>LOCAL</title>
 <style>
   :root {
     --primary: #2563eb;
@@ -309,6 +309,8 @@ const encabezadoUbicacion = `(${nombreUbicacion.join(' / ')})`;
   const resumen = {
     familias_2025: sumBy(datosUltima, 'nfamilia_saf'),
     familias_2024: sumBy(datosEnero, 'nfamilia_saf'),
+    gestantes_SAF: sumBy(datosUltima, 'ngestantes_saf'),
+    niños_saf: sumBy(datosUltima, 'nniños_saf'),
     niños_2025: sumBy(datosUltima, 'nniños_scd'),
     niños_2024: sumBy(datosEnero, 'nniños_scd'),
     ejec_saf: sumBy(datosUltima, 'ejecucion_saf'),
@@ -338,6 +340,8 @@ const tablaSAF = `
       <tr><th>Servicio de Acompañamiento a Familias (SAF)<br>${encabezadoUbicacion}</th><th>${mesNombre} ${año}</th></tr>
       <tr><td>👨‍👩‍👧‍👦 Familias <b>(ENE 2024)</b></td><td>${d.familias_2024.toLocaleString('es-PE')}</td></tr>
       <tr><td>👨‍👩‍👧‍👦 Familias</td><td>${d.familias_2025.toLocaleString('es-PE')}</td></tr>
+      <tr><td>🤰 Gestantes</td><td>${d.gestantes_SAF}</td></tr>
+      <tr><td>🧒 Niños</td><td>${d.niños_saf}</td></tr>
       <tr><td>🏛 Comités de Gestión</td><td>${d.CG_SAF}</td></tr>
       <tr><td>👥 Facilitadoras</td><td>${d.FACILITADOR_SAF}</td></tr>
       <tr><td>📌 Distritos con atención</td><td>${d.dist_saf}</td></tr>
@@ -401,6 +405,8 @@ ${encabezadoUbicacion}
 *🔴 Servicio de Acompañamiento a Familias (SAF) -* ${dist && d.CUMPLE_SAF !== undefined ? `${getEtiquetaFocalizacion(d.CUMPLE_SAF).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SAF).texto}` : ''}  
 👨‍👩‍👧‍👦 Familias (ENE 2024): ${d.familias_2024.toLocaleString('es-PE')}  
 👨‍👩‍👧‍👦 Familias (${mesNombre} ${año}): ${d.familias_2025.toLocaleString('es-PE')}  
+🤰 Gestantes: ${d.gestantes_SAF}
+🧒 Niños: ${d.niños_saf}
 🏛 Comités de Gestión: ${d.CG_SAF}  
 👥 Facilitadoras: ${d.FACILITADOR_SAF}  
 📌 Distritos con atención: ${d.dist_saf}  
@@ -467,6 +473,8 @@ function calcularResumen(dep, prov = null, dist = null) {
   return {
     familias_2025: sumBy(datosUltima, 'nfamilia_saf'),
     familias_2024: sumBy(datosEnero, 'nfamilia_saf'),
+    gestantes_SAF: sumBy(datosUltima, 'ngestantes_saf'),
+    niños_saf: sumBy(datosUltima, 'nniños_saf'),
     niños_2025: sumBy(datosUltima, 'nniños_scd'),
     niños_2024: sumBy(datosEnero, 'nniños_scd'),
     ejec_saf: sumBy(datosUltima, 'ejecucion_saf'),
@@ -492,6 +500,8 @@ function generarTablaSAF(d, encabezadoUbicacion, dist) {
       <tr><th>Servicio SAF<br>${encabezadoUbicacion}</th><th>${mesNombre} ${año}</th></tr>
       <tr><td>👨‍👩‍👧‍👦 Familias (ENE 2024)</td><td>${d.familias_2024.toLocaleString('es-PE')}</td></tr>
       <tr><td>👨‍👩‍👧‍👦 Familias</td><td>${d.familias_2025.toLocaleString('es-PE')}</td></tr>
+      <tr><td>🤰 Gestantes</td><td>${d.gestantes_SAF}</td></tr>
+      <tr><td>🧒 Niños</td><td>${d.niños_saf}</td></tr>
       <tr><td>🏛 Comités de Gestión</td><td>${d.CG_SAF}</td></tr>
       <tr><td>👥 Facilitadoras</td><td>${d.FACILITADOR_SAF}</td></tr>
       <tr><td>📌 Distritos con atención</td><td>${d.dist_saf}</td></tr>
@@ -528,7 +538,7 @@ function generarNarrativa(nivel, nombre, d) {
   return `
     <h2>${nivel.toUpperCase()}: ${nombre.toUpperCase()}</h2>
     <p>En ${mesNombre} de ${año}, el PNCM ha ejecutado en ${nivelTexto} <strong>${nombre}</strong> un total de <strong>S/. ${d.ejec_saf.toLocaleString('es-PE')}</strong> en el Servicio SAF y <strong>S/. ${d.ejec_scd.toLocaleString('es-PE')}</strong> en el Servicio SCD.</p>
-    <p>La cobertura del SAF se incrementó de <strong>${d.familias_2024.toLocaleString('es-PE')}</strong> familias en enero de 2024 a <strong>${d.familias_2025.toLocaleString('es-PE')}</strong> familias en ${mesNombre} de ${año} (<strong>${crecimientoSAF}%</strong>). Presencia en <strong>${d.dist_saf}</strong> distritos de <strong>${d.prov_saf}</strong> provincias, con <strong>${d.CG_SAF}</strong> Comités de Gestión y <strong>${d.FACILITADOR_SAF}</strong> facilitadoras.</p>
+    <p>La cobertura del SAF se incrementó de <strong>${d.familias_2024.toLocaleString('es-PE')}</strong> familias en enero de 2024 a <strong>${d.familias_2025.toLocaleString('es-PE')}</strong> familias compuestas por ${d.niños_saf.toLocaleString('es-PE')} niños y ${d.gestantes_SAF} gestantes en ${mesNombre} de ${año} (<strong>${crecimientoSAF}%</strong>). Presencia en <strong>${d.dist_saf}</strong> distritos de <strong>${d.prov_saf}</strong> provincias, con <strong>${d.CG_SAF}</strong> Comités de Gestión y <strong>${d.FACILITADOR_SAF}</strong> facilitadoras.</p>
     <p>En el SCD, se pasó de <strong>${d.niños_2024.toLocaleString('es-PE')}</strong> niños a <strong>${d.niños_2025.toLocaleString('es-PE')}</strong> (<strong>${crecimientoSCD}%</strong>), con <strong>${d.CIAI_SCD}</strong> CIAI, presencia en <strong>${d.dist_scd}</strong> distritos de <strong>${d.prov_scd}</strong> provincias, <strong>${d.CG_SCD}</strong> Comités de Gestión y <strong>${d.MadresCuidadoras_SCD}</strong> Madres Cuidadoras.</p>
   `;
 }
