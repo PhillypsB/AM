@@ -16,7 +16,7 @@
 
 ---
 
-## 🧠 What is this?
+## 🧠 ¿Qué es esto?
 
 Aplicación web **100% client-side** diseñada para generar reportes de cobertura del PNCM con enfoque territorial y analítico.
 
@@ -26,108 +26,103 @@ Aplicación web **100% client-side** diseñada para generar reportes de cobertur
 
 ---
 
-## ⚡ Why it matters
+## ⚡ ¿Por qué importa?
 
-- 📊 Reduce tiempos de análisis
-- 🎯 Estandariza reportes institucionales
-- 📈 Mejora toma de decisiones territoriales
-- 🧾 Automatiza narrativa técnica
+- 📊 Reduce tiempos de análisis  
+- 🎯 Estandariza reportes institucionales  
+- 📈 Mejora la toma de decisiones  
+- 🧾 Automatiza narrativa técnica  
 
 ---
 
-## 🧱 Architecture (Simple but Powerful)
+## 🏛️ Casos de Uso (Gestión Pública — MIDIS)
+
+### 📊 Seguimiento de cobertura territorial
+Monitoreo de servicios SAF y SCD a nivel:
+- Departamento  
+- Provincia  
+- Distrito  
+
+---
+
+### 🎯 Toma de decisiones
+- Priorización de territorios  
+- Identificación de brechas  
+- Redistribución de recursos  
+
+---
+
+### 🧾 Reportes institucionales
+- Word, Excel y PDF automáticos  
+- Informes ejecutivos y técnicos  
+
+---
+
+### 🧠 Planeamiento y análisis
+- Evaluación territorial  
+- Comparación entre regiones  
+- Soporte a UPPM  
+
+---
+
+### ⚙️ Automatización
+- Eliminación de procesos manuales  
+- Generación en tiempo real  
+
+---
+
+## 🧱 Arquitectura
 
 ```mermaid
 flowchart LR
-A[Dataset JS] --> B[Filtering Engine]
-B --> C[Aggregation Layer]
-C --> D[UI Rendering]
-D --> E[Export Engine]
+A[Dataset JS] --> B[Filtros]
+B --> C[Agregación]
+C --> D[UI]
+D --> E[Exportación]
 ```
-
-📌 Todo ocurre en el navegador
 
 ---
 
 ## ✨ Features
 
-- 🔎 Filtros dinámicos multinivel
-- ⚡ Cálculo en tiempo real
-- 🧠 Narrativa automática
-- 📊 Tablas inteligentes
-- 📤 Exportación múltiple (Word, Excel, PDF)
-- 🎨 Diseño institucional
+- 🔎 Filtros dinámicos  
+- ⚡ Cálculo en tiempo real  
+- 🧠 Narrativa automática  
+- 📊 Tablas inteligentes  
+- 📤 Exportación múltiple  
 
 ---
 
-## 📊 Data Flow
-
-```mermaid
-flowchart TD
-A[Raw Dataset] --> B[Filter by Geography]
-B --> C[Aggregate Indicators]
-C --> D[Render UI]
-D --> E[Generate Reports]
-```
-
----
-
-## 📤 Export System Deep Dive
-
-| Tipo | Motor | Característica |
-|------|------|---------------|
-| 📘 Word | HTML MIME | Ligero y compatible |
-| 📊 Excel | xlsx-js-style | Formato profesional |
-| 📄 PDF | jsPDF | Diseño estructurado |
-
----
-
-## 🎨 UI Philosophy
-
-- Claridad > Complejidad  
-- Datos > Decoración  
-- Velocidad > Dependencias  
-
----
-
-## ▶️ Quick Start
+## ▶️ Uso
 
 ```bash
 git clone <repo-url>
-open PNCM_Cobertura_FEB2026.html
+abrir PNCM_Cobertura_FEB2026.html
 ```
 
 ---
 
-## 🧪 Performance
+## 🎥 Demo
 
-- Dataset: ~17MB  
-- Rendering: instantáneo  
-- Bottleneck: memoria del navegador  
-
----
-
-## 🔮 Roadmap
-
-- [ ] Gráficos interactivos  
-- [ ] Optimización de dataset  
-- [ ] Modo offline real  
-- [ ] Modularización  
+<p align="center">
+  <img src="docs/demo.gif" width="800">
+</p>
 
 ---
 
-## 🏛️ Context
+## 📅 Datos
 
-Proyecto desarrollado para análisis operativo dentro del sector público peruano.
+- Corte: Febrero 2026  
+- Próxima actualización: 16 abril 2026  
 
 ---
 
-## 👥 Credits
+## 👥 Créditos
 
 UPPM — PNCM — MIDIS 🇵🇪
 
 ---
 
 <p align="center">
-⭐ Built for impact, not just code
+⭐ Proyecto orientado a impacto en gestión pública
 </p>
