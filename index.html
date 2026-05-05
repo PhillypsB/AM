@@ -380,21 +380,21 @@ body{
 </div><!-- /page-wrapper -->
 
 <!-- DATA -->
-<script src="am_febrero26.js"></script>
+<script src="am_marzo26.js"></script>
 
 <script>
 // ══════════════════════════════════════════════════
 //  CONFIGURACIÓN  ← ACTUALIZAR CADA MES
 // ══════════════════════════════════════════════════
-const FECHA_CORTE = "2026-02-28";
+const FECHA_CORTE = "2026-03-31";
 const APP_VERSION = "v2026.02-r3";      // versión del reporte (corte + release)
-const DATOS_CORTE_LABEL = "FEBRERO 2026";
-const PROX_ACTUALIZACION = "16 de Abril";
-const PROX_DATOS_LABEL = "MARZO 2026";
+const DATOS_CORTE_LABEL = "MARZO 2026";
+const PROX_ACTUALIZACION = "16 de Mayo";
+const PROX_DATOS_LABEL = "ABRIL 2026";
 // Versiones abreviadas para la línea de footer
-const DATOS_CORTE_LABEL_CORTO   = "Feb 2026";
-const PROX_ACTUALIZACION_CORTO  = "16 Abr";
-const PROX_DATOS_LABEL_CORTO    = "Mar 2026";
+const DATOS_CORTE_LABEL_CORTO   = "Mar 2026";
+const PROX_ACTUALIZACION_CORTO  = "16 May";
+const PROX_DATOS_LABEL_CORTO    = "ABR 2026";
 
 // Guard: si el dataset no cargó, avisar al usuario con un mensaje claro
 if (typeof dataset === 'undefined' || !Array.isArray(dataset)) {
@@ -857,8 +857,8 @@ function generarTablaSAF(d, encabezadoUbicacion, dist, prov) {
       <tr><td>👨‍👩‍👧‍👦 Familias</td><td>${d.familias_2025.toLocaleString('es-PE')}</td></tr>
       <tr><td>🤰 Gestantes</td><td>${d.gestantes_SAF}</td></tr>
       <tr><td>🧒 Niños</td><td>${d.niños_saf}</td></tr>
-      <tr><td>🏛 Comités de Gestión</td><td>${d.CG_SAF}</td></tr>
-      <tr><td>👥 Facilitadoras</td><td>${d.FACILITADOR_SAF}</td></tr>
+      ${nivelDistrito ? `<tr><td>🏛 Comités de Gestión</td><td>${d.CG_SAF}</td></tr>` : ''}
+      ${nivelDistrito ? `<tr><td>👥 Facilitadoras</td><td>${d.FACILITADOR_SAF}</td></tr>` : ''}
       ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${d.dist_saf}</td></tr>` : ''}
       ${nivelDepto     ? `<tr><td>📌 Provincias con atención</td><td>${d.prov_saf}</td></tr>` : ''}
       <tr><td>💰 Ejecución</td><td>S/. ${d.ejec_saf.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</td></tr>
@@ -876,8 +876,8 @@ function generarTablaSCD(d, encabezadoUbicacion, dist, prov) {
       <tr><th>Servicio SCD<br>${encabezadoUbicacion}</th><th>${mesNombre} ${año}</th></tr>
       <tr><td>🧒 Niños (ENE 2024)</td><td>${d.niños_2024.toLocaleString('es-PE')}</td></tr>
       <tr><td>🧒 Niños</td><td>${d.niños_2025.toLocaleString('es-PE')}</td></tr>
-      <tr><td>🏛 Comités de Gestión</td><td>${d.CG_SCD}</td></tr>
-      <tr><td>👩 Madres Cuidadoras</td><td>${d.MadresCuidadoras_SCD}</td></tr>
+      ${nivelDistrito ? `<tr><td>🏛 Comités de Gestión</td><td>${d.CG_SCD}</td></tr>` : ''}
+      ${nivelDistrito ? `<tr><td>👩 Madres Cuidadoras</td><td>${d.MadresCuidadoras_SCD}</td></tr>` : ''}
       <tr><td>🏘 CIAI</td><td>${d.CIAI_SCD}</td></tr>
       ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${d.dist_scd}</td></tr>` : ''}
       ${nivelDepto     ? `<tr><td>📌 Provincias con atención</td><td>${d.prov_scd}</td></tr>` : ''}
@@ -901,7 +901,7 @@ function obtenerDatosCobertura(nivel, dep, prov) {
   let claveCol, tituloCol, datosAmbito;
   if (nivel === 'departamento') {
     claveCol    = 'departamento';
-    tituloCol   = 'DEPARTAMENTOS';
+    tituloCol   = 'DEPARTAMENTO';
     datosAmbito = base;
   } else if (nivel === 'provincia') {
     claveCol    = 'provincia';
@@ -1268,12 +1268,23 @@ function generarNarrativa(nivel, nombre, d) {
   const nivelTexto = nivel === 'distrito' ? 'el distrito de' : nivel === 'provincia' ? 'la provincia de' : 'el departamento de';
   const crecimientoSAF = d.familias_2024 ? (((d.familias_2025 - d.familias_2024) / d.familias_2024) * 100).toFixed(1) : '0.0';
   const crecimientoSCD = d.niños_2024 ? (((d.niños_2025 - d.niños_2024) / d.niños_2024) * 100).toFixed(1) : '0.0';
+  const mesAlto = (mesNombre || '').toUpperCase();
+
+  // Frase de "Presencia" adaptada al nivel
+  let presenciaSAF, presenciaSCD;
+  if (nivel === 'distrito') {
+    presenciaSAF = `Presencia de <strong>${d.CG_SAF}</strong> Comités de Gestión y <strong>${d.FACILITADOR_SAF}</strong> facilitadoras.`;
+    presenciaSCD = `Presencia de <strong>${d.CG_SCD}</strong> Comités de Gestión y <strong>${d.MadresCuidadoras_SCD}</strong> Madres Cuidadoras.`;
+  } else {
+    presenciaSAF = `Presencia en <strong>${d.dist_saf}</strong> distritos de <strong>${d.prov_saf}</strong> provincias.`;
+    presenciaSCD = `Presencia en <strong>${d.dist_scd}</strong> distritos de <strong>${d.prov_scd}</strong> provincias.`;
+  }
 
   return `
     <h2>${nivel.toUpperCase()}: ${nombre.toUpperCase()}</h2>
-    <p>En ${mesNombre} de ${año}, el PNCM ha ejecutado en ${nivelTexto} <strong>${nombre}</strong> un total de <strong>S/. ${d.ejec_saf.toLocaleString('es-PE')}</strong> en el Servicio SAF y <strong>S/. ${d.ejec_scd.toLocaleString('es-PE')}</strong> en el Servicio SCD.</p>
-    <p>La cobertura del SAF se incrementó de <strong>${d.familias_2024.toLocaleString('es-PE')}</strong> familias en enero de 2024 a <strong>${d.familias_2025.toLocaleString('es-PE')}</strong> familias compuestas por ${d.niños_saf.toLocaleString('es-PE')} niños y ${d.gestantes_SAF} gestantes en ${mesNombre} de ${año} (<strong>${crecimientoSAF}%</strong>). Presencia en <strong>${d.dist_saf}</strong> distritos de <strong>${d.prov_saf}</strong> provincias, con <strong>${d.CG_SAF}</strong> Comités de Gestión y <strong>${d.FACILITADOR_SAF}</strong> facilitadoras.</p>
-    <p>En el SCD, se pasó de <strong>${d.niños_2024.toLocaleString('es-PE')}</strong> niños a <strong>${d.niños_2025.toLocaleString('es-PE')}</strong> (<strong>${crecimientoSCD}%</strong>), con <strong>${d.CIAI_SCD}</strong> CIAI, presencia en <strong>${d.dist_scd}</strong> distritos de <strong>${d.prov_scd}</strong> provincias, <strong>${d.CG_SCD}</strong> Comités de Gestión y <strong>${d.MadresCuidadoras_SCD}</strong> Madres Cuidadoras.</p>
+    <p>De enero a ${mesAlto} de ${año}, el PNCM ha ejecutado en ${nivelTexto} <strong>${nombre}</strong> un total de <strong>S/. ${d.ejec_saf.toLocaleString('es-PE')}</strong> en el Servicio SAF y <strong>S/. ${d.ejec_scd.toLocaleString('es-PE')}</strong> en el Servicio SCD.</p>
+    <p>La cobertura del SAF se incrementó de <strong>${d.familias_2024.toLocaleString('es-PE')}</strong> familias en enero de 2024 a <strong>${d.familias_2025.toLocaleString('es-PE')}</strong> familias compuestas por ${d.niños_saf.toLocaleString('es-PE')} niños y ${d.gestantes_SAF} gestantes de enero a ${mesAlto} de ${año} (<strong>${crecimientoSAF}%</strong>). ${presenciaSAF}</p>
+    <p>En el SCD, se pasó de <strong>${d.niños_2024.toLocaleString('es-PE')}</strong> niños a <strong>${d.niños_2025.toLocaleString('es-PE')}</strong> (<strong>${crecimientoSCD}%</strong>), con <strong>${d.CIAI_SCD}</strong> CIAI. ${presenciaSCD}</p>
   `;
 }
 
