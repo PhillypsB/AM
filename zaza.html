@@ -15,25 +15,16 @@
     🚀 ZaZA PRESUPUESTO
   </title>
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- SHEETJS -->
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-
-  <!-- APEXCHARTS -->
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
-  <!-- JQUERY -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-  <!-- DATATABLE -->
   <link
     rel="stylesheet"
-    href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"
+    href="style.css"
   >
 
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <!-- XLSX -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+  <!-- CHART -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 </head>
 
@@ -42,11 +33,11 @@
   <!-- LOADER -->
 
   <div
-    id="loaderOverlay"
-    class="loader-overlay hidden"
+    id="loader"
+    class="loader hidden"
   >
 
-    <div class="loader-card">
+    <div class="loader-box">
 
       <div class="spinner"></div>
 
@@ -55,7 +46,7 @@
       </h2>
 
       <p id="loaderText">
-        Leyendo archivo Excel...
+        Iniciando...
       </p>
 
       <div class="progress-container">
@@ -67,10 +58,7 @@
 
       </div>
 
-      <div
-        id="progressLabel"
-        class="progress-label"
-      >
+      <div id="progressLabel">
         0%
       </div>
 
@@ -80,439 +68,213 @@
 
   <!-- HEADER -->
 
-  <header class="topbar">
+  <header class="header">
 
-    <div class="brand">
+    <div class="logo-section">
 
-      <div class="brand-logo">
+      <div class="logo">
         🚀
       </div>
 
       <div>
 
-        <div class="brand-title">
+        <h1>
           ZaZA PRESUPUESTO
-        </div>
+        </h1>
 
-        <div class="brand-subtitle">
+        <span>
           Plataforma Inteligente de Análisis Presupuestal
-        </div>
+        </span>
 
       </div>
 
     </div>
-
-    <!-- INFO SUPERIOR -->
 
     <div
-      id="infoSuperior"
-      class="topbar-info hidden"
+      id="headerInfo"
+      class="header-info hidden"
     >
 
-      <div class="info-card">
+      <div class="info-box">
 
-        <div class="info-icon">
-          🏛️
-        </div>
+        <small>
+          Fuente Oficial
+        </small>
 
-        <div>
-
-          <div class="info-label">
-            Fuente Oficial
-          </div>
-
-          <div class="info-value">
-            SIAF WEB
-          </div>
-
-        </div>
+        <strong>
+          SIAF WEB
+        </strong>
 
       </div>
 
-      <div class="info-card">
+      <div class="info-box">
 
-        <div class="info-icon">
-          🕘
-        </div>
+        <small>
+          Última actualización
+        </small>
 
-        <div>
-
-          <div class="info-label">
-            Última actualización
-          </div>
-
-          <div
-            class="info-value"
-            id="fechaActualizacion"
-          >
-            --
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="info-card">
-
-        <div class="info-icon">
-          📅
-        </div>
-
-        <select id="selectorHistorial">
-
-          <option>
-            Historial disponible
-          </option>
-
-        </select>
+        <strong id="fechaActualizacion">
+          --
+        </strong>
 
       </div>
 
     </div>
 
-    <!-- DARK -->
-
     <button
-      id="themeToggle"
-      class="theme-toggle"
+      class="theme-btn"
       onclick="toggleTheme()"
+      id="themeBtn"
     >
       🌙
     </button>
 
   </header>
 
-  <!-- LAYOUT -->
+  <!-- MAIN -->
 
-  <div class="layout">
+  <main class="main">
 
-    <!-- SIDEBAR -->
+    <!-- CARGA -->
 
-    <aside class="sidebar">
+    <section class="upload-card">
 
-      <!-- CARGA -->
+      <div class="upload-icon">
+        📂
+      </div>
 
-      <section class="card carga-card">
+      <h2>
+        Seleccionar archivo SIAF
+      </h2>
 
-        <div class="upload-icon">
-          📂
-        </div>
+      <p>
+        Carga un archivo Excel para iniciar el análisis presupuestal
+      </p>
 
-        <h2>
-          Seleccionar archivo SIAF
+      <input
+        type="file"
+        id="fileInput"
+        accept=".xls,.xlsx"
+        hidden
+      >
+
+      <button
+        class="primary-btn"
+        onclick="document.getElementById('fileInput').click()"
+      >
+        Seleccionar archivo
+      </button>
+
+      <div
+        id="fileName"
+        class="file-name"
+      ></div>
+
+    </section>
+
+    <!-- KPI -->
+
+    <section
+      id="kpiSection"
+      class="kpi-grid hidden"
+    >
+
+      <div class="kpi-card">
+
+        <span>PIM</span>
+
+        <h2 id="kpiPim">
+          S/ 0
         </h2>
 
-        <p>
-          Carga un archivo Excel para iniciar el análisis presupuestal
-        </p>
+      </div>
 
-        <input
-          type="file"
-          id="fileInput"
-          accept=".xls,.xlsx"
-          hidden
-        >
+      <div class="kpi-card">
 
-        <button
-          class="primary-btn"
-          onclick="document.getElementById('fileInput').click()"
-        >
-          Seleccionar archivo
-        </button>
+        <span>Certificado</span>
 
-        <div
-          id="archivoSeleccionado"
-          class="archivo-seleccionado"
-        ></div>
+        <h2 id="kpiCert">
+          S/ 0
+        </h2>
 
-      </section>
+      </div>
 
-      <!-- FILTROS -->
+      <div class="kpi-card">
 
-      <section
-        id="filtrosSection"
-        class="card hidden"
-      >
+        <span>Devengado</span>
 
-        <h3>
-          🎛️ Filtros
-        </h3>
+        <h2 id="kpiDev">
+          S/ 0
+        </h2>
 
-        <label>
-          Departamento
-        </label>
+      </div>
 
-        <select id="filterDepartamento">
+      <div class="kpi-card">
 
-          <option value="">
-            Todos
-          </option>
+        <span>Girado</span>
 
-        </select>
+        <h2 id="kpiGir">
+          S/ 0
+        </h2>
 
-        <label>
-          Programa
-        </label>
+      </div>
 
-        <select id="filterPrograma">
+      <div class="kpi-card">
 
-          <option value="">
-            Todos
-          </option>
+        <span>Pagado</span>
 
-        </select>
+        <h2 id="kpiPag">
+          S/ 0
+        </h2>
 
-        <button
-          class="secondary-btn"
-          onclick="aplicarFiltros()"
-        >
-          Aplicar filtros
-        </button>
+      </div>
 
-      </section>
+      <div class="kpi-card active">
 
-      <!-- EXPORTACIONES -->
+        <span>Ejecución</span>
 
-      <section
-        id="exportSection"
-        class="card hidden"
-      >
+        <h2 id="kpiEjec">
+          0%
+        </h2>
 
-        <h3>
-          📤 Exportaciones
-        </h3>
+      </div>
 
-        <button
-          class="secondary-btn"
-          onclick="alert('PDF próximamente')"
-        >
-          Exportar PDF
-        </button>
+    </section>
 
-        <button
-          class="secondary-btn"
-          onclick="alert('Excel próximamente')"
-        >
-          Exportar Excel
-        </button>
+    <!-- CHART -->
 
-      </section>
+    <section
+      id="chartSection"
+      class="chart-card hidden"
+    >
 
-    </aside>
+      <div class="section-title">
+        📈 Top Devengado
+      </div>
 
-    <!-- MAIN -->
+      <div id="chart"></div>
 
-    <main class="main-content">
+    </section>
 
-      <!-- HERO -->
+    <!-- INSIGHTS -->
 
-      <section
-        id="heroSection"
-        class="hero-card hidden"
-      >
+    <section
+      id="insightSection"
+      class="insight-card hidden"
+    >
 
-        <div>
+      <div class="section-title">
+        🧠 Insights Automáticos
+      </div>
 
-          <h2>
-            📊 Panel Presupuestal
-          </h2>
+      <div id="insights"></div>
 
-          <p>
-            Visualización histórica y análisis inteligente
-          </p>
+    </section>
 
-        </div>
+  </main>
 
-        <div class="hero-stats">
-
-          <div class="hero-stat">
-
-            <span>
-              Tiempo de carga
-            </span>
-
-            <strong id="tiempoCarga">
-              0s
-            </strong>
-
-          </div>
-
-          <div class="hero-stat">
-
-            <span>
-              Registros
-            </span>
-
-            <strong id="totalRegistros">
-              0
-            </strong>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      <!-- KPIS -->
-
-      <section
-        id="kpiSection"
-        class="kpi-grid hidden"
-      >
-
-        <div class="kpi-card">
-
-          <span>
-            PIM
-          </span>
-
-          <h2 id="pim">
-            0
-          </h2>
-
-        </div>
-
-        <div class="kpi-card">
-
-          <span>
-            Certificado
-          </span>
-
-          <h2 id="certificado">
-            0
-          </h2>
-
-        </div>
-
-        <div class="kpi-card">
-
-          <span>
-            Devengado
-          </span>
-
-          <h2 id="devengado">
-            0
-          </h2>
-
-        </div>
-
-        <div class="kpi-card">
-
-          <span>
-            Girado
-          </span>
-
-          <h2 id="girado">
-            0
-          </h2>
-
-        </div>
-
-        <div class="kpi-card">
-
-          <span>
-            Pagado
-          </span>
-
-          <h2 id="pagado">
-            0
-          </h2>
-
-        </div>
-
-        <div class="kpi-card kpi-highlight">
-
-          <span>
-            Ejecución
-          </span>
-
-          <h2 id="ejecucion">
-            0%
-          </h2>
-
-        </div>
-
-      </section>
-
-      <!-- INSIGHTS -->
-
-      <section
-        id="insightSection"
-        class="card hidden"
-      >
-
-        <div class="section-title">
-          🧠 Insights Automáticos
-        </div>
-
-        <div
-          id="insights"
-          class="insight-list"
-        ></div>
-
-      </section>
-
-      <!-- GRAFICO -->
-
-      <section
-        id="chartSection"
-        class="card hidden"
-      >
-
-        <div class="section-title">
-          📈 Devengado vs Girado
-        </div>
-
-        <div id="chart"></div>
-
-      </section>
-
-      <!-- TABLA -->
-
-      <section
-        id="tablaSection"
-        class="card hidden"
-      >
-
-        <div class="section-title">
-          📋 Detalle Presupuestal
-        </div>
-
-        <div class="table-wrapper">
-
-          <table
-            id="tabla"
-            class="display"
-          >
-
-            <thead>
-
-              <tr>
-
-                <th>Programa</th>
-                <th>PIM</th>
-                <th>Certificado</th>
-                <th>Devengado</th>
-                <th>Girado</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody></tbody>
-
-          </table>
-
-        </div>
-
-      </section>
-
-    </main>
-
-  </div>
-
-  <!-- APP -->
   <script src="app.js"></script>
 
 </body>
+
 </html>
