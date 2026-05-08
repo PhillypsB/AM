@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 
@@ -12,53 +11,140 @@
   >
 
   <title>
-    🚀 ZaZA PRESUPUESTO
+    🚀 zaZA PRESUPUESTO
   </title>
+
+  <meta
+    name="theme-color"
+    content="#ffffff"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
 
   <link
     rel="stylesheet"
     href="style.css"
   >
 
-  <!-- XLSX -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
-  <!-- CHART -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 </head>
 
 <body>
 
-  <!-- LOADER -->
+  <!-- CURSOR -->
 
   <div
-    id="loader"
-    class="loader hidden"
+    id="cursor"
+    class="cursor"
+  ></div>
+
+  <!-- ZONA SOLTAR -->
+
+  <div
+    id="zonaSoltar"
+    class="zona-soltar oculto"
   >
 
-    <div class="loader-box">
+    <div class="zona-soltar-contenido">
 
-      <div class="spinner"></div>
+      <div class="zona-soltar-icono">
+        🚀
+      </div>
+
+      <h2>
+        Suelte aquí el archivo XLS
+      </h2>
+
+      <p>
+        Archivo exportado desde SIAF WEB
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- ERROR -->
+
+  <div
+    id="mensajeError"
+    class="mensaje-error oculto"
+  >
+
+    <div class="mensaje-error-card">
+
+      <div class="mensaje-error-icono">
+        ⚠️
+      </div>
+
+      <h2>
+        Archivo no válido
+      </h2>
+
+      <p>
+        Solo debe subir el archivo exportado
+        desde el SIAF WEB sin modificaciones.
+      </p>
+
+      <button
+        class="boton-principal"
+        onclick="cerrarError()"
+      >
+        Entendido
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- CARGA -->
+
+  <div
+    id="cargador"
+    class="cargador oculto"
+  >
+
+    <div class="cargador-card">
+
+      <div class="cargador-circulo"></div>
 
       <h2>
         Procesando información
       </h2>
 
-      <p id="loaderText">
+      <p id="textoCarga">
         Iniciando...
       </p>
 
-      <div class="progress-container">
+      <div class="barra-contenedor">
 
         <div
-          id="progressBar"
-          class="progress-bar"
+          id="barraCarga"
+          class="barra-carga"
         ></div>
 
       </div>
 
-      <div id="progressLabel">
+      <div
+        id="porcentajeCarga"
+        class="porcentaje-carga"
+      >
         0%
       </div>
 
@@ -66,122 +152,227 @@
 
   </div>
 
-  <!-- HEADER -->
+  <!-- CABECERA -->
 
-  <header class="header">
+  <header class="cabecera">
 
-    <div class="logo-section">
+    <div class="cabecera-izquierda">
 
-      <div class="logo">
-        🚀
+      <div class="contenedor-cohete">
+
+        <div class="brillo-cohete"></div>
+
+        <div class="icono-cohete">
+          🚀
+        </div>
+
       </div>
 
-      <div>
+      <div class="marca-texto">
 
         <h1>
-          ZaZA PRESUPUESTO
+          zaZA PRESUPUESTO
         </h1>
 
-        <span>
-          Plataforma Inteligente de Análisis Presupuestal
-        </span>
+        <p>
+          Plataforma Ejecutiva de Inteligencia Presupuestal
+        </p>
 
       </div>
 
     </div>
+
+    <!-- INFORMACIÓN -->
 
     <div
-      id="headerInfo"
-      class="header-info hidden"
+      id="informacionCabecera"
+      class="cabecera-centro oculto"
     >
 
-      <div class="info-box">
+      <div class="tarjeta-estado">
 
-        <small>
-          Fuente Oficial
-        </small>
+        <div class="estado-superior">
 
-        <strong>
-          SIAF WEB
-        </strong>
+          <span class="estado-punto"></span>
 
-      </div>
+          <small>
+            ENTIDAD OPERATIVA
+          </small>
 
-      <div class="info-box">
+        </div>
 
-        <small>
-          Última actualización
-        </small>
+        <div class="estado-cuerpo">
 
-        <strong id="fechaActualizacion">
-          --
-        </strong>
+          <div class="estado-item">
+
+            <span>
+              🏛️ Entidad
+            </span>
+
+            <strong id="entidadCabecera">
+              --
+            </strong>
+
+          </div>
+
+          <div class="estado-item">
+
+            <span>
+              📅 Datos con corte a
+            </span>
+
+            <strong id="fechaActualizacion">
+              --
+            </strong>
+
+          </div>
+
+        </div>
 
       </div>
 
     </div>
 
-    <button
-      class="theme-btn"
-      onclick="toggleTheme()"
-      id="themeBtn"
-    >
-      🌙
-    </button>
+    <!-- ACCIONES -->
+
+    <div class="cabecera-acciones">
+
+      <div
+        class="tooltip"
+        data-tooltip="Cambiar vista ejecutiva"
+      >
+
+        <button
+          class="boton-accion"
+          onclick="cambiarVista()"
+          id="botonVista"
+        >
+          📊
+        </button>
+
+      </div>
+
+      <div
+        class="tooltip"
+        data-tooltip="Cambiar tema visual"
+      >
+
+        <button
+          class="boton-accion"
+          onclick="cambiarTema()"
+          id="botonTema"
+        >
+          🌙
+        </button>
+
+      </div>
+
+    </div>
 
   </header>
 
-  <!-- MAIN -->
+  <!-- CONTENIDO -->
 
-  <main class="main">
+  <main class="contenido-principal">
 
     <!-- CARGA -->
 
-    <section class="upload-card">
+    <section
+      id="seccionCarga"
+      class="zona-carga"
+    >
 
-      <div class="upload-icon">
-        📂
+      <div class="tarjeta-carga">
+
+        <div class="brillo-carga"></div>
+
+        <div class="animacion-carga">
+
+          <div class="anillo-pulso"></div>
+
+          <div class="icono-carga">
+            🚀
+          </div>
+
+        </div>
+
+        <h2>
+          Inteligencia Presupuestal Ultrarrápida
+        </h2>
+
+        <p>
+          Analice información presupuestal
+          del SIAF WEB en segundos.
+        </p>
+
+        <input
+          type="file"
+          id="archivoExcel"
+          accept=".xls"
+          hidden
+        >
+
+        <button
+          class="boton-principal"
+          onclick="document.getElementById('archivoExcel').click()"
+        >
+          Seleccionar archivo XLS
+        </button>
+
+        <div
+          id="nombreArchivo"
+          class="nombre-archivo"
+        ></div>
+
       </div>
-
-      <h2>
-        Seleccionar archivo SIAF
-      </h2>
-
-      <p>
-        Carga un archivo Excel para iniciar el análisis presupuestal
-      </p>
-
-      <input
-        type="file"
-        id="fileInput"
-        accept=".xls,.xlsx"
-        hidden
-      >
-
-      <button
-        class="primary-btn"
-        onclick="document.getElementById('fileInput').click()"
-      >
-        Seleccionar archivo
-      </button>
-
-      <div
-        id="fileName"
-        class="file-name"
-      ></div>
 
     </section>
 
-    <!-- KPI -->
+    <!-- ENTIDAD -->
 
     <section
-      id="kpiSection"
-      class="kpi-grid hidden"
+      id="seccionEntidad"
+      class="seccion-entidad oculto"
     >
 
-      <div class="kpi-card">
+      <div class="tarjeta-entidad">
 
-        <span>PIM</span>
+        <div class="entidad-izquierda">
+
+          <div class="entidad-icono">
+            🛰️
+          </div>
+
+          <div>
+
+            <span>
+              ENTIDAD OPERATIVA
+            </span>
+
+            <h2 id="tituloEntidad">
+              --
+            </h2>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- INDICADORES -->
+
+    <section
+      id="seccionIndicadores"
+      class="seccion-indicadores oculto"
+    >
+
+      <div class="tarjeta-indicador">
+
+        <span>
+          💰 PIM
+        </span>
 
         <h2 id="kpiPim">
           S/ 0
@@ -189,9 +380,11 @@
 
       </div>
 
-      <div class="kpi-card">
+      <div class="tarjeta-indicador">
 
-        <span>Certificado</span>
+        <span>
+          📌 Certificado
+        </span>
 
         <h2 id="kpiCert">
           S/ 0
@@ -199,9 +392,11 @@
 
       </div>
 
-      <div class="kpi-card">
+      <div class="tarjeta-indicador">
 
-        <span>Devengado</span>
+        <span>
+          📉 Devengado
+        </span>
 
         <h2 id="kpiDev">
           S/ 0
@@ -209,9 +404,11 @@
 
       </div>
 
-      <div class="kpi-card">
+      <div class="tarjeta-indicador">
 
-        <span>Girado</span>
+        <span>
+          🏦 Girado
+        </span>
 
         <h2 id="kpiGir">
           S/ 0
@@ -219,9 +416,11 @@
 
       </div>
 
-      <div class="kpi-card">
+      <div class="tarjeta-indicador">
 
-        <span>Pagado</span>
+        <span>
+          ✅ Pagado
+        </span>
 
         <h2 id="kpiPag">
           S/ 0
@@ -229,9 +428,11 @@
 
       </div>
 
-      <div class="kpi-card active">
+      <div class="tarjeta-indicador indicador-porcentaje">
 
-        <span>Ejecución</span>
+        <span>
+          🚀 Ejecución
+        </span>
 
         <h2 id="kpiEjec">
           0%
@@ -241,40 +442,255 @@
 
     </section>
 
-    <!-- CHART -->
+    <!-- FILTROS -->
 
     <section
-      id="chartSection"
-      class="chart-card hidden"
+      id="seccionFiltros"
+      class="panel oculto"
     >
 
-      <div class="section-title">
-        📈 Top Devengado
+      <div class="panel-cabecera">
+
+        <div>
+
+          <small>
+            Navegación
+          </small>
+
+          <h2>
+            Filtros Inteligentes
+          </h2>
+
+        </div>
+
       </div>
 
-      <div id="chart"></div>
+      <div class="filtros-grid">
+
+        <select>
+          <option>
+            Departamento
+          </option>
+        </select>
+
+        <select>
+          <option>
+            Provincia
+          </option>
+        </select>
+
+        <select>
+          <option>
+            Programa Presupuestal
+          </option>
+        </select>
+
+        <select>
+          <option>
+            Fuente Financiamiento
+          </option>
+        </select>
+
+      </div>
 
     </section>
 
-    <!-- INSIGHTS -->
+    <!-- GRÁFICO -->
 
     <section
-      id="insightSection"
-      class="insight-card hidden"
+      id="seccionGrafico"
+      class="panel oculto"
     >
 
-      <div class="section-title">
-        🧠 Insights Automáticos
+      <div class="panel-cabecera">
+
+        <div>
+
+          <small>
+            Visualización
+          </small>
+
+          <h2>
+            Devengado por Programa
+          </h2>
+
+        </div>
+
       </div>
 
-      <div id="insights"></div>
+      <div id="grafico"></div>
+
+    </section>
+
+    <!-- PRODUCTOS -->
+
+    <section
+      id="seccionProductos"
+      class="panel oculto"
+    >
+
+      <div class="panel-cabecera">
+
+        <div>
+
+          <small>
+            Distribución
+          </small>
+
+          <h2>
+            Productos / Proyectos
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div
+        id="contenedorProductos"
+        class="productos-grid"
+      ></div>
+
+    </section>
+
+    <!-- EXPORTAR -->
+
+    <section
+      id="seccionExportar"
+      class="panel oculto"
+    >
+
+      <div class="panel-cabecera">
+
+        <div>
+
+          <small>
+            Compartir
+          </small>
+
+          <h2>
+            Exportar Información
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div class="exportar-grid">
+
+        <button
+          class="boton-exportar"
+          onclick="accionExportar('WhatsApp')"
+        >
+          📲 WhatsApp
+        </button>
+
+        <button
+          class="boton-exportar"
+          onclick="accionExportar('PDF')"
+        >
+          📄 PDF
+        </button>
+
+        <button
+          class="boton-exportar"
+          onclick="accionExportar('Excel')"
+        >
+          📊 Excel
+        </button>
+
+        <button
+          class="boton-exportar"
+          onclick="accionExportar('Word')"
+        >
+          📝 Word
+        </button>
+
+      </div>
+
+    </section>
+
+    <!-- HALLAZGOS -->
+
+    <section
+      id="seccionHallazgos"
+      class="panel oculto"
+    >
+
+      <div class="panel-cabecera">
+
+        <div>
+
+          <small>
+            Hallazgos
+          </small>
+
+          <h2>
+            Insights Automáticos
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div id="hallazgos"></div>
 
     </section>
 
   </main>
 
+  <!-- PIE -->
+
+  <footer class="pie oculto">
+
+    <div class="pie-brillo"></div>
+
+    <div class="pie-contenido">
+
+      <div class="pie-marca">
+
+        <div class="pie-cohete">
+          🚀
+        </div>
+
+        <div>
+
+          <h3>
+            zaZA PRESUPUESTO
+          </h3>
+
+          <p>
+            Plataforma Ejecutiva de Inteligencia Presupuestal
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="pie-centro">
+
+        <span id="pieActualizado">
+          📅 Corte de datos: --
+        </span>
+
+        <span>
+          🛰️ Fuente: SIAF WEB
+        </span>
+
+        <span id="pieTiempo">
+          ⚡ Tiempo de carga: --
+        </span>
+
+        <span id="pieRegistros">
+          📂 Registros procesados: --
+        </span>
+
+      </div>
+
+    </div>
+
+  </footer>
+
   <script src="app.js"></script>
 
 </body>
-
 </html>
