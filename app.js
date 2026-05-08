@@ -1,6 +1,7 @@
 // app.js
 
-let dataGlobal = [];
+let resumenGlobal = {};
+let detalleGlobal = [];
 
 /* =========================
    AUTO CARGA
@@ -10,7 +11,7 @@ document
 .getElementById("fileInput")
 .addEventListener(
   "change",
-  function(e){
+  async function(e){
 
     const file =
       e.target.files[0];
@@ -19,50 +20,36 @@ document
 
     document
     .getElementById(
-      "archivoSeleccionado"
+      "fileName"
     )
-    .innerHTML = `
-      <div class="archivo-ok">
-        ✅ Archivo seleccionado
-        <br><br>
-        <strong>${file.name}</strong>
-      </div>
-    `;
+    .innerHTML =
+      `✅ ${file.name}`;
 
-    setTimeout(()=>{
-      procesarExcel();
-    },700);
+    iniciarLoader();
+
+    await procesarExcel(file);
 
   }
 );
 
 /* =========================
-   PROCESAR EXCEL
+   PROCESAR
 ========================= */
 
-function procesarExcel(){
-
-  const file =
-    document.getElementById(
-      "fileInput"
-    ).files[0];
-
-  if(!file) return;
-
-  iniciarLoader();
-
-  const inicio =
-    performance.now();
+async function procesarExcel(file){
 
   const reader =
     new FileReader();
 
-  reader.onload = (e)=>{
+  reader.onload =
+  async function(e){
 
     actualizarLoader(
-      15,
+      10,
       "Leyendo archivo Excel..."
     );
+
+    await pausa();
 
     const workbook =
       XLSX.read(
@@ -75,9 +62,11 @@ function procesarExcel(){
       );
 
     actualizarLoader(
-      40,
-      "Procesando información..."
+      30,
+      "Procesando hoja..."
     );
+
+    await pausa();
 
     const sheet =
       workbook.Sheets[
@@ -85,37 +74,52 @@ function procesarExcel(){
       ];
 
     const raw =
-      XLSX.utils
-      .sheet_to_json(sheet);
+      XLSX.utils.sheet_to_json(
+        sheet,
+        {
+          raw:true,
+          defval:0
+        }
+      );
 
     actualizarLoader(
-      60,
-      "Transformando datos..."
-    );
-
-    dataGlobal =
-      transformarDatos(raw);
-
-    actualizarLoader(
-      80,
+      50,
       "Calculando indicadores..."
     );
 
-    renderKPIs(dataGlobal);
+    await pausa();
 
-    renderChart(dataGlobal);
+    const procesado =
+      transformarDatos(raw);
 
-    renderTabla(dataGlobal);
+    resumenGlobal =
+      procesado.resumen;
 
-    renderInsights(dataGlobal);
+    detalleGlobal =
+      procesado.detalle;
 
-    renderFiltros(dataGlobal);
-
-    guardarInformacionArchivo(
-      file.name
+    actualizarLoader(
+      70,
+      "Generando visualizaciones..."
     );
 
-    mostrarPaneles();
+    await pausa();
+
+    requestAnimationFrame(()=>{
+
+      renderKPIs();
+
+      renderChart();
+
+      renderInsights();
+
+      mostrarPaneles();
+
+      guardarFechaArchivo(
+        file.name
+      );
+
+    });
 
     actualizarLoader(
       100,
@@ -126,27 +130,7 @@ function procesarExcel(){
 
       finalizarLoader();
 
-    },600);
-
-    const fin =
-      performance.now();
-
-    document
-    .getElementById(
-      "tiempoCarga"
-    )
-    .innerText =
-      (
-        (fin-inicio)/1000
-      ).toFixed(2) + "s";
-
-    document
-    .getElementById(
-      "totalRegistros"
-    )
-    .innerText =
-      raw.length
-      .toLocaleString();
+    },500);
 
   };
 
@@ -160,39 +144,70 @@ function procesarExcel(){
 
 function transformarDatos(data){
 
-  return data.map(r => ({
+  let pim = 0;
+  let certificado = 0;
+  let devengado = 0;
+  let girado = 0;
+  let pagado = 0;
 
-    departamento:
-      r["departamento_meta"],
+  const detalle = [];
 
-    programa:
-      r["programa_pptal"],
+  for(const r of data){
 
-    pim:
-      numero(r["mto_pim"]),
+    const item = {
 
-    certificado:
-      numero(r["mto_certificado"]),
+      programa:
+        r["programa_pptal"],
 
-    devengado:
-      sumarMeses(
-        r,
-        "mto_devenga"
-      ),
+      pim:
+        num(r["mto_pim"]),
 
-    girado:
-      sumarMeses(
-        r,
-        "mto_girado"
-      ),
+      certificado:
+        num(r["mto_certificado"]),
 
-    pagado:
-      sumarMeses(
-        r,
-        "mto_pagado"
-      )
+      devengado:
+        sumarMeses(
+          r,
+          "mto_devenga"
+        ),
 
-  }));
+      girado:
+        sumarMeses(
+          r,
+          "mto_girado"
+        ),
+
+      pagado:
+        sumarMeses(
+          r,
+          "mto_pagado"
+        )
+
+    };
+
+    pim += item.pim;
+    certificado += item.certificado;
+    devengado += item.devengado;
+    girado += item.girado;
+    pagado += item.pagado;
+
+    detalle.push(item);
+
+  }
+
+  return {
+
+    resumen:{
+      pim,
+      certificado,
+      devengado,
+      girado,
+      pagado
+    },
+
+    detalle
+
+  };
 
 }
 
@@ -200,40 +215,9 @@ function transformarDatos(data){
    HELPERS
 ========================= */
 
-function numero(v){
+function num(v){
 
   return Number(v || 0);
-
-}
-
-function sumarMeses(
-  row,
-  prefijo
-){
-
-  let total = 0;
-
-  for(let i=1;i<=12;i++){
-
-    const key =
-      `${prefijo}_${String(i)
-      .padStart(2,"0")}`;
-
-    total +=
-      numero(row[key]);
-
-  }
-
-  return total;
-
-}
-
-function suma(data,key){
-
-  return data.reduce(
-    (a,b)=>
-      a + (b[key] || 0)
-  ,0);
 
 }
 
@@ -250,55 +234,94 @@ function money(v){
 
 }
 
+function pausa(){
+
+  return new Promise(
+    resolve =>
+      setTimeout(resolve,50)
+  );
+
+}
+
+function sumarMeses(
+  row,
+  prefijo
+){
+
+  let total = 0;
+
+  for(let i=1;i<=12;i++){
+
+    total +=
+      num(
+        row[
+          `${prefijo}_${String(i)
+          .padStart(2,"0")}`
+        ]
+      );
+
+  }
+
+  return total;
+
+}
+
 /* =========================
    KPIS
 ========================= */
 
-function renderKPIs(data){
+function renderKPIs(){
 
-  const pim =
-    suma(data,"pim");
-
-  const cert =
-    suma(data,"certificado");
-
-  const dev =
-    suma(data,"devengado");
-
-  const gir =
-    suma(data,"girado");
-
-  const pag =
-    suma(data,"pagado");
+  const r =
+    resumenGlobal;
 
   const ejec =
-    pim
-      ? ((dev/pim)*100)
-      .toFixed(2)
+    r.pim
+      ? (
+          (r.devengado/r.pim)
+          *100
+        ).toFixed(2)
       : 0;
 
   document
-  .getElementById("pim")
-  .innerText = money(pim);
+  .getElementById(
+    "kpiPim"
+  )
+  .innerText =
+    money(r.pim);
 
   document
-  .getElementById("certificado")
-  .innerText = money(cert);
+  .getElementById(
+    "kpiCert"
+  )
+  .innerText =
+    money(r.certificado);
 
   document
-  .getElementById("devengado")
-  .innerText = money(dev);
+  .getElementById(
+    "kpiDev"
+  )
+  .innerText =
+    money(r.devengado);
 
   document
-  .getElementById("girado")
-  .innerText = money(gir);
+  .getElementById(
+    "kpiGir"
+  )
+  .innerText =
+    money(r.girado);
 
   document
-  .getElementById("pagado")
-  .innerText = money(pag);
+  .getElementById(
+    "kpiPag"
+  )
+  .innerText =
+    money(r.pagado);
 
   document
-  .getElementById("ejecucion")
+  .getElementById(
+    "kpiEjec"
+  )
   .innerText =
     ejec + "%";
 
@@ -308,22 +331,24 @@ function renderKPIs(data){
    CHART
 ========================= */
 
-function renderChart(data){
+function renderChart(){
+
+  const top =
+    [...detalleGlobal]
+
+    .sort(
+      (a,b)=>
+        b.devengado
+        - a.devengado
+    )
+
+    .slice(0,10);
 
   const labels =
-    data
-    .slice(0,10)
-    .map(x=>x.programa);
+    top.map(x=>x.programa);
 
-  const dev =
-    data
-    .slice(0,10)
-    .map(x=>x.devengado);
-
-  const gir =
-    data
-    .slice(0,10)
-    .map(x=>x.girado);
+  const data =
+    top.map(x=>x.devengado);
 
   document
   .querySelector("#chart")
@@ -346,11 +371,7 @@ function renderChart(data){
       series:[
         {
           name:"Devengado",
-          data:dev
-        },
-        {
-          name:"Girado",
-          data:gir
+          data
         }
       ],
 
@@ -369,214 +390,57 @@ function renderChart(data){
 }
 
 /* =========================
-   TABLA
-========================= */
-
-function renderTabla(data){
-
-  if(
-    $.fn.DataTable
-    .isDataTable("#tabla")
-  ){
-
-    $("#tabla")
-    .DataTable()
-    .destroy();
-
-  }
-
-  const tbody =
-    document.querySelector(
-      "#tabla tbody"
-    );
-
-  tbody.innerHTML = "";
-
-  data.slice(0,300)
-  .forEach(r => {
-
-    tbody.innerHTML += `
-      <tr>
-        <td>${r.programa}</td>
-        <td>${money(r.pim)}</td>
-        <td>${money(r.certificado)}</td>
-        <td>${money(r.devengado)}</td>
-        <td>${money(r.girado)}</td>
-      </tr>
-    `;
-
-  });
-
-  $("#tabla")
-  .DataTable({
-    pageLength:10
-  });
-
-}
-
-/* =========================
-   FILTROS
-========================= */
-
-function renderFiltros(data){
-
-  const dep =
-    document.getElementById(
-      "filterDepartamento"
-    );
-
-  const prog =
-    document.getElementById(
-      "filterPrograma"
-    );
-
-  dep.innerHTML =
-    '<option value="">Todos</option>';
-
-  prog.innerHTML =
-    '<option value="">Todos</option>';
-
-  [
-    ...new Set(
-      data.map(
-        x=>x.departamento
-      )
-    )
-  ]
-  .forEach(v => {
-
-    dep.innerHTML += `
-      <option value="${v}">
-        ${v}
-      </option>
-    `;
-
-  });
-
-  [
-    ...new Set(
-      data.map(
-        x=>x.programa
-      )
-    )
-  ]
-  .forEach(v => {
-
-    prog.innerHTML += `
-      <option value="${v}">
-        ${v}
-      </option>
-    `;
-
-  });
-
-}
-
-function aplicarFiltros(){
-
-  const dep =
-    document.getElementById(
-      "filterDepartamento"
-    ).value;
-
-  const prog =
-    document.getElementById(
-      "filterPrograma"
-    ).value;
-
-  let filtrado =
-    [...dataGlobal];
-
-  if(dep){
-
-    filtrado =
-      filtrado.filter(
-        x =>
-          x.departamento
-          === dep
-      );
-
-  }
-
-  if(prog){
-
-    filtrado =
-      filtrado.filter(
-        x =>
-          x.programa
-          === prog
-      );
-
-  }
-
-  renderKPIs(filtrado);
-
-  renderChart(filtrado);
-
-  renderTabla(filtrado);
-
-}
-
-/* =========================
    INSIGHTS
 ========================= */
 
-function renderInsights(data){
+function renderInsights(){
 
-  const el =
-    document.getElementById(
-      "insights"
-    );
-
-  el.innerHTML = "";
-
-  const totalDev =
-    suma(data,"devengado");
-
-  const totalPim =
-    suma(data,"pim");
+  const r =
+    resumenGlobal;
 
   const ejec =
-    totalPim
+    r.pim
       ? (
-          (totalDev/totalPim)
+          (r.devengado/r.pim)
           *100
         ).toFixed(2)
       : 0;
 
-  el.innerHTML += `
-    <div class="insight">
-      📊 El presupuesto presenta una ejecución de
-      <strong>${ejec}%</strong>
-      respecto al PIM.
-    </div>
-  `;
+  document
+  .getElementById(
+    "insights"
+  )
+  .innerHTML = `
 
-  el.innerHTML += `
     <div class="insight">
-      💰 El monto total devengado asciende a
-      <strong>${money(totalDev)}</strong>.
+      📊 La ejecución presupuestal actual alcanza el
+      <strong>${ejec}%</strong>
+      del PIM.
     </div>
+
+    <div class="insight">
+      💰 El monto devengado asciende a
+      <strong>${money(r.devengado)}</strong>.
+    </div>
+
+    <div class="insight">
+      🏦 El monto girado total es de
+      <strong>${money(r.girado)}</strong>.
+    </div>
+
   `;
 
 }
 
 /* =========================
-   MOSTRAR MODULOS
+   MOSTRAR
 ========================= */
 
 function mostrarPaneles(){
 
   document
   .getElementById(
-    "infoSuperior"
-  )
-  .classList
-  .remove("hidden");
-
-  document
-  .getElementById(
-    "heroSection"
+    "headerInfo"
   )
   .classList
   .remove("hidden");
@@ -590,13 +454,6 @@ function mostrarPaneles(){
 
   document
   .getElementById(
-    "insightSection"
-  )
-  .classList
-  .remove("hidden");
-
-  document
-  .getElementById(
     "chartSection"
   )
   .classList
@@ -604,21 +461,7 @@ function mostrarPaneles(){
 
   document
   .getElementById(
-    "tablaSection"
-  )
-  .classList
-  .remove("hidden");
-
-  document
-  .getElementById(
-    "filtrosSection"
-  )
-  .classList
-  .remove("hidden");
-
-  document
-  .getElementById(
-    "exportSection"
+    "insightSection"
   )
   .classList
   .remove("hidden");
@@ -626,34 +469,10 @@ function mostrarPaneles(){
 }
 
 /* =========================
-   FECHA ARCHIVO
+   FECHA
 ========================= */
 
-function guardarInformacionArchivo(
-  fileName
-){
-
-  const meta =
-    extraerFechaArchivo(
-      fileName
-    );
-
-  if(!meta) return;
-
-  const texto =
-    `${meta.fecha} · ${meta.hora}`;
-
-  document
-  .getElementById(
-    "fechaActualizacion"
-  )
-  .innerText = texto;
-
-  guardarHistorial(texto);
-
-}
-
-function extraerFechaArchivo(nombre){
+function guardarFechaArchivo(nombre){
 
   const regex =
     /(\d{4}-\d{2}-\d{2})T(\d{2})(\d{2})(\d{2})/;
@@ -661,74 +480,16 @@ function extraerFechaArchivo(nombre){
   const match =
     nombre.match(regex);
 
-  if(!match){
-    return null;
-  }
+  if(!match) return;
 
-  return {
+  const texto =
+    `${match[1]} ${match[2]}:${match[3]}:${match[4]}`;
 
-    fecha:match[1],
-
-    hora:
-      `${match[2]}:${match[3]}:${match[4]}`
-
-  };
-
-}
-
-/* =========================
-   HISTORIAL
-========================= */
-
-function guardarHistorial(
-  fecha
-){
-
-  let historial =
-    JSON.parse(
-      localStorage.getItem(
-        "zaza_historial"
-      )
-    ) || [];
-
-  if(!historial.includes(fecha)){
-
-    historial.unshift(fecha);
-
-  }
-
-  localStorage.setItem(
-    "zaza_historial",
-    JSON.stringify(historial)
-  );
-
-  renderHistorial();
-
-}
-
-function renderHistorial(){
-
-  const historial =
-    JSON.parse(
-      localStorage.getItem(
-        "zaza_historial"
-      )
-    ) || [];
-
-  const select =
-    document.getElementById(
-      "selectorHistorial"
-    );
-
-  select.innerHTML = "";
-
-  historial.forEach(h => {
-
-    select.innerHTML += `
-      <option>${h}</option>
-    `;
-
-  });
+  document
+  .getElementById(
+    "fechaActualizacion"
+  )
+  .innerText = texto;
 
 }
 
@@ -740,7 +501,7 @@ function iniciarLoader(){
 
   document
   .getElementById(
-    "loaderOverlay"
+    "loader"
   )
   .classList
   .remove("hidden");
@@ -770,7 +531,8 @@ function actualizarLoader(
   .getElementById(
     "loaderText"
   )
-  .innerText = texto;
+  .innerText =
+    texto;
 
 }
 
@@ -778,7 +540,7 @@ function finalizarLoader(){
 
   document
   .getElementById(
-    "loaderOverlay"
+    "loader"
   )
   .classList
   .add("hidden");
@@ -805,15 +567,15 @@ function toggleTheme(){
       : "light"
   );
 
-  actualizarBotonTheme();
+  actualizarTheme();
 
 }
 
-function actualizarBotonTheme(){
+function actualizarTheme(){
 
   document
   .getElementById(
-    "themeToggle"
+    "themeBtn"
   )
   .innerHTML =
 
@@ -842,9 +604,7 @@ window.addEventListener(
 
     }
 
-    actualizarBotonTheme();
-
-    renderHistorial();
+    actualizarTheme();
 
   }
 );
