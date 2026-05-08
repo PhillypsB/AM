@@ -37,7 +37,7 @@ document
 );
 
 /* =========================
-   PROCESAR
+   PROCESAR EXCEL
 ========================= */
 
 function procesarExcel(){
@@ -60,11 +60,11 @@ function procesarExcel(){
   reader.onload = (e)=>{
 
     actualizarLoader(
-      20,
-      "Leyendo archivo..."
+      15,
+      "Leyendo archivo Excel..."
     );
 
-    const wb =
+    const workbook =
       XLSX.read(
         new Uint8Array(
           e.target.result
@@ -75,24 +75,29 @@ function procesarExcel(){
       );
 
     actualizarLoader(
-      45,
+      40,
       "Procesando información..."
     );
 
     const sheet =
-      wb.Sheets[
-        wb.SheetNames[0]
+      workbook.Sheets[
+        workbook.SheetNames[0]
       ];
 
     const raw =
       XLSX.utils
       .sheet_to_json(sheet);
 
+    actualizarLoader(
+      60,
+      "Transformando datos..."
+    );
+
     dataGlobal =
-      transformar(raw);
+      transformarDatos(raw);
 
     actualizarLoader(
-      70,
+      80,
       "Calculando indicadores..."
     );
 
@@ -106,17 +111,22 @@ function procesarExcel(){
 
     renderFiltros(dataGlobal);
 
-    actualizarLoader(
-      90,
-      "Actualizando panel..."
-    );
-
-    guardarSnapshot(
-      dataGlobal,
+    guardarInformacionArchivo(
       file.name
     );
 
-    finalizarLoader();
+    mostrarPaneles();
+
+    actualizarLoader(
+      100,
+      "Proceso completado"
+    );
+
+    setTimeout(()=>{
+
+      finalizarLoader();
+
+    },600);
 
     const fin =
       performance.now();
@@ -148,7 +158,7 @@ function procesarExcel(){
    TRANSFORMAR
 ========================= */
 
-function transformar(data){
+function transformarDatos(data){
 
   return data.map(r => ({
 
@@ -159,10 +169,10 @@ function transformar(data){
       r["programa_pptal"],
 
     pim:
-      num(r["mto_pim"]),
+      numero(r["mto_pim"]),
 
     certificado:
-      num(r["mto_certificado"]),
+      numero(r["mto_certificado"]),
 
     devengado:
       sumarMeses(
@@ -190,7 +200,7 @@ function transformar(data){
    HELPERS
 ========================= */
 
-function num(v){
+function numero(v){
 
   return Number(v || 0);
 
@@ -210,7 +220,7 @@ function sumarMeses(
       .padStart(2,"0")}`;
 
     total +=
-      num(row[key]);
+      numero(row[key]);
 
   }
 
@@ -327,7 +337,10 @@ function renderChart(data){
 
       chart:{
         type:"bar",
-        height:420
+        height:420,
+        toolbar:{
+          show:false
+        }
       },
 
       series:[
@@ -343,6 +356,10 @@ function renderChart(data){
 
       xaxis:{
         categories:labels
+      },
+
+      dataLabels:{
+        enabled:false
       }
 
     }
@@ -513,24 +530,106 @@ function renderInsights(data){
 
   el.innerHTML = "";
 
-  const total =
+  const totalDev =
     suma(data,"devengado");
+
+  const totalPim =
+    suma(data,"pim");
+
+  const ejec =
+    totalPim
+      ? (
+          (totalDev/totalPim)
+          *100
+        ).toFixed(2)
+      : 0;
 
   el.innerHTML += `
     <div class="insight">
-      📊 Devengado total:
-      <strong>${money(total)}</strong>
+      📊 El presupuesto presenta una ejecución de
+      <strong>${ejec}%</strong>
+      respecto al PIM.
+    </div>
+  `;
+
+  el.innerHTML += `
+    <div class="insight">
+      💰 El monto total devengado asciende a
+      <strong>${money(totalDev)}</strong>.
     </div>
   `;
 
 }
 
 /* =========================
-   FECHA
+   MOSTRAR MODULOS
 ========================= */
 
-function guardarSnapshot(
-  data,
+function mostrarPaneles(){
+
+  document
+  .getElementById(
+    "infoSuperior"
+  )
+  .classList
+  .remove("hidden");
+
+  document
+  .getElementById(
+    "heroSection"
+  )
+  .classList
+  .remove("hidden");
+
+  document
+  .getElementById(
+    "kpiSection"
+  )
+  .classList
+  .remove("hidden");
+
+  document
+  .getElementById(
+    "insightSection"
+  )
+  .classList
+  .remove("hidden");
+
+  document
+  .getElementById(
+    "chartSection"
+  )
+  .classList
+  .remove("hidden");
+
+  document
+  .getElementById(
+    "tablaSection"
+  )
+  .classList
+  .remove("hidden");
+
+  document
+  .getElementById(
+    "filtrosSection"
+  )
+  .classList
+  .remove("hidden");
+
+  document
+  .getElementById(
+    "exportSection"
+  )
+  .classList
+  .remove("hidden");
+
+}
+
+/* =========================
+   FECHA ARCHIVO
+========================= */
+
+function guardarInformacionArchivo(
   fileName
 ){
 
@@ -539,10 +638,10 @@ function guardarSnapshot(
       fileName
     );
 
+  if(!meta) return;
+
   const texto =
-    meta
-      ? `${meta.fecha} · ${meta.hora}`
-      : "Sin información";
+    `${meta.fecha} · ${meta.hora}`;
 
   document
   .getElementById(
@@ -677,21 +776,12 @@ function actualizarLoader(
 
 function finalizarLoader(){
 
-  actualizarLoader(
-    100,
-    "Proceso finalizado"
-  );
-
-  setTimeout(()=>{
-
-    document
-    .getElementById(
-      "loaderOverlay"
-    )
-    .classList
-    .add("hidden");
-
-  },700);
+  document
+  .getElementById(
+    "loaderOverlay"
+  )
+  .classList
+  .add("hidden");
 
 }
 
@@ -715,11 +805,11 @@ function toggleTheme(){
       : "light"
   );
 
-  updateThemeButton();
+  actualizarBotonTheme();
 
 }
 
-function updateThemeButton(){
+function actualizarBotonTheme(){
 
   document
   .getElementById(
@@ -752,7 +842,7 @@ window.addEventListener(
 
     }
 
-    updateThemeButton();
+    actualizarBotonTheme();
 
     renderHistorial();
 
