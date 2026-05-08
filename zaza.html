@@ -4,19 +4,19 @@
 
 <head>
 
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
 
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
-  />
+  >
 
   <title>
     🚀 ZaZA PRESUPUESTO
   </title>
 
   <!-- CSS -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 
   <!-- SHEETJS -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -28,15 +28,12 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
   <!-- DATATABLE -->
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
   <link
     rel="stylesheet"
     href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"
-  />
+  >
 
-  <!-- DAYJS -->
-  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 </head>
 
@@ -70,7 +67,10 @@
 
       </div>
 
-      <div id="progressLabel">
+      <div
+        id="progressLabel"
+        class="progress-label"
+      >
         0%
       </div>
 
@@ -82,48 +82,81 @@
 
   <header class="topbar">
 
-    <div class="topbar-left">
+    <div class="brand">
 
-      <div class="brand-title">
-        🚀 ZaZA PRESUPUESTO
+      <div class="brand-logo">
+        🚀
       </div>
 
-      <div class="brand-subtitle">
-        Plataforma Inteligente de Análisis Presupuestal
+      <div>
+
+        <div class="brand-title">
+          ZaZA PRESUPUESTO
+        </div>
+
+        <div class="brand-subtitle">
+          Plataforma Inteligente de Análisis Presupuestal
+        </div>
+
       </div>
 
     </div>
 
-    <div class="topbar-center">
+    <!-- INFO SUPERIOR -->
 
-      <div class="fuente-box">
+    <div
+      id="infoSuperior"
+      class="topbar-info hidden"
+    >
 
-        <div class="fuente-label">
-          Fuente
+      <div class="info-card">
+
+        <div class="info-icon">
+          🏛️
         </div>
 
-        <div class="fuente-value">
-          SIAF WEB
+        <div>
+
+          <div class="info-label">
+            Fuente Oficial
+          </div>
+
+          <div class="info-value">
+            SIAF WEB
+          </div>
+
         </div>
 
       </div>
 
-      <div class="actualizacion-box">
+      <div class="info-card">
 
-        <div class="actualizacion-label">
-          Actualizado
+        <div class="info-icon">
+          🕘
         </div>
 
-        <div
-          class="actualizacion-value"
-          id="fechaActualizacion"
-        >
-          Sin información
+        <div>
+
+          <div class="info-label">
+            Última actualización
+          </div>
+
+          <div
+            class="info-value"
+            id="fechaActualizacion"
+          >
+            --
+          </div>
+
         </div>
 
       </div>
 
-      <div class="historial-box">
+      <div class="info-card">
+
+        <div class="info-icon">
+          📅
+        </div>
 
         <select id="selectorHistorial">
 
@@ -137,17 +170,15 @@
 
     </div>
 
-    <div class="topbar-right">
+    <!-- DARK -->
 
-      <button
-        id="themeToggle"
-        class="theme-toggle"
-        onclick="toggleTheme()"
-      >
-        🌙
-      </button>
-
-    </div>
+    <button
+      id="themeToggle"
+      class="theme-toggle"
+      onclick="toggleTheme()"
+    >
+      🌙
+    </button>
 
   </header>
 
@@ -161,12 +192,9 @@
 
       <!-- CARGA -->
 
-      <section
-        id="uploadSection"
-        class="carga-box"
-      >
+      <section class="card carga-card">
 
-        <div class="carga-icon">
+        <div class="upload-icon">
           📂
         </div>
 
@@ -183,10 +211,10 @@
           id="fileInput"
           accept=".xls,.xlsx"
           hidden
-        />
+        >
 
         <button
-          class="primary-btn carga-btn"
+          class="primary-btn"
           onclick="document.getElementById('fileInput').click()"
         >
           Seleccionar archivo
@@ -201,14 +229,17 @@
 
       <!-- FILTROS -->
 
-      <section>
+      <section
+        id="filtrosSection"
+        class="card hidden"
+      >
 
         <h3>
           🎛️ Filtros
         </h3>
 
         <label>
-          🌎 Departamento
+          Departamento
         </label>
 
         <select id="filterDepartamento">
@@ -220,7 +251,7 @@
         </select>
 
         <label>
-          🏛️ Programa
+          Programa
         </label>
 
         <select id="filterPrograma">
@@ -240,9 +271,12 @@
 
       </section>
 
-      <!-- EXPORTAR -->
+      <!-- EXPORTACIONES -->
 
-      <section>
+      <section
+        id="exportSection"
+        class="card hidden"
+      >
 
         <h3>
           📤 Exportaciones
@@ -262,13 +296,6 @@
           Exportar Excel
         </button>
 
-        <button
-          class="secondary-btn"
-          onclick="alert('JSON próximamente')"
-        >
-          Exportar JSON
-        </button>
-
       </section>
 
     </aside>
@@ -279,7 +306,10 @@
 
       <!-- HERO -->
 
-      <section class="hero-card">
+      <section
+        id="heroSection"
+        class="hero-card hidden"
+      >
 
         <div>
 
@@ -325,7 +355,10 @@
 
       <!-- KPIS -->
 
-      <section class="kpi-grid">
+      <section
+        id="kpiSection"
+        class="kpi-grid hidden"
+      >
 
         <div class="kpi-card">
 
@@ -403,9 +436,12 @@
 
       <!-- INSIGHTS -->
 
-      <section class="card">
+      <section
+        id="insightSection"
+        class="card hidden"
+      >
 
-        <div class="card-title">
+        <div class="section-title">
           🧠 Insights Automáticos
         </div>
 
@@ -418,9 +454,12 @@
 
       <!-- GRAFICO -->
 
-      <section class="card">
+      <section
+        id="chartSection"
+        class="card hidden"
+      >
 
-        <div class="card-title">
+        <div class="section-title">
           📈 Devengado vs Girado
         </div>
 
@@ -430,9 +469,12 @@
 
       <!-- TABLA -->
 
-      <section class="card">
+      <section
+        id="tablaSection"
+        class="card hidden"
+      >
 
-        <div class="card-title">
+        <div class="section-title">
           📋 Detalle Presupuestal
         </div>
 
@@ -473,5 +515,4 @@
   <script src="app.js"></script>
 
 </body>
-
 </html>
