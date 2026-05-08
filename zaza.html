@@ -1,0 +1,424 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>🚀 ZaZA PRESUPUESTO</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- SHEETJS -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+  <!-- APEXCHARTS -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+  <!-- JQUERY -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <!-- DATATABLE -->
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"
+  />
+
+  <!-- DAYJS -->
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+
+</head>
+
+<body>
+
+  <!-- LOADER -->
+
+  <div
+    id="loaderOverlay"
+    class="loader-overlay hidden"
+  >
+
+    <div class="loader-card">
+
+      <div class="spinner"></div>
+
+      <h2>Procesando Snapshot</h2>
+
+      <p id="loaderText">
+        📖 Leyendo Excel...
+      </p>
+
+      <div class="progress-container">
+
+        <div
+          id="progressBar"
+          class="progress-bar"
+        ></div>
+
+      </div>
+
+      <div id="progressLabel">
+        0%
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- TOPBAR -->
+
+  <header class="topbar">
+
+    <div class="topbar-left">
+
+      <h1>
+        🚀 ZaZA PRESUPUESTO
+      </h1>
+
+      <p>
+        Plataforma Inteligente de Análisis Presupuestal SIAF
+      </p>
+
+    </div>
+
+    <div class="topbar-right">
+
+      <div class="snapshot-badge">
+
+        📸
+        <span id="snapshotFecha">
+          Sin snapshot
+        </span>
+
+      </div>
+
+      <button
+        id="themeToggle"
+        class="theme-toggle"
+        onclick="toggleTheme()"
+      >
+        🌙
+      </button>
+
+    </div>
+
+  </header>
+
+  <!-- LAYOUT -->
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+      <!-- UPLOAD -->
+
+      <section
+        id="uploadSection"
+      >
+
+        <h3>
+          📂 Cargar Snapshot
+        </h3>
+
+        <input
+          type="file"
+          id="fileInput"
+          accept=".xls,.xlsx"
+        />
+
+        <button
+          class="primary-btn"
+          onclick="procesarExcel()"
+        >
+          📥 Procesar Excel
+        </button>
+
+        <p class="hint">
+          Compatible con archivos SIAF
+        </p>
+
+      </section>
+
+      <!-- FILTROS -->
+
+      <section>
+
+        <h3>
+          🎛️ Filtros
+        </h3>
+
+        <label>
+          🌎 Departamento
+        </label>
+
+        <select id="filterDepartamento">
+          <option value="">
+            Todos
+          </option>
+        </select>
+
+        <label>
+          🏛️ Programa
+        </label>
+
+        <select id="filterPrograma">
+          <option value="">
+            Todos
+          </option>
+        </select>
+
+        <button
+          class="secondary-btn"
+          onclick="aplicarFiltros()"
+        >
+          🔍 Aplicar filtros
+        </button>
+
+      </section>
+
+      <!-- EXPORTACIONES -->
+
+      <section>
+
+        <h3>
+          📤 Exportaciones
+        </h3>
+
+        <button
+          class="secondary-btn"
+          onclick="alert('PDF próximamente')"
+        >
+          📄 Exportar PDF
+        </button>
+
+        <button
+          class="secondary-btn"
+          onclick="alert('Excel próximamente')"
+        >
+          📊 Exportar Excel
+        </button>
+
+        <button
+          class="secondary-btn"
+          onclick="alert('JSON próximamente')"
+        >
+          📦 Exportar JSON
+        </button>
+
+      </section>
+
+    </aside>
+
+    <!-- MAIN -->
+
+    <main class="main-content">
+
+      <!-- HERO -->
+
+      <section class="hero-card">
+
+        <div>
+
+          <h2>
+            📊 Dashboard Presupuestal
+          </h2>
+
+          <p>
+            Visualización histórica y explotación presupuestal SIAF
+          </p>
+
+        </div>
+
+        <div class="hero-stats">
+
+          <div class="hero-stat">
+
+            <span>
+              ⚡ Tiempo
+            </span>
+
+            <strong id="tiempoCarga">
+              0s
+            </strong>
+
+          </div>
+
+          <div class="hero-stat">
+
+            <span>
+              📦 Registros
+            </span>
+
+            <strong id="totalRegistros">
+              0
+            </strong>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- KPIS -->
+
+      <section class="kpi-grid">
+
+        <div class="kpi-card">
+
+          <span>
+            💵 PIM
+          </span>
+
+          <h2 id="pim">
+            0
+          </h2>
+
+        </div>
+
+        <div class="kpi-card">
+
+          <span>
+            📌 Certificado
+          </span>
+
+          <h2 id="certificado">
+            0
+          </h2>
+
+        </div>
+
+        <div class="kpi-card">
+
+          <span>
+            📉 Devengado
+          </span>
+
+          <h2 id="devengado">
+            0
+          </h2>
+
+        </div>
+
+        <div class="kpi-card">
+
+          <span>
+            🏦 Girado
+          </span>
+
+          <h2 id="girado">
+            0
+          </h2>
+
+        </div>
+
+        <div class="kpi-card">
+
+          <span>
+            ✅ Pagado
+          </span>
+
+          <h2 id="pagado">
+            0
+          </h2>
+
+        </div>
+
+        <div class="kpi-card kpi-highlight">
+
+          <span>
+            📊 Ejecución
+          </span>
+
+          <h2 id="ejecucion">
+            0%
+          </h2>
+
+        </div>
+
+      </section>
+
+      <!-- INSIGHTS -->
+
+      <section class="card">
+
+        <div class="card-title">
+          🧠 Insights Automáticos
+        </div>
+
+        <div
+          id="insights"
+          class="insight-list"
+        ></div>
+
+      </section>
+
+      <!-- CHART -->
+
+      <section class="card">
+
+        <div class="card-title">
+          📈 Devengado vs Girado
+        </div>
+
+        <div id="chart"></div>
+
+      </section>
+
+      <!-- TABLA -->
+
+      <section class="card">
+
+        <div class="card-title">
+          📋 Detalle Presupuestal
+        </div>
+
+        <div class="table-wrapper">
+
+          <table
+            id="tabla"
+            class="display"
+          >
+
+            <thead>
+
+              <tr>
+
+                <th>Programa</th>
+                <th>PIM</th>
+                <th>Certificado</th>
+                <th>Devengado</th>
+                <th>Girado</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody></tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- APP -->
+  <script src="app.js"></script>
+
+</body>
+
+</html>
