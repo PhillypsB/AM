@@ -387,91 +387,40 @@
 
     </section>
 
-    <!-- FILTROS GERENCIAL (solo visible en vista gerencial) -->
+    <!-- ══════════════════════════════════════════════
+         VISTA OPERATIVA — Tabla Resumen por Tipo de Gasto
+         ══════════════════════════════════════════════ -->
 
-    <section
-      id="seccionFiltros"
-      class="panel oculto vista-gerencial"
-    >
-
-      <div class="panel-cabecera">
-
-        <div>
-
-          <small>
-            Navegación
-          </small>
-
-          <h2>
-            Filtros Inteligentes
-          </h2>
-
-        </div>
-
-      </div>
-
-      <div class="filtros-grid">
-
-        <select>
-          <option>
-            Departamento
-          </option>
-        </select>
-
-        <select>
-          <option>
-            Provincia
-          </option>
-        </select>
-
-        <select>
-          <option>
-            Programa Presupuestal
-          </option>
-        </select>
-
-        <select>
-          <option>
-            Fuente Financiamiento
-          </option>
-        </select>
-
-      </div>
-
-    </section>
-
-    <!-- TABLA RESTRICCIONES (vista operativa — por defecto) -->
-
-    <section
-      id="seccionRestriccion"
-      class="panel oculto vista-operativa"
-    >
+    <section id="seccionRestriccion" class="panel oculto vista-operativa">
 
       <div class="panel-cabecera">
         <div>
           <small>Vista Operativa</small>
           <h2>Resumen por Tipo de Gasto</h2>
         </div>
+        <div class="panel-badge badge-operativa">📋 Operativa</div>
       </div>
 
       <!-- FILTROS OPERATIVOS -->
-      <div class="filtros-operativos">
+      <div class="filtros-bloque filtros-bloque-operativa">
 
-        <div class="filtros-fila filtros-geo">
+        <!-- Fila 1: Geo Meta -->
+        <div class="filtros-seccion-label">📍 Ubicación Meta</div>
+        <div class="filtros-fila" id="filaFiltrosGeoMeta">
           <div class="filtro-grupo">
-            <label class="filtro-label">Departamento</label>
-            <select id="filtroDepartamento" class="filtro-select" onchange="filtrarTablaRestriccion()">
+            <label class="filtro-label">Departamento Meta</label>
+            <select id="filtroDepartamentoMeta" class="filtro-select" onchange="alCambiarDepartamentoOp()">
               <option value="">Todos</option>
             </select>
           </div>
           <div class="filtro-grupo">
-            <label class="filtro-label">Provincia</label>
-            <select id="filtroProvincia" class="filtro-select" onchange="filtrarTablaRestriccion()">
+            <label class="filtro-label">Provincia Meta</label>
+            <select id="filtroProvincia" class="filtro-select" onchange="alCambiarProvinciaOp()">
               <option value="">Todas</option>
             </select>
           </div>
           <div class="filtro-grupo">
-            <label class="filtro-label">Distrito</label>
+            <label class="filtro-label">Distrito Meta</label>
             <select id="filtroDistrito" class="filtro-select" onchange="filtrarTablaRestriccion()">
               <option value="">Todos</option>
             </select>
@@ -484,17 +433,18 @@
           </div>
         </div>
 
+        <!-- Fila 2: Búsqueda + estado -->
         <div class="filtros-fila filtros-busqueda">
           <div class="filtro-busqueda-wrap">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" id="filtroRestrin" class="input-busqueda" placeholder="Buscar tipo de gasto..." oninput="filtrarTablaRestriccion()">
           </div>
-          <select id="filtroTipoRestrin" class="filtro-select" onchange="filtrarTablaRestriccion()">
+          <select id="filtroTipoRestrin" class="filtro-select filtro-estado" onchange="filtrarTablaRestriccion()">
             <option value="">Todos los estados</option>
-            <option value="restringida">Restringidas</option>
-            <option value="sin restriccion">Sin Restricción</option>
+            <option value="restringida">🔒 Restringidas</option>
+            <option value="sin restriccion">✅ Sin Restricción</option>
           </select>
-          <button class="btn-limpiar-filtros" onclick="limpiarFiltros()">
+          <button class="btn-limpiar-filtros" onclick="limpiarFiltrosOperativa()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
             Limpiar
           </button>
@@ -502,110 +452,109 @@
 
       </div>
 
+      <!-- TABLA -->
       <div class="tabla-wrapper">
-
         <table id="tablaRestriccion" class="tabla-restrin">
-
           <thead>
             <tr>
               <th class="col-n">N°</th>
-              <th class="col-tipo th-sort" data-col="tipo" onclick="ordenarTabla('tipo')">
-                Tipo de Gasto <span class="sort-icon">↕</span>
-              </th>
-              <th class="col-estado th-sort" data-col="estado" onclick="ordenarTabla('estado')">
-                Estado <span class="sort-icon">↕</span>
-              </th>
-              <th class="col-monto th-sort" data-col="pia" onclick="ordenarTabla('pia')">
-                PIA <span class="sort-icon">↕</span>
-              </th>
-              <th class="col-monto th-sort" data-col="pim" onclick="ordenarTabla('pim')">
-                PIM <span class="sort-icon">↕</span>
-              </th>
-              <th class="col-pct th-sort" data-col="porcentaje" onclick="ordenarTabla('porcentaje')">
-                % PIM <span class="sort-icon">↕</span>
-              </th>
-              <th class="col-monto th-sort" data-col="certificado" onclick="ordenarTabla('certificado')">
-                Certificado <span class="sort-icon">↕</span>
-              </th>
-              <th class="col-monto th-sort" data-col="devengado" onclick="ordenarTabla('devengado')">
-                Devengado <span class="sort-icon">↕</span>
-              </th>
-              <th class="col-pct th-sort" data-col="avanceDev" onclick="ordenarTabla('avanceDev')">
-                % Dev. <span class="sort-icon">↕</span>
-              </th>
-              <th class="col-monto th-sort" data-col="saldoDev" onclick="ordenarTabla('saldoDev')">
-                Saldo Dev. <span class="sort-icon">↕</span>
-              </th>
+              <th class="col-tipo th-sort" data-col="tipo" onclick="ordenarTabla('tipo')">Tipo de Gasto <span class="sort-icon">↕</span></th>
+              <th class="col-estado th-sort" data-col="estado" onclick="ordenarTabla('estado')">Estado <span class="sort-icon">↕</span></th>
+              <th class="col-monto th-sort" data-col="pia" onclick="ordenarTabla('pia')">PIA <span class="sort-icon">↕</span></th>
+              <th class="col-monto th-sort" data-col="pim" onclick="ordenarTabla('pim')">PIM <span class="sort-icon">↕</span></th>
+              <th class="col-pct th-sort" data-col="porcentaje" onclick="ordenarTabla('porcentaje')">% PIM <span class="sort-icon">↕</span></th>
+              <th class="col-monto th-sort" data-col="certificado" onclick="ordenarTabla('certificado')">Certificado <span class="sort-icon">↕</span></th>
+              <th class="col-monto th-sort" data-col="devengado" onclick="ordenarTabla('devengado')">Devengado <span class="sort-icon">↕</span></th>
+              <th class="col-pct th-sort" data-col="avanceDev" onclick="ordenarTabla('avanceDev')">% Dev. <span class="sort-icon">↕</span></th>
+              <th class="col-monto th-sort" data-col="saldoDev" onclick="ordenarTabla('saldoDev')">Saldo Dev. <span class="sort-icon">↕</span></th>
             </tr>
           </thead>
-
-          <tbody id="cuerpoRestriccion">
-          </tbody>
-
-          <tfoot id="totalRestriccion">
-          </tfoot>
-
+          <tbody id="cuerpoRestriccion"></tbody>
+          <tfoot id="totalRestriccion"></tfoot>
         </table>
+      </div>
+
+    </section>
+
+
+    <!-- ══════════════════════════════════════════════
+         VISTA GERENCIAL — Filtros + Gráfico + Productos
+         ══════════════════════════════════════════════ -->
+
+    <!-- Filtros gerenciales -->
+    <section id="seccionFiltrosGerencial" class="panel oculto vista-gerencial">
+
+      <div class="panel-cabecera">
+        <div>
+          <small>Vista Gerencial</small>
+          <h2>Filtros de Análisis</h2>
+        </div>
+        <div class="panel-badge badge-gerencial">📊 Gerencial</div>
+      </div>
+
+      <div class="filtros-bloque filtros-bloque-gerencial">
+
+        <div class="filtros-fila">
+          <div class="filtro-grupo">
+            <label class="filtro-label">Departamento Meta</label>
+            <select id="gFiltroDepartamento" class="filtro-select" onchange="alCambiarDepartamentoGer()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="filtro-grupo">
+            <label class="filtro-label">Provincia Meta</label>
+            <select id="gFiltroProvincia" class="filtro-select" onchange="alCambiarProvinciaGer()">
+              <option value="">Todas</option>
+            </select>
+          </div>
+          <div class="filtro-grupo">
+            <label class="filtro-label">Distrito Meta</label>
+            <select id="gFiltroDistrito" class="filtro-select" onchange="filtrarVistaGerencial()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="filtro-grupo">
+            <label class="filtro-label">Fuente de Fin.</label>
+            <select id="gFiltroFuente" class="filtro-select" onchange="filtrarVistaGerencial()">
+              <option value="">Todas</option>
+            </select>
+          </div>
+          <div class="filtro-grupo">
+            <label class="filtro-label">Programa Presupuestal</label>
+            <select id="gFiltroPrograma" class="filtro-select" onchange="filtrarVistaGerencial()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <button class="btn-limpiar-filtros" onclick="limpiarFiltrosGerencial()" style="align-self:flex-end">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            Limpiar
+          </button>
+        </div>
 
       </div>
 
     </section>
 
-    <!-- GRÁFICO -->
-
-    <section
-      id="seccionGrafico"
-      class="panel oculto vista-gerencial"
-    >
-
+    <!-- Gráfico -->
+    <section id="seccionGrafico" class="panel oculto vista-gerencial">
       <div class="panel-cabecera">
-
         <div>
-
-          <small>
-            Visualización
-          </small>
-
-          <h2>
-            Devengado por Programa
-          </h2>
-
+          <small>Visualización</small>
+          <h2>Devengado por Programa</h2>
         </div>
-
       </div>
-
       <div id="grafico"></div>
-
     </section>
 
-    <!-- PRODUCTOS -->
-
-    <section
-      id="seccionProductos"
-      class="panel oculto vista-gerencial"
-    >
-
+    <!-- Productos -->
+    <section id="seccionProductos" class="panel oculto vista-gerencial">
       <div class="panel-cabecera">
-
         <div>
-
-          <small>
-            Distribución
-          </small>
-
-          <h2>
-            Productos / Proyectos
-          </h2>
-
+          <small>Distribución</small>
+          <h2>Productos / Proyectos</h2>
         </div>
-
       </div>
-
-      <div
-        id="contenedorProductos"
-        class="productos-grid"
-      ></div>
-
+      <div id="contenedorProductos" class="productos-grid"></div>
     </section>
 
     <!-- EXPORTAR -->
