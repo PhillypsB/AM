@@ -348,8 +348,8 @@ async function procesarExcel(archivo) {
       poblarFiltrosGeo(raw);
       generarHallazgos(raw);
 
-      document.getElementById('seccionFiltros').classList.remove('oculto');
       document.getElementById('seccionRestriccion').classList.remove('oculto');
+      document.getElementById('seccionFiltrosGerencial').classList.remove('oculto');
       document.getElementById('seccionExportar').classList.remove('oculto');
 
       await esperar(120);
@@ -638,6 +638,13 @@ function pintarTablaRestriccion(resumen) {
       ? `<span class="badge-restrin badge-restringida">🔒 Restringida</span>`
       : `<span class="badge-restrin badge-libre">✅ Sin Restricción</span>`;
 
+    // Quitar prefijo "Sin Restricción - " / "Restringida - " / "Sin restricción - " del texto visible
+    const tipoVisible = item.tipo
+      .replace(/^sin restricci[oó]n\s*[-–]\s*/i, '')
+      .replace(/^restringida\s*[-–]\s*/i, '')
+      .replace(/^sin restricci[oó]n$/i, 'General')
+      || item.tipo;
+
     const avDev = item.pim > 0 ? (item.devengado / item.pim * 100).toFixed(1) : '0.0';
     const pctBar = Math.min(100, parseFloat(avDev));
     const pctColor = pctBar >= 80 ? '#10b981' : pctBar >= 50 ? '#f59e0b' : '#ef4444';
@@ -647,7 +654,7 @@ function pintarTablaRestriccion(resumen) {
         <td>${i + 1}</td>
         <td class="col-tipo">
           <span class="drill-toggle">▶</span>
-          ${item.tipo}
+          ${tipoVisible}
         </td>
         <td>${badge}</td>
         <td>${numero(item.pia)}</td>
@@ -731,10 +738,9 @@ function toggleDrillDown(fila, tipoGasto) {
     const tipo = obtenerTipoGasto(clas);
     if (tipo !== tipoGasto) return;
 
-    const desc = String(item['especifica_det'] || item['subgenerica_det'] || clas || 'SIN DESCRIPCIÓN').trim();
-    const key  = clas + '|' + desc;
+    const key  = clas;
     if (!grupos[key]) {
-      grupos[key] = { clas, desc, pia: 0, pim: 0, devengado: 0, certificado: 0 };
+      grupos[key] = { clas, pia: 0, pim: 0, devengado: 0, certificado: 0 };
     }
     grupos[key].pia         += Number(item['mto_pia']         || 0);
     grupos[key].pim         += Number(item['mto_pim']         || 0);
@@ -758,7 +764,6 @@ function toggleDrillDown(fila, tipoGasto) {
         <tr>
           <td class="drill-num">${i+1}</td>
           <td class="drill-clas">${g.clas}</td>
-          <td class="drill-desc">${g.desc}</td>
           <td class="drill-monto">${numero(g.pim)}</td>
           <td class="drill-monto">${numero(g.devengado)}</td>
           <td class="drill-pct">
@@ -777,7 +782,6 @@ function toggleDrillDown(fila, tipoGasto) {
           <tr>
             <th>N°</th>
             <th>Clasificador</th>
-            <th>Descripción</th>
             <th>PIM</th>
             <th>Devengado</th>
             <th>% Dev.</th>
@@ -793,94 +797,207 @@ function toggleDrillDown(fila, tipoGasto) {
 }
 
 function obtenerDatosFiltradosActuales() {
-  // Devuelve los datos crudos ya con los filtros geo aplicados
-  const dept   = (document.getElementById('filtroDepartamento')?.value || '').trim();
-  const prov   = (document.getElementById('filtroProvincia')?.value    || '').trim();
-  const dist   = (document.getElementById('filtroDistrito')?.value     || '').trim();
-  const fuente = (document.getElementById('filtroFuente')?.value       || '').trim();
+  // Filtros de la vista OPERATIVA
+  const dept   = (document.getElementById('filtroDepartamentoMeta')?.value || '').trim();
+  const prov   = (document.getElementById('filtroProvincia')?.value        || '').trim();
+  const dist   = (document.getElementById('filtroDistrito')?.value         || '').trim();
+  const fuente = (document.getElementById('filtroFuente')?.value           || '').trim();
 
   return datosRestriccionRaw.filter(item => {
-    if (dept   && normalizarCampoGeo(item,'departamento') !== dept)   return false;
-    if (prov   && normalizarCampoGeo(item,'provincia')    !== prov)   return false;
-    if (dist   && normalizarCampoGeo(item,'distrito')     !== dist)   return false;
-    if (fuente && normalizarCampoGeo(item,'fuente_financiamiento') !== fuente) return false;
+    if (dept   && normalizarCampoGeo(item,'departamento_meta') !== dept)        return false;
+    if (prov   && normalizarCampoGeo(item,'provincia_meta')    !== prov)        return false;
+    if (dist   && normalizarCampoGeo(item,'distrito_meta')     !== dist)        return false;
+    if (fuente && normalizarCampoGeo(item,'fuente_financiamiento') !== fuente)  return false;
+    return true;
+  });
+}
+
+function obtenerDatosFiltradosGerencial() {
+  // Filtros de la vista GERENCIAL
+  const dept     = (document.getElementById('gFiltroDepartamento')?.value || '').trim();
+  const prov     = (document.getElementById('gFiltroProvincia')?.value    || '').trim();
+  const dist     = (document.getElementById('gFiltroDistrito')?.value     || '').trim();
+  const fuente   = (document.getElementById('gFiltroFuente')?.value       || '').trim();
+  const programa = (document.getElementById('gFiltroPrograma')?.value     || '').trim();
+
+  return datosRestriccionRaw.filter(item => {
+    if (dept     && normalizarCampoGeo(item,'departamento_meta')   !== dept)     return false;
+    if (prov     && normalizarCampoGeo(item,'provincia_meta')      !== prov)     return false;
+    if (dist     && normalizarCampoGeo(item,'distrito_meta')       !== dist)     return false;
+    if (fuente   && normalizarCampoGeo(item,'fuente_financiamiento') !== fuente) return false;
+    if (programa && normalizarCampoGeo(item,'programa_pptal')      !== programa) return false;
     return true;
   });
 }
 
 // -------------------------------------------------------
-// FILTROS GEOGRÁFICOS — poblar selects
+// FILTROS GEOGRÁFICOS — campos candidatos
 // -------------------------------------------------------
 
-// Campos posibles en el SIAF para ubigeo
 const CAMPOS_GEO = {
-  departamento: ['departamento','dep','dpto','ubigeo_dep'],
-  provincia:    ['provincia','prov','ubigeo_prov'],
-  distrito:     ['distrito','dist','ubigeo_dist'],
-  fuente_financiamiento: ['fuente_financiamiento','fuente','ffte_financiamiento','tipo_recurso']
+  departamento_meta:     ['departamento_meta','departamento','dep','dpto'],
+  provincia_meta:        ['provincia_meta','provincia','prov'],
+  distrito_meta:         ['distrito_meta','distrito','dist'],
+  fuente_financiamiento: ['fuente_financiamiento','fuente','ffte_financiamiento','tipo_recurso'],
+  programa_pptal:        ['programa_pptal','programa','prog_pptal']
 };
 
 function normalizarCampoGeo(item, campo) {
   const candidatos = CAMPOS_GEO[campo] || [campo];
   for (const c of candidatos) {
     const v = item[c];
-    if (v !== undefined && v !== null && String(v).trim() !== '') {
-      // Quitar prefijo numérico "01. " estilo SIAF
+    if (v !== undefined && v !== null && String(v).trim() !== '' && String(v).trim() !== '0') {
       return String(v).trim().replace(/^\d+\.\s*/,'');
     }
   }
   return '';
 }
 
+// -------------------------------------------------------
+// POBLAR FILTROS — carga inicial (solo departamentos)
+// -------------------------------------------------------
+
 function poblarFiltrosGeo(data) {
-  const departamentos = new Set();
-  const provincias    = new Set();
-  const distritos     = new Set();
-  const fuentes       = new Set();
+  // Recolectar todos los valores únicos del dataset completo
+  const deptSet    = new Set();
+  const fuenteSet  = new Set();
+  const programaSet = new Set();
 
   data.forEach(item => {
-    const d = normalizarCampoGeo(item,'departamento');
-    const p = normalizarCampoGeo(item,'provincia');
-    const t = normalizarCampoGeo(item,'distrito');
+    const d = normalizarCampoGeo(item,'departamento_meta');
     const f = normalizarCampoGeo(item,'fuente_financiamiento');
-    if (d) departamentos.add(d);
-    if (p) provincias.add(p);
-    if (t) distritos.add(t);
-    if (f) fuentes.add(f);
+    const g = normalizarCampoGeo(item,'programa_pptal');
+    if (d) deptSet.add(d);
+    if (f) fuenteSet.add(f);
+    if (g) programaSet.add(g);
   });
 
-  // Mostrar/ocultar fila geo según si hay datos
-  const filaGeo = document.querySelector('.filtros-geo');
-  const hayGeo  = departamentos.size > 0 || provincias.size > 0 || distritos.size > 0;
+  const hayGeo = deptSet.size > 0;
+  const filaGeo = document.getElementById('filaFiltrosGeoMeta');
   if (filaGeo) filaGeo.style.display = hayGeo ? '' : 'none';
 
-  llenarSelect('filtroDepartamento', departamentos);
-  llenarSelect('filtroProvincia',    provincias);
-  llenarSelect('filtroDistrito',     distritos);
-  llenarSelect('filtroFuente',       fuentes);
+  // Vista operativa — solo departamento al inicio
+  llenarSelect('filtroDepartamentoMeta', deptSet);
+  llenarSelect('filtroProvincia',        new Set());   // vacío hasta elegir depto
+  llenarSelect('filtroDistrito',         new Set());   // vacío hasta elegir provincia
+  llenarSelect('filtroFuente',           fuenteSet);
+
+  // Vista gerencial
+  llenarSelect('gFiltroDepartamento', deptSet);
+  llenarSelect('gFiltroProvincia',    new Set());
+  llenarSelect('gFiltroDistrito',     new Set());
+  llenarSelect('gFiltroFuente',       fuenteSet);
+  llenarSelect('gFiltroPrograma',     programaSet);
 }
 
-function llenarSelect(id, set) {
+// -------------------------------------------------------
+// LLENAR SELECT
+// -------------------------------------------------------
+
+function llenarSelect(id, set, placeholder) {
   const sel = document.getElementById(id);
   if (!sel) return;
-  // Limpiar opciones previas (salvo la primera "Todos")
+  const valorActual = sel.value;
   while (sel.options.length > 1) sel.remove(1);
-  const sorted = [...set].sort();
-  sorted.forEach(v => {
+  [...set].sort().forEach(v => {
     if (!v) return;
     const opt = document.createElement('option');
     opt.value = v;
     opt.textContent = v;
     sel.appendChild(opt);
   });
+  // Restaurar selección si aún es válida
+  if (valorActual && [...set].includes(valorActual)) {
+    sel.value = valorActual;
+  }
 }
 
-function limpiarFiltros() {
-  ['filtroDepartamento','filtroProvincia','filtroDistrito','filtroFuente',
+// -------------------------------------------------------
+// ENCADENAMIENTO — Dept → Provincia → Distrito
+// (operativa)
+// -------------------------------------------------------
+
+function alCambiarDepartamentoOp() {
+  const dept = (document.getElementById('filtroDepartamentoMeta')?.value || '').trim();
+
+  // Repoblar provincias filtradas por el departamento elegido
+  const provSet = new Set();
+  datosRestriccionRaw.forEach(item => {
+    if (dept && normalizarCampoGeo(item,'departamento_meta') !== dept) return;
+    const p = normalizarCampoGeo(item,'provincia_meta');
+    if (p) provSet.add(p);
+  });
+
+  llenarSelect('filtroProvincia', provSet);
+  llenarSelect('filtroDistrito',  new Set());   // limpiar distrito al cambiar depto
+  filtrarTablaRestriccion();
+}
+
+function alCambiarProvinciaOp() {
+  const dept = (document.getElementById('filtroDepartamentoMeta')?.value || '').trim();
+  const prov = (document.getElementById('filtroProvincia')?.value        || '').trim();
+
+  // Repoblar distritos filtrados por depto + provincia
+  const distSet = new Set();
+  datosRestriccionRaw.forEach(item => {
+    if (dept && normalizarCampoGeo(item,'departamento_meta') !== dept) return;
+    if (prov && normalizarCampoGeo(item,'provincia_meta')    !== prov) return;
+    const t = normalizarCampoGeo(item,'distrito_meta');
+    if (t) distSet.add(t);
+  });
+
+  llenarSelect('filtroDistrito', distSet);
+  filtrarTablaRestriccion();
+}
+
+// -------------------------------------------------------
+// ENCADENAMIENTO — Dept → Provincia → Distrito
+// (gerencial)
+// -------------------------------------------------------
+
+function alCambiarDepartamentoGer() {
+  const dept = (document.getElementById('gFiltroDepartamento')?.value || '').trim();
+
+  const provSet = new Set();
+  datosRestriccionRaw.forEach(item => {
+    if (dept && normalizarCampoGeo(item,'departamento_meta') !== dept) return;
+    const p = normalizarCampoGeo(item,'provincia_meta');
+    if (p) provSet.add(p);
+  });
+
+  llenarSelect('gFiltroProvincia', provSet);
+  llenarSelect('gFiltroDistrito',  new Set());
+  filtrarVistaGerencial();
+}
+
+function alCambiarProvinciaGer() {
+  const dept = (document.getElementById('gFiltroDepartamento')?.value || '').trim();
+  const prov = (document.getElementById('gFiltroProvincia')?.value    || '').trim();
+
+  const distSet = new Set();
+  datosRestriccionRaw.forEach(item => {
+    if (dept && normalizarCampoGeo(item,'departamento_meta') !== dept) return;
+    if (prov && normalizarCampoGeo(item,'provincia_meta')    !== prov) return;
+    const t = normalizarCampoGeo(item,'distrito_meta');
+    if (t) distSet.add(t);
+  });
+
+  llenarSelect('gFiltroDistrito', distSet);
+  filtrarVistaGerencial();
+}
+
+// -------------------------------------------------------
+// LIMPIAR FILTROS
+// -------------------------------------------------------
+
+function limpiarFiltrosOperativa() {
+  ['filtroDepartamentoMeta','filtroProvincia','filtroDistrito','filtroFuente',
    'filtroRestrin','filtroTipoRestrin'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  // Repoblar provincia/distrito desde cero (todo el dataset)
+  poblarFiltrosGeo(datosRestriccionRaw);
   ordenActual = { col: null, dir: 'asc' };
   document.querySelectorAll('.th-sort').forEach(th => {
     th.classList.remove('sort-asc','sort-desc');
@@ -888,6 +1005,29 @@ function limpiarFiltros() {
     if (si) si.textContent = '↕';
   });
   filtrarTablaRestriccion();
+}
+
+function limpiarFiltros() { limpiarFiltrosOperativa(); }
+
+function limpiarFiltrosGerencial() {
+  ['gFiltroDepartamento','gFiltroProvincia','gFiltroDistrito',
+   'gFiltroFuente','gFiltroPrograma'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  poblarFiltrosGeo(datosRestriccionRaw);
+  filtrarVistaGerencial();
+}
+
+// -------------------------------------------------------
+// FILTRAR VISTA GERENCIAL
+// -------------------------------------------------------
+
+function filtrarVistaGerencial() {
+  const datos = obtenerDatosFiltradosGerencial();
+  renderizarGrafico(datos);
+  renderizarProductos(datos);
+  renderizarIndicadores(datos);
 }
 
 // -------------------------------------------------------
