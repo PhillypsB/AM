@@ -797,17 +797,17 @@ function toggleDrillDown(fila, tipoGasto) {
 }
 
 function obtenerDatosFiltradosActuales() {
-  // Filtros de la vista OPERATIVA
-  const dept   = (document.getElementById('filtroDepartamentoMeta')?.value || '').trim();
-  const prov   = (document.getElementById('filtroProvincia')?.value        || '').trim();
-  const dist   = (document.getElementById('filtroDistrito')?.value         || '').trim();
-  const fuente = (document.getElementById('filtroFuente')?.value           || '').trim();
+  // Filtros de la vista OPERATIVA (nueva estructura)
+  const programa = (document.getElementById('filtroPrograma')?.value || '').trim();
+  const producto = (document.getElementById('filtroProducto')?.value || '').trim();
+  const actividad = (document.getElementById('filtroActividad')?.value || '').trim();
+  const depto = (document.getElementById('filtroDepartamento')?.value || '').trim();
 
   return datosRestriccionRaw.filter(item => {
-    if (dept   && normalizarCampoGeo(item,'departamento_meta') !== dept)        return false;
-    if (prov   && normalizarCampoGeo(item,'provincia_meta')    !== prov)        return false;
-    if (dist   && normalizarCampoGeo(item,'distrito_meta')     !== dist)        return false;
-    if (fuente && normalizarCampoGeo(item,'fuente_financiamiento') !== fuente)  return false;
+    if (programa && normalizarCampoGeo(item,'programa_pptal') !== programa) return false;
+    if (producto && normalizarCampoGeo(item,'producto_proyecto') !== producto) return false;
+    if (actividad && normalizarCampoGeo(item,'activ_obra_accinv') !== actividad) return false;
+    if (depto && normalizarCampoGeo(item,'departamento_meta') !== depto) return false;
     return true;
   });
 }
@@ -839,7 +839,9 @@ const CAMPOS_GEO = {
   provincia_meta:        ['provincia_meta','provincia','prov'],
   distrito_meta:         ['distrito_meta','distrito','dist'],
   fuente_financiamiento: ['fuente_financiamiento','fuente','ffte_financiamiento','tipo_recurso'],
-  programa_pptal:        ['programa_pptal','programa','prog_pptal']
+  programa_pptal:        ['programa_pptal','programa','prog_pptal'],
+  producto_proyecto:     ['producto_proyecto','producto','prod_proyecto'],
+  activ_obra_accinv:     ['activ_obra_accinv','actividad','obra','accion_inversion']
 };
 
 function normalizarCampoGeo(item, campo) {
@@ -859,30 +861,36 @@ function normalizarCampoGeo(item, campo) {
 
 function poblarFiltrosGeo(data) {
   // Recolectar todos los valores únicos del dataset completo
-  const deptSet    = new Set();
-  const fuenteSet  = new Set();
   const programaSet = new Set();
+  const productoSet = new Set();
+  const actividadSet = new Set();
+  const deptSet = new Set();
+  const fuenteSet = new Set();
 
   data.forEach(item => {
+    const g = normalizarCampoGeo(item,'programa_pptal');
+    const pd = normalizarCampoGeo(item,'producto_proyecto');
+    const a = normalizarCampoGeo(item,'activ_obra_accinv');
     const d = normalizarCampoGeo(item,'departamento_meta');
     const f = normalizarCampoGeo(item,'fuente_financiamiento');
-    const g = normalizarCampoGeo(item,'programa_pptal');
+    if (g) programaSet.add(g);
+    if (pd) productoSet.add(pd);
+    if (a) actividadSet.add(a);
     if (d) deptSet.add(d);
     if (f) fuenteSet.add(f);
-    if (g) programaSet.add(g);
   });
 
-  const hayGeo = deptSet.size > 0;
+  const hayGeo = programaSet.size > 0 || productoSet.size > 0 || actividadSet.size > 0 || deptSet.size > 0;
   const filaGeo = document.getElementById('filaFiltrosGeoMeta');
   if (filaGeo) filaGeo.style.display = hayGeo ? '' : 'none';
 
-  // Vista operativa — solo departamento al inicio
-  llenarSelect('filtroDepartamentoMeta', deptSet);
-  llenarSelect('filtroProvincia',        new Set());   // vacío hasta elegir depto
-  llenarSelect('filtroDistrito',         new Set());   // vacío hasta elegir provincia
-  llenarSelect('filtroFuente',           fuenteSet);
+  // Vista operativa — nuevos filtros
+  llenarSelect('filtroPrograma',   programaSet);
+  llenarSelect('filtroProducto',   productoSet);
+  llenarSelect('filtroActividad',  actividadSet);
+  llenarSelect('filtroDepartamento', deptSet);
 
-  // Vista gerencial
+  // Vista gerencial (mantiene su estructura anterior)
   llenarSelect('gFiltroDepartamento', deptSet);
   llenarSelect('gFiltroProvincia',    new Set());
   llenarSelect('gFiltroDistrito',     new Set());
@@ -914,41 +922,35 @@ function llenarSelect(id, set, placeholder) {
 
 // -------------------------------------------------------
 // ENCADENAMIENTO — Dept → Provincia → Distrito
-// (operativa)
+// (operativa) — DEPRECATED: No longer used with new filter structure
 // -------------------------------------------------------
 
-function alCambiarDepartamentoOp() {
-  const dept = (document.getElementById('filtroDepartamentoMeta')?.value || '').trim();
-
-  // Repoblar provincias filtradas por el departamento elegido
-  const provSet = new Set();
-  datosRestriccionRaw.forEach(item => {
-    if (dept && normalizarCampoGeo(item,'departamento_meta') !== dept) return;
-    const p = normalizarCampoGeo(item,'provincia_meta');
-    if (p) provSet.add(p);
-  });
-
-  llenarSelect('filtroProvincia', provSet);
-  llenarSelect('filtroDistrito',  new Set());   // limpiar distrito al cambiar depto
-  filtrarTablaRestriccion();
-}
-
-function alCambiarProvinciaOp() {
-  const dept = (document.getElementById('filtroDepartamentoMeta')?.value || '').trim();
-  const prov = (document.getElementById('filtroProvincia')?.value        || '').trim();
-
-  // Repoblar distritos filtrados por depto + provincia
-  const distSet = new Set();
-  datosRestriccionRaw.forEach(item => {
-    if (dept && normalizarCampoGeo(item,'departamento_meta') !== dept) return;
-    if (prov && normalizarCampoGeo(item,'provincia_meta')    !== prov) return;
-    const t = normalizarCampoGeo(item,'distrito_meta');
-    if (t) distSet.add(t);
-  });
-
-  llenarSelect('filtroDistrito', distSet);
-  filtrarTablaRestriccion();
-}
+// function alCambiarDepartamentoOp() {
+//   const dept = (document.getElementById('filtroDepartamentoMeta')?.value || '').trim();
+//   const provSet = new Set();
+//   datosRestriccionRaw.forEach(item => {
+//     if (dept && normalizarCampoGeo(item,'departamento_meta') !== dept) return;
+//     const p = normalizarCampoGeo(item,'provincia_meta');
+//     if (p) provSet.add(p);
+//   });
+//   llenarSelect('filtroProvincia', provSet);
+//   llenarSelect('filtroDistrito',  new Set());
+//   filtrarTablaRestriccion();
+// }
+//
+// function alCambiarProvinciaOp() {
+//   const dept = (document.getElementById('filtroDepartamentoMeta')?.value || '').trim();
+//   const prov = (document.getElementById('filtroProvincia')?.value        || '').trim();
+//   const distSet = new Set();
+//   datosRestriccionRaw.forEach(item => {
+//     if (dept && normalizarCampoGeo(item,'departamento_meta') !== dept) return;
+//     if (prov && normalizarCampoGeo(item,'provincia_meta')    !== prov) return;
+//     const t = normalizarCampoGeo(item,'distrito_meta');
+//     if (t) distSet.add(t);
+//   });
+//   llenarSelect('filtroDistrito', distSet);
+//   filtrarTablaRestriccion();
+// }
 
 // -------------------------------------------------------
 // ENCADENAMIENTO — Dept → Provincia → Distrito
@@ -991,12 +993,12 @@ function alCambiarProvinciaGer() {
 // -------------------------------------------------------
 
 function limpiarFiltrosOperativa() {
-  ['filtroDepartamentoMeta','filtroProvincia','filtroDistrito','filtroFuente',
+  ['filtroPrograma','filtroProducto','filtroActividad','filtroDepartamento',
    'filtroRestrin','filtroTipoRestrin'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  // Repoblar provincia/distrito desde cero (todo el dataset)
+  // Repoblar filtros desde cero (todo el dataset)
   poblarFiltrosGeo(datosRestriccionRaw);
   ordenActual = { col: null, dir: 'asc' };
   document.querySelectorAll('.th-sort').forEach(th => {
