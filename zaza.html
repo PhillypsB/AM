@@ -404,31 +404,31 @@
       <!-- FILTROS OPERATIVOS -->
       <div class="filtros-bloque filtros-bloque-operativa">
 
-        <!-- Fila 1: Geo Meta -->
-        <div class="filtros-seccion-label">📍 Ubicación Meta</div>
+        <!-- Fila 1: Dimensiones Operativas -->
+        <div class="filtros-seccion-label">📊 Dimensiones Operativas</div>
         <div class="filtros-fila" id="filaFiltrosGeoMeta">
           <div class="filtro-grupo">
+            <label class="filtro-label">Programa Presupuestal</label>
+            <select id="filtroPrograma" class="filtro-select" onchange="filtrarTablaRestriccion()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="filtro-grupo">
+            <label class="filtro-label">Producto / Proyecto</label>
+            <select id="filtroProducto" class="filtro-select" onchange="filtrarTablaRestriccion()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="filtro-grupo">
+            <label class="filtro-label">Actividad / Obra / Acción</label>
+            <select id="filtroActividad" class="filtro-select" onchange="filtrarTablaRestriccion()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="filtro-grupo">
             <label class="filtro-label">Departamento Meta</label>
-            <select id="filtroDepartamentoMeta" class="filtro-select" onchange="alCambiarDepartamentoOp()">
+            <select id="filtroDepartamento" class="filtro-select" onchange="filtrarTablaRestriccion()">
               <option value="">Todos</option>
-            </select>
-          </div>
-          <div class="filtro-grupo">
-            <label class="filtro-label">Provincia Meta</label>
-            <select id="filtroProvincia" class="filtro-select" onchange="alCambiarProvinciaOp()">
-              <option value="">Todas</option>
-            </select>
-          </div>
-          <div class="filtro-grupo">
-            <label class="filtro-label">Distrito Meta</label>
-            <select id="filtroDistrito" class="filtro-select" onchange="filtrarTablaRestriccion()">
-              <option value="">Todos</option>
-            </select>
-          </div>
-          <div class="filtro-grupo">
-            <label class="filtro-label">Fuente de Fin.</label>
-            <select id="filtroFuente" class="filtro-select" onchange="filtrarTablaRestriccion()">
-              <option value="">Todas</option>
             </select>
           </div>
         </div>
