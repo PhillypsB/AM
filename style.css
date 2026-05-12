@@ -1048,7 +1048,262 @@ body.oscuro .producto-barra{
 }
 
 /* =======================================================
-   FILTROS OPERATIVOS — departamento / provincia / distrito
+   FILTROS BLOQUE — unificado operativa y gerencial
+======================================================= */
+
+.filtros-bloque{
+  background: linear-gradient(135deg, rgba(37,99,235,.05), rgba(96,165,250,.04));
+  border: 1px solid rgba(37,99,235,.15);
+  border-radius: 18px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+body.oscuro .filtros-bloque{
+  background: linear-gradient(135deg, rgba(37,99,235,.08), rgba(96,165,250,.05));
+  border-color: rgba(59,130,246,.2);
+}
+
+.filtros-fila{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filtros-geo{
+  border-bottom: 1px solid rgba(37,99,235,.12);
+  padding-bottom: 14px;
+}
+
+body.oscuro .filtros-geo{
+  border-bottom-color: rgba(59,130,246,.15);
+}
+
+.filtro-grupo{
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 150px;
+  flex: 1;
+}
+
+.filtro-label{
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--azul);
+  letter-spacing: .7px;
+  text-transform: uppercase;
+}
+
+body.oscuro .filtro-label{
+  color: #60a5fa;
+}
+
+.filtro-select{
+  padding: 9px 32px 9px 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(37,99,235,.25);
+  background: var(--fondo-secundario);
+  color: var(--texto);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transicion);
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.filtro-select:hover,
+.filtro-select:focus{
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+
+body.oscuro .filtro-select{
+  border-color: rgba(59,130,246,.3);
+  background-color: rgba(255,255,255,.04);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2360a5fa' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.filtros-busqueda{
+  align-items: center;
+  gap: 10px;
+}
+
+.filtro-busqueda-wrap{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+  background: var(--fondo-secundario);
+  border: 1.5px solid rgba(37,99,235,.25);
+  border-radius: 10px;
+  padding: 0 12px;
+  transition: var(--transicion);
+}
+
+.filtro-busqueda-wrap:focus-within{
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+
+body.oscuro .filtro-busqueda-wrap{
+  border-color: rgba(59,130,246,.3);
+  background: rgba(255,255,255,.04);
+}
+
+.filtro-busqueda-wrap svg{
+  flex-shrink: 0;
+  color: var(--azul);
+  opacity: .7;
+}
+
+.input-busqueda{
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--texto);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 0;
+  outline: none;
+}
+
+.input-busqueda::placeholder{
+  color: var(--texto-suave);
+  font-weight: 400;
+}
+
+.filtro-estado{
+  min-width: 170px;
+}
+
+.btn-limpiar-filtros{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 1.5px solid rgba(37,99,235,.25);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--azul);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transicion);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-limpiar-filtros:hover{
+  background: var(--azul);
+  color: white;
+  border-color: var(--azul);
+}
+
+body.oscuro .btn-limpiar-filtros{
+  color: #60a5fa;
+  border-color: rgba(96,165,250,.3);
+}
+
+body.oscuro .btn-limpiar-filtros:hover{
+  background: var(--azul);
+  color: white;
+}
+
+/* =======================================================
+   PANEL BADGE — identificador de vista
+======================================================= */
+
+.panel-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .4px;
+}
+
+.badge-operativa{
+  background: rgba(37,99,235,.1);
+  color: var(--azul);
+  border: 1px solid rgba(37,99,235,.2);
+}
+
+.badge-gerencial{
+  background: rgba(16,185,129,.1);
+  color: #059669;
+  border: 1px solid rgba(16,185,129,.2);
+}
+
+body.oscuro .badge-operativa{
+  background: rgba(59,130,246,.15);
+  color: #60a5fa;
+  border-color: rgba(59,130,246,.25);
+}
+
+body.oscuro .badge-gerencial{
+  background: rgba(16,185,129,.12);
+  color: #34d399;
+  border-color: rgba(16,185,129,.2);
+}
+
+/* =======================================================
+   FILTROS BLOQUE — base
+======================================================= */
+
+.filtros-bloque{
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filtros-bloque-operativa{
+  background: linear-gradient(135deg, rgba(37,99,235,.05), rgba(96,165,250,.04));
+  border: 1.5px solid rgba(37,99,235,.18);
+}
+
+body.oscuro .filtros-bloque-operativa{
+  background: linear-gradient(135deg, rgba(37,99,235,.08), rgba(96,165,250,.05));
+  border-color: rgba(59,130,246,.22);
+}
+
+.filtros-bloque-gerencial{
+  background: linear-gradient(135deg, rgba(16,185,129,.05), rgba(52,211,153,.04));
+  border: 1.5px solid rgba(16,185,129,.2);
+}
+
+body.oscuro .filtros-bloque-gerencial{
+  background: linear-gradient(135deg, rgba(16,185,129,.08), rgba(52,211,153,.04));
+  border-color: rgba(16,185,129,.22);
+}
+
+.filtros-seccion-label{
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-suave);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  margin-bottom: -4px;
+}
+
+/* =======================================================
+   FILTROS OPERATIVOS (legacy — kept for compatibility)
 ======================================================= */
 
 .filtros-operativos{
@@ -1057,144 +1312,9 @@ body.oscuro .producto-barra{
   flex-direction:column;
   gap:10px;
 }
-
-.filtros-fila{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:flex-end;
-}
-
-.filtros-geo{
-  border-bottom:1px solid var(--borde);
-  padding-bottom:12px;
-}
-
-.filtro-grupo{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  min-width:160px;
-  flex:1;
-}
-
-.filtro-label{
-  font-size:10px;
-  font-weight:700;
-  color:var(--texto-suave);
-  letter-spacing:.6px;
-  text-transform:uppercase;
-}
-
-.filtro-select{
-  padding:8px 12px;
-  border-radius:10px;
-  border:1px solid var(--borde);
-  background:var(--fondo-secundario);
-  color:var(--texto);
-  font-size:13px;
-  cursor:pointer;
-  transition:var(--transicion);
-  outline:none;
-  appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 10px center;
-  padding-right:30px;
-}
-
-.filtro-select:focus{
-  border-color:var(--azul);
-  box-shadow:0 0 0 3px rgba(37,99,235,.1);
-}
-
-.filtros-busqueda{
-  align-items:center;
-}
-
-.filtro-busqueda-wrap{
-  position:relative;
-  flex:1;
-  min-width:200px;
-}
-
-.filtro-busqueda-wrap svg{
-  position:absolute;
-  left:12px;
-  top:50%;
-  transform:translateY(-50%);
-  color:var(--texto-suave);
-  pointer-events:none;
-}
-
-.btn-limpiar-filtros{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:8px 14px;
-  border-radius:10px;
-  border:1px solid var(--borde);
-  background:var(--fondo-secundario);
-  color:var(--texto-suave);
-  font-size:12px;
-  font-weight:600;
-  cursor:pointer;
-  transition:var(--transicion);
-  white-space:nowrap;
-  height:36px;
-}
-
-.btn-limpiar-filtros:hover{
-  background:var(--azul);
-  color:white;
-  border-color:var(--azul);
-}
-
 /* =======================================================
    TABLA RESTRICCIONES
 ======================================================= */
-
-.filtros-restrin{
-
-  display:flex;
-
-  gap:10px;
-
-  flex-wrap:wrap;
-
-}
-
-.input-busqueda{
-
-  padding:8px 12px 8px 34px;
-
-  border-radius:10px;
-
-  border:1px solid var(--borde);
-
-  background:var(--fondo-secundario);
-
-  color:var(--texto);
-
-  font-size:13px;
-
-  width:100%;
-
-  outline:none;
-
-  transition:var(--transicion);
-
-  height:36px;
-
-}
-
-.input-busqueda:focus{
-
-  border-color:var(--azul);
-
-  box-shadow:0 0 0 3px rgba(37,99,235,.1);
-
-}
 
 .tabla-wrapper{
 
