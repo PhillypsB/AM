@@ -1,0 +1,31 @@
+{
+  "name": "pncm-coverage-app",
+  "version": "1.0.0",
+  "description": "Standalone Web App for Coverage Reporting - Programa Nacional Cuna Más (PNCM) · MIDIS · Perú",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"No tests specified\"",
+    "dev": "npx serve .",
+    "start": "npx serve ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PhillypsB/AM.git"
+  },
+  "keywords": [
+    "vercel-analytics",
+    "pncm",
+    "midis",
+    "coverage",
+    "reporting"
+  ],
+  "author": "UPPM — PNCM — MIDIS",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PhillypsB/AM/issues"
+  },
+  "homepage": "https://github.com/PhillypsB/AM#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
