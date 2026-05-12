@@ -1,0 +1,14 @@
+{
+  "name": "am",
+  "version": "1.0.0",
+  "description": "PNCM – Cobertura SAF y SCD",
+  "private": true,
+  "scripts": {
+    "dev": "npx http-server -p 3000",
+    "build": "echo 'No build step required for static HTML'",
+    "lint": "echo 'No linting configured'"
+  },
+  "dependencies": {
+    "@vercel/speed-insights": "^1.1.0"
+  }
+}
