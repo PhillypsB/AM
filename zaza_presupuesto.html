@@ -1784,7 +1784,8 @@ body.dark-mode .zsk-filter-tag svg{ color:var(--cyan); }
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:10px;
-  padding:7px 36px 7px 14px;
+  /* Sin padding-right: el select/input cubre toda la anchura incluida la zona de la flecha */
+  padding:7px 0 7px 14px;
   cursor:pointer;
   transition:all .18s ease;
   display:block;
@@ -1807,7 +1808,8 @@ body.dark-mode .zsk-filter-tag svg{ color:var(--cyan); }
 .zsk-fl-native{
   display:block; width:100%;
   background:transparent !important; border:none !important;
-  padding:0 !important; margin:1px 0 0 !important;
+  /* padding-right:36px → el select ocupa zona de la flecha, el click siempre cae en el select */
+  padding:0 36px 0 0 !important; margin:1px 0 0 !important;
   font-size:13.5px !important; font-weight:600 !important;
   color:var(--white) !important;
   font-family:inherit !important;
@@ -1868,7 +1870,9 @@ body.dark-mode .zsk-filter-tag svg{ color:var(--cyan); }
   animation-delay:.05s;
 }
 @media (max-width:1180px){ .zsk-kpis{grid-template-columns:repeat(3,1fr);} }
-@media (max-width:760px){ .zsk-kpis{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:760px){  .zsk-kpis{grid-template-columns:repeat(2,1fr);} }
+/* ≤ 520px: 1 columna para que los valores monetarios quepan sin cortarse */
+@media (max-width:520px){  .zsk-kpis{grid-template-columns:1fr;} }
 
 .zsk-kpi{
   position:relative; overflow:hidden;
@@ -1896,12 +1900,13 @@ body.dark-mode .zsk-filter-tag svg{ color:var(--cyan); }
   font-weight:700; line-height:1.1;
 }
 .zsk-kpi-value{
-  font-size:26px; font-weight:800; letter-spacing:-.02em;
+  font-size:clamp(15px, 1.7vw, 24px); font-weight:800; letter-spacing:-.02em;
   line-height:1.05; margin-top:4px;
   font-variant-numeric:tabular-nums; font-feature-settings:"tnum";
   color:var(--white);
+  overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
 }
-.zsk-kpi-value-sm{ font-size:22px; }
+.zsk-kpi-value-sm{ font-size:clamp(14px, 1.5vw, 20px); }
 .zsk-kpi-foot{
   font-size:11.5px; color:var(--muted); font-weight:500;
   margin-top:2px;
@@ -1928,7 +1933,7 @@ body.dark-mode .zsk-kpi.hero{
 .zsk-kpi.hero::before{ background:linear-gradient(180deg,var(--zsk-success),var(--zsk-success-2)); }
 .zsk-kpi.hero .zsk-kpi-icon{ background:var(--zsk-success-soft); color:var(--zsk-success-2); }
 .zsk-kpi.hero .zsk-kpi-label{ color:var(--zsk-success-2); }
-.zsk-kpi.hero .zsk-kpi-value{ color:var(--zsk-success-2); font-size:30px; }
+.zsk-kpi.hero .zsk-kpi-value{ color:var(--zsk-success-2); font-size:clamp(16px, 1.9vw, 28px); }
 body.dark-mode .zsk-kpi.hero .zsk-kpi-icon{ background:rgba(0,255,157,.10); color:#34D399; }
 body.dark-mode .zsk-kpi.hero .zsk-kpi-label,
 body.dark-mode .zsk-kpi.hero .zsk-kpi-value{ color:#34D399; }
@@ -2349,7 +2354,7 @@ body.dark-mode #autopilotModal:not(.hidden){
    ░░ RESPONSIVE ░░
    ════════════════════════════════════════════════════════════════════ */
 @media (max-width:980px){
-  .mc-header.zsk-header{ flex-wrap:wrap; }
+  .mc-header.zsk-header{ flex-wrap:wrap; gap:10px; }
   .zsk-entity-header{ order:5; flex-basis:100%; padding-top:4px; }
   .zsk-view-switch{ margin-left:0; }
   .mc-main.zsk-main{ padding:14px 16px 80px !important; }
@@ -2361,6 +2366,47 @@ body.dark-mode #autopilotModal:not(.hidden){
   .zsk-robot-wrap{ right:16px; bottom:16px; }
   .zsk-robot-btn{ width:62px; height:62px; }
   .zsk-robot-tip{ display:none; }
+}
+/* ── CABECERA MOBILE ≤ 520px ──────────────────────────────────── */
+@media (max-width:520px){
+  .mc-header.zsk-header{
+    padding:10px 14px !important;
+    min-height:52px !important;
+    height:auto !important;
+    gap:8px !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+  }
+  /* Logo + nombre en fila compacta */
+  .hdr-brand.zsk-brand{ gap:8px !important; flex-shrink:0; }
+  .zsk-logo{ width:34px !important; height:34px !important; border-radius:9px !important; }
+  .zsk-name-top{ font-size:14px !important; }
+  .zsk-name-tag{ display:none !important; }
+  /* Ocultar entidad y separador en mobile — se ve en las tarjetas */
+  .hdr-entity.zsk-entity-header, .hdr-sep{ display:none !important; }
+  /* View switch: compacto, sin texto largo */
+  .zsk-view-switch{
+    margin-left:auto !important;
+    flex-shrink:0;
+    padding:3px !important;
+    border-radius:9px !important;
+  }
+  .zsk-view-btn{
+    padding:6px 10px !important;
+    font-size:11.5px !important;
+    gap:5px !important;
+    border-radius:6px !important;
+  }
+  /* Ocultar texto del botón, dejar solo íconos */
+  .zsk-view-btn span, .zsk-view-btn br{ display:none; }
+  /* Botones de ícono: más pequeños */
+  .zsk-icon-btn{
+    width:32px !important; height:32px !important;
+    border-radius:8px !important;
+    flex-shrink:0;
+  }
+  /* Ocultar el segundo botón de config para ganar espacio */
+  .hdr-btn.zsk-icon-btn:nth-of-type(2){ display:none !important; }
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -2377,10 +2423,14 @@ body.dark-mode #autopilotModal:not(.hidden){
 }
 .zsk-kpi:not(.hero) .zsk-kpi-value{
   color:var(--white) !important;
-  font-size:21px !important;
+  font-size:13px !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  word-break:normal !important;
 }
-.zsk-kpi:not(.hero) .zsk-kpi-value-sm{ font-size:19px !important; }
-.zsk-kpi.hero  .zsk-kpi-value{ font-size:26px !important; }
+.zsk-kpi:not(.hero) .zsk-kpi-value-sm{ font-size:clamp(11px, 0.95vw, 14px) !important; }
+.zsk-kpi.hero  .zsk-kpi-value{ font-size:22px !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; word-break:normal !important; }
 .zsk-kpi.hero  .zsk-kpi-label{ font-size:11px !important; letter-spacing:.12em !important; }
 
 /* La franja vertical solo en el hero — el resto sin el accent left bar */
@@ -2713,17 +2763,20 @@ body.dark-mode #autopilotModal:not(.hidden) > div:nth-child(4){
    ░░ ITERACIÓN 3 — Cosmic polish + config + modal grid ░░
    ════════════════════════════════════════════════════════════════════ */
 
-/* ── 1) KPIs aún más compactos, jerarquía clara, solo HERO en color ── */
+/* ── 1) KPIs compactos, jerarquía clara, solo HERO en color ── */
 .zsk-kpi .zsk-kpi-value{
-  font-size:var(--zcfg-kpi-value, 18px) !important;
-  line-height:1.05 !important;
-  letter-spacing:-.015em !important;
+  font-size:var(--zcfg-kpi-value, 13px) !important;
+  line-height:1.2 !important;
+  letter-spacing:-.01em !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
 }
 .zsk-kpi .zsk-kpi-value-sm{
-  font-size:var(--zcfg-kpi-value-sm, 16px) !important;
+  font-size:var(--zcfg-kpi-value-sm, 14px) !important;
 }
 .zsk-kpi.hero .zsk-kpi-value{
-  font-size:var(--zcfg-kpi-hero, 24px) !important;
+  font-size:var(--zcfg-kpi-hero, 22px) !important;
   letter-spacing:-.025em !important;
 }
 .zsk-kpi .zsk-kpi-label{
@@ -2785,7 +2838,8 @@ body.dark-mode .zsk-kpi.hero{
   color:var(--white) !important;
   background:transparent !important;
   border:none !important;
-  padding:0 !important;
+  /* padding-right:36px → cubre la zona de la flecha */
+  padding:0 36px 0 0 !important;
   margin-top:2px !important;
   outline:none;
   appearance:none; -webkit-appearance:none;
@@ -3167,42 +3221,48 @@ body.dark-mode .zsk-insight{
 
 /* FOOTER del modal */
 .zsk-modal-foot{
-  display:flex; align-items:center; gap:14px;
-  padding:16px 22px;
+  display:flex; align-items:center; gap:12px;
+  padding:14px 20px;
   border-top:1px solid rgba(229,235,242,.7);
   background:linear-gradient(180deg,transparent,rgba(245,247,251,.5));
   flex-shrink:0;
+  flex-wrap:wrap;
 }
 body.dark-mode .zsk-modal-foot{
   border-top-color:rgba(0,209,255,.10);
   background:linear-gradient(180deg,transparent,rgba(0,0,0,.25));
 }
 .zsk-foot-ic{
-  width:38px; height:38px; border-radius:12px;
-  background:var(--zsk-brand-soft);
-  color:var(--zsk-brand-2);
+  width:36px; height:36px; border-radius:10px;
+  background:rgba(37,99,235,.10);
+  color:#2563eb;
   display:grid; place-items:center; flex-shrink:0;
 }
-.zsk-foot-copy{ flex:1; min-width:0; }
+body.dark-mode .zsk-foot-ic{ background:rgba(0,209,255,.12); color:#00d1ff; }
+.zsk-foot-copy{ flex:1; min-width:160px; }
 .zsk-foot-copy h5{
-  margin:0; font-size:13.5px; font-weight:700; color:var(--white);
-  letter-spacing:-.01em;
+  margin:0; font-size:13px; font-weight:700; color:var(--white);
+  letter-spacing:-.01em; line-height:1.3;
 }
 .zsk-foot-copy p{
-  margin:1px 0 0; font-size:12px; color:var(--muted);
+  margin:2px 0 0; font-size:11.5px; color:var(--muted); line-height:1.4;
 }
+/* CTA WhatsApp */
 .zsk-foot-cta{
   display:inline-flex; align-items:center; gap:7px;
-  padding:9px 14px; font-size:12.5px; font-weight:600;
-  color:var(--white); background:var(--hull);
-  border:1px solid var(--border); border-radius:10px;
+  padding:9px 16px; font-size:12.5px; font-weight:700;
+  color:#fff;
+  background:linear-gradient(135deg,#25D366,#128C7E);
+  border:none; border-radius:10px;
   cursor:pointer; transition:all .2s ease;
   font-family:inherit;
   white-space:nowrap;
+  text-decoration:none;
+  box-shadow:0 4px 14px rgba(37,211,102,.30);
 }
 .zsk-foot-cta:hover{
-  border-color:var(--zsk-brand); color:var(--zsk-brand);
-  box-shadow:var(--zsk-ring);
+  transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(37,211,102,.40);
 }
 
 /* Responsive del modal */
@@ -3211,6 +3271,9 @@ body.dark-mode .zsk-modal-foot{
   .zsk-modal-meta{ width:100%; justify-content:space-between; }
   .zsk-insights-grid{ grid-template-columns:1fr; padding:14px; }
   .zsk-modal-tabs{ overflow-x:auto; padding:10px 14px; }
+  .zsk-modal-foot{ gap:10px; padding:12px 16px; }
+  .zsk-foot-ic{ display:none; }
+  .zsk-foot-cta{ width:100%; justify-content:center; }
 }
 
 
@@ -3222,16 +3285,19 @@ body.dark-mode .zsk-modal-foot{
 /* Avatar — hard hide por si quedó cache */
 .zsk-avatar, .avatar{ display:none !important; }
 
-/* KPIs — overrides más agresivos para tamaños compactos */
+/* KPIs — overrides tamaños compactos */
 .zsk-kpi .zsk-kpi-value{
-  font-size:var(--zcfg-kpi-value, 16px) !important;
+  font-size:var(--zcfg-kpi-value, 13px) !important;
   font-weight:800 !important;
-  letter-spacing:-.02em !important;
-  line-height:1.05 !important;
+  letter-spacing:-.01em !important;
+  line-height:1.2 !important;
   color:var(--white) !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
 }
 .zsk-kpi.hero .zsk-kpi-value{
-  font-size:var(--zcfg-kpi-hero, 20px) !important;
+  font-size:var(--zcfg-kpi-hero, 22px) !important;
   color:var(--zsk-success-2) !important;
 }
 body.dark-mode .zsk-kpi.hero .zsk-kpi-value{ color:#34D399 !important; }
@@ -3240,11 +3306,14 @@ body.dark-mode .zsk-kpi.hero .zsk-kpi-value{ color:#34D399 !important; }
   font-size:var(--zcfg-kpi-value-sm, 14px) !important;
 }
 .zsk-kpi .zsk-kpi-label{
-  font-size:var(--zcfg-kpi-label, 9.5px) !important;
-  letter-spacing:.10em !important;
+  font-size:var(--zcfg-kpi-label, 9px) !important;
+  letter-spacing:.09em !important;
   text-transform:uppercase !important;
   color:var(--muted) !important;
   font-weight:700 !important;
+  display:block !important;
+  /* sin nowrap — el texto corto cabe; si overflow ocurre, que muestre 2 líneas */
+  line-height:1.2 !important;
 }
 .zsk-kpi.hero .zsk-kpi-label{ color:var(--zsk-success-2) !important; }
 body.dark-mode .zsk-kpi.hero .zsk-kpi-label{ color:#34D399 !important; }
@@ -3318,15 +3387,10 @@ body.dark-mode .zsk-kpi.hero{
    ════════════════════════════════════════════════════════════════════ */
 
 /* ── 1) Upload screen: ocultar robot y elementos no relevantes ──── */
-#screenUpload ~ .zsk-robot-wrap,
-body:has(#screenDashboard.hidden) .zsk-robot-wrap{
-  display:none !important;
-}
 #screenUpload, #screenLoading{
   /* asegurar que la pantalla de upload este limpia */
   position:relative;
 }
-#screenUpload .zsk-robot-wrap{ display:none !important; }
 
 /* ── 2) DROPDOWNS UNIFICADOS — todos iguales ────────────────────── */
 .zsk-filters .zsk-filter-select{
@@ -3336,7 +3400,8 @@ body:has(#screenDashboard.hidden) .zsk-robot-wrap{
   background:linear-gradient(180deg,var(--hull) 0%,var(--surface) 100%) !important;
   border:1px solid var(--border) !important;
   border-radius:11px !important;
-  padding:9px 36px 7px 14px !important;
+  /* Sin padding-right: el select debe cubrir toda la anchura incluida la zona de la flecha */
+  padding:9px 0 7px 14px !important;
   display:flex !important;
   flex-direction:column !important;
   justify-content:center !important;
@@ -3367,7 +3432,8 @@ body:has(#screenDashboard.hidden) .zsk-robot-wrap{
   background:transparent !important;
   border:none !important;
   outline:none !important;
-  padding:0 !important;
+  /* padding-right:36px cubre la zona de la flecha → el select llega hasta el borde derecho */
+  padding:0 36px 0 0 !important;
   margin-top:4px !important;
   font-size:13px !important;
   font-weight:600 !important;
@@ -3773,120 +3839,8 @@ body.dark-mode .zsk-upload-sub{ color:rgba(232,244,255,.65); }
   display:none !important;
 }
 
-/* CRÍTICO: robot escondido en upload y loading */
-#screenUpload ~ .zsk-robot-wrap,
-body:has(#screenUpload:not(.hidden)) .zsk-robot-wrap,
-body:has(#screenLoading:not(.hidden)) .zsk-robot-wrap{
-  display:none !important;
-}
 
 
-/* ════════════════════════════════════════════════════════════════════
-   ░░ ITERACION 7 — Robot bullet-proof + Dashboard pro + Upload sells ░░
-   ════════════════════════════════════════════════════════════════════ */
-
-/* ── 1) ROBOT: regla simple y bullet-proof ─────────────────────── */
-/* El JS controla visibilidad, este CSS solo refuerza con !important */
-body:has(#screenUpload:not(.hidden)) .zsk-robot-wrap,
-body:has(#screenLoading:not(.hidden)) .zsk-robot-wrap{
-  display:none !important;
-}
-
-/* ── 2) UPLOAD VENDEDOR — features grid + testimonials + más detalle */
-.zsk-upload-card{
-  width:min(820px, 100%) !important;
-  padding:40px 44px 32px !important;
-}
-
-.zsk-upload-features{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:12px;
-  margin-top:18px;
-}
-.zsk-upload-feature{
-  display:flex; flex-direction:column; align-items:flex-start;
-  gap:8px;
-  padding:14px 14px;
-  border-radius:12px;
-  background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(248,250,253,.7));
-  border:1px solid rgba(229,235,242,.9);
-  transition:transform .25s ease, box-shadow .25s ease;
-}
-body.dark-mode .zsk-upload-feature{
-  background:linear-gradient(180deg, rgba(7,14,28,.6), rgba(0,0,0,.3));
-  border-color:rgba(0,209,255,.12);
-}
-.zsk-upload-feature:hover{
-  transform:translateY(-2px);
-  box-shadow:0 8px 20px rgba(15,30,55,.08);
-}
-.zsk-upload-feature-icon{
-  width:34px; height:34px; border-radius:9px;
-  display:grid; place-items:center;
-  background:linear-gradient(135deg, rgba(37,99,235,.10), rgba(14,165,233,.10));
-  color:#2563EB;
-}
-.zsk-upload-feature-ttl{
-  font-size:12px; font-weight:700;
-  color:#0B1C2C; letter-spacing:-.005em;
-  line-height:1.2;
-}
-body.dark-mode .zsk-upload-feature-ttl{ color:#E8F4FF; }
-.zsk-upload-feature-sub{
-  font-size:11px; color:#64748B; font-weight:500;
-  line-height:1.4;
-}
-body.dark-mode .zsk-upload-feature-sub{ color:rgba(232,244,255,.55); }
-
-.zsk-upload-pills{
-  display:flex; gap:8px; flex-wrap:wrap;
-  margin-top:14px;
-  justify-content:center;
-}
-.zsk-upload-pill{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:5px 11px;
-  border-radius:999px;
-  background:rgba(16,185,129,.10);
-  color:#059669;
-  font-size:11px; font-weight:700; letter-spacing:.02em;
-  border:1px solid rgba(16,185,129,.20);
-}
-.zsk-upload-pill::before{
-  content:""; width:5px; height:5px; border-radius:50%;
-  background:#10B981;
-}
-.zsk-upload-pill.brand{
-  background:rgba(37,99,235,.10); color:#1D4ED8;
-  border-color:rgba(37,99,235,.20);
-}
-.zsk-upload-pill.brand::before{ background:#2563EB; }
-.zsk-upload-pill.warn{
-  background:rgba(245,158,11,.10); color:#B45309;
-  border-color:rgba(245,158,11,.20);
-}
-.zsk-upload-pill.warn::before{ background:#F59E0B; }
-
-.zsk-upload-hero{
-  font-size:26px !important;
-  font-weight:800 !important;
-  letter-spacing:-.025em !important;
-  color:#0B1C2C !important;
-  text-align:center;
-  line-height:1.15;
-  margin:18px 0 8px !important;
-  background:linear-gradient(135deg, #1E40AF, #2563EB, #0EA5E9);
-  -webkit-background-clip:text; background-clip:text;
-  -webkit-text-fill-color:transparent; color:transparent !important;
-}
-.zsk-upload-tagline{
-  font-size:14px !important; color:#475569;
-  text-align:center;
-  max-width:520px; margin:0 auto !important;
-  line-height:1.55;
-}
-body.dark-mode .zsk-upload-tagline{ color:rgba(232,244,255,.70); }
 
 .zsk-upload-trust{
   display:flex; align-items:center; justify-content:center; gap:18px;
@@ -4091,16 +4045,6 @@ body.dark-mode .zsk-ger-row-bar{
    ════════════════════════════════════════════════════════════════════ */
 
 /* ROBOT: solo se oculta en loading. Aparece en upload Y en dashboard */
-body:has(#screenLoading:not(.hidden)) .zsk-robot-wrap{
-  display:none !important;
-}
-/* Override regla previa que lo escondia en upload */
-body:has(#screenUpload:not(.hidden)) .zsk-robot-wrap{
-  display:block !important;
-}
-/* Robot mas chico en upload para no robar protagonismo al botón */
-body:has(#screenUpload:not(.hidden)) .zsk-robot-btn{
-  width:60px !important; height:60px !important;
 }
 body:has(#screenUpload:not(.hidden)) .zsk-robot-badge{
   min-width:20px; height:20px; font-size:10px;
@@ -4377,24 +4321,99 @@ body:has(#screenDashboard:not(.hidden)) .zsk-robot-wrap{
   z-index:100 !important;
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   ░░ KPI DESKTOP REDESIGN — icono compacto, valor a ancho completo ░░
+   Objetivo: label corto en 1 línea, valor sin truncar, tarjeta limpia
+   ════════════════════════════════════════════════════════════════════ */
+@media (min-width:761px){
+  /* Icono más pequeño → más espacio para el meta */
+  .zsk-kpi > .zsk-kpi-icon{
+    width:28px !important; height:28px !important;
+    border-radius:8px !important;
+    flex-shrink:0 !important;
+  }
+  .zsk-kpi > .zsk-kpi-icon svg{
+    width:13px !important; height:13px !important;
+  }
+  /* Grid interno más apretado: icon 28px + gap 8px */
+  .zsk-kpi{
+    grid-template-columns:28px 1fr !important;
+    column-gap:8px !important;
+    padding:12px 14px 10px !important;
+  }
+  /* Hero mantiene algo más de aire */
+  .zsk-kpi.hero{
+    padding:14px 16px 12px !important;
+  }
+  /* Donut (Avance): reducir a 32px, mantener funcional */
+  .zsk-kpi > .zsk-kpi-donut{
+    width:32px !important; height:32px !important;
+  }
+  .zsk-kpi > .zsk-kpi-donut svg{
+    width:32px !important; height:32px !important;
+  }
+  .zsk-kpi > .zsk-kpi-donut .zsk-donut-pct{
+    font-size:7px !important;
+  }
+  /* Valor: tamaño fijo que cabe en la meta más angosta */
+  .zsk-kpi .zsk-kpi-value{
+    font-size:14px !important;
+    letter-spacing:-.01em !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  .zsk-kpi.hero .zsk-kpi-value{
+    font-size:22px !important;
+    letter-spacing:-.02em !important;
+  }
+  /* Footer más compacto */
+  .zsk-kpi .zsk-kpi-foot{
+    font-size:10px !important;
+  }
+  /* Bar: pegado al fondo del grid */
+  .zsk-kpi > .zsk-kpi-bar{
+    margin-top:10px !important;
+  }
+}
+
 
 /* ════════════════════════════════════════════════════════════════════
    ░░ ITERACION 12 — 6 ajustes UX premium ░░
    ════════════════════════════════════════════════════════════════════ */
 
-/* ── 1) KPIs valor UNIFORME en todos los cards ─────────────────── */
+/* ── 1) KPIs valor — nunca romper números, truncar con ellipsis solo si es inevitable ─── */
+/* Cálculo: tarjeta 1fr ≈ 238px → meta area ≈ 140px → 13px mono × 17 chars = 132px ✓     */
 .zsk-kpi .zsk-kpi-value,
-.zsk-kpi.hero .zsk-kpi-value,
 .zsk-kpi .zsk-kpi-value-sm,
 .zsk-kpi.warn .zsk-kpi-value{
-  font-size:18px !important;
+  font-size:13px !important;
   font-weight:800 !important;
+  letter-spacing:.01em !important;
+  line-height:1.2 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  word-break:normal !important;
+  overflow-wrap:normal !important;
+  display:block !important;
+}
+/* Hero: card 1.45× más ancha (meta ≈247px), fuente más grande */
+.zsk-kpi.hero .zsk-kpi-value{
+  font-size:22px !important;
   letter-spacing:-.02em !important;
   line-height:1.1 !important;
-}
-/* Hero conserva la distinción por COLOR, no por tamaño */
-.zsk-kpi.hero .zsk-kpi-value{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
   color:#059669 !important;
+}
+/* Mobile 1-col (≤520px): card ancha = fuente cómoda */
+@media (max-width:520px){
+  .zsk-kpi .zsk-kpi-value,
+  .zsk-kpi .zsk-kpi-value-sm,
+  .zsk-kpi.warn .zsk-kpi-value{ font-size:18px !important; letter-spacing:-.01em !important; }
+  .zsk-kpi.hero .zsk-kpi-value{ font-size:24px !important; }
 }
 body.dark-mode .zsk-kpi.hero .zsk-kpi-value{
   color:#34D399 !important;
@@ -4824,8 +4843,8 @@ body.dark-mode .zsk-prod{
         <span class="zsk-fl-lbl">Genérica / Partida</span>
         <input id="zskGenericaInput" class="zsk-fl-native zsk-fl-input" list="zskGenericaList"
                placeholder="Todas — escribe o elige"
-               oninput="window.__zskOnGenericaInput && window.__zskOnGenericaInput(this.value)"
-               onchange="window.__zskOnGenericaInput && window.__zskOnGenericaInput(this.value)">
+               oninput="window.__zskOnGenericaInput && window.__zskOnGenericaInput()"
+               onchange="window.__zskOnGenericaInput && window.__zskOnGenericaInput()">
         <datalist id="zskGenericaList"></datalist>
         <svg class="zsk-fl-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </label>
@@ -4835,10 +4854,6 @@ body.dark-mode .zsk-prod{
         Limpiar filtros
       </button>
 
-      <div class="zsk-timestamp zsk-ts-live" id="zskTimestampWrap">
-        <span class="zsk-ts-dot">Datos a corte</span>
-        <span class="zsk-ts-when" id="zskTimestamp">—</span>
-      </div>
     </section>
 
     <!-- KPIs HERO -->
@@ -4848,7 +4863,7 @@ body.dark-mode .zsk-prod{
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l4 4h5a2 2 0 0 1 2 2z"/></svg>
         </div>
         <div class="zsk-kpi-meta">
-          <div class="zsk-kpi-label">Presupuesto sin restricción</div>
+          <div class="zsk-kpi-label">Sin restricción</div>
           <div class="zsk-kpi-value" id="briefLibre">—</div>
           <div class="zsk-kpi-foot" id="zskFootLibreWrap"><span id="zskFootLibre">Sin datos cargados</span></div>
         </div>
@@ -4860,7 +4875,7 @@ body.dark-mode .zsk-prod{
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
         <div class="zsk-kpi-meta">
-          <div class="zsk-kpi-label">Presupuesto restringido</div>
+          <div class="zsk-kpi-label">Restringido</div>
           <div class="zsk-kpi-value" id="briefRestr">—</div>
           <div class="zsk-kpi-foot"><span id="zskFootRestr">Sin datos cargados</span></div>
         </div>
@@ -4887,7 +4902,7 @@ body.dark-mode .zsk-prod{
           <span class="zsk-donut-pct" id="zskDonutPct">0%</span>
         </div>
         <div class="zsk-kpi-meta">
-          <div class="zsk-kpi-label">Avance de ejecución</div>
+          <div class="zsk-kpi-label">Avance ejec.</div>
           <div class="zsk-kpi-value" id="briefEjec">—</div>
           <div class="zsk-kpi-foot"><span id="zskFootDev">Sin datos</span></div>
         </div>
@@ -4898,7 +4913,7 @@ body.dark-mode .zsk-prod{
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         </div>
         <div class="zsk-kpi-meta">
-          <div class="zsk-kpi-label">Capacidad de ejecución</div>
+          <div class="zsk-kpi-label">Capacidad</div>
           <div class="zsk-kpi-value zsk-kpi-value-sm" id="zskCapacidad">—</div>
           <div class="zsk-kpi-foot" id="zskFootCap">—</div>
         </div>
@@ -5058,7 +5073,8 @@ body.dark-mode .zsk-prod{
     <div style="display:flex;align-items:center;gap:12px">
       <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:18px">🤖</div>
       <div>
-        <div style="font-size:15px;font-weight:800;color:var(--white)">zaZÁ IA — Análisis Inteligente</div>
+        <div style="font-size:15px;font-weight:800;color:var(--white)">zaZÁ PRESUPUESTO</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">Inteligencia Ejecutiva Presupuestal</div>
         <div id="apModalCounter" style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace">0 / 0</div>
       </div>
     </div>
@@ -5104,27 +5120,22 @@ body.dark-mode .zsk-prod{
   <div class="config-panel">
     <div class="config-title">⚙️ Configurar Umbrales</div>
     <div class="cfg-group">
-      <label class="cfg-label">Restricción dominante</label>
+      <label class="cfg-label" for="cfg_restriccionDominante">Restricción dominante</label>
       <span class="cfg-sub">Si más de este % del PIM está restringido, se activa alerta</span>
       <input type="number" id="cfg_restriccionDominante" class="cfg-input" value="15" min="1" max="80"> %
     </div>
     <div class="cfg-group">
-      <label class="cfg-label">Meta ejecución mes 6</label>
+      <label class="cfg-label" for="cfg_ejecucionMes6">Meta ejecución mes 6</label>
       <span class="cfg-sub">% esperado a mitad de año</span>
       <input type="number" id="cfg_ejecucionMes6" class="cfg-input" value="50" min="10" max="90"> %
     </div>
     <div class="cfg-group">
-      <label class="cfg-label">Meta ejecución mes 9</label>
+      <label class="cfg-label" for="cfg_ejecucionMes9">Meta ejecución mes 9</label>
       <span class="cfg-sub">% esperado a mes 9</span>
       <input type="number" id="cfg_ejecucionMes9" class="cfg-input" value="75" min="30" max="100"> %
     </div>
     <div class="cfg-group">
-      <label class="cfg-label">Meta ejecución mes 9</label>
-      <span class="cfg-sub">% esperado a mes 9</span>
-      <input type="number" id="cfg_ejecucionMes9" class="cfg-input" value="75" min="30" max="100"> %
-    </div>
-    <div class="cfg-group">
-      <label class="cfg-label">Ventana crítica (meses)</label>
+      <label class="cfg-label" for="cfg_ventanaMeses">Ventana crítica (meses)</label>
       <span class="cfg-sub">Alerta cuando queden ≤ X meses</span>
       <input type="number" id="cfg_ventanaMeses" class="cfg-input" value="4" min="1" max="6">
     </div>
@@ -5293,6 +5304,12 @@ window.ZAZA_CONFIG = {
 let datosExcel   = [];
 let grafico      = null;
 let vistaGerencial = false;
+let _graficosRenderizados = false;
+let datosRestriccionRaw    = [];
+let resumenRestriccionCache = [];
+let activeInsightId        = null;
+let insightsCache          = [];
+let currentTab             = 'gestion';
 
 
 const REGLAS = {
@@ -5413,78 +5430,6 @@ const REGLAS = {
 
 // -------------------------------------------------------
 
-function cambiarTema() {
-  document.body.classList.toggle('oscuro');
-  const oscuro = document.body.classList.contains('oscuro');
-  const icono = document.getElementById('iconoTema');
-  if (oscuro) {
-    icono.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
-  } else {
-    icono.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
-  }
-}
-
-// -------------------------------------------------------
-// CAMBIAR VISTA
-// -------------------------------------------------------
-
-function cambiarVista() {
-  vistaGerencial = !vistaGerencial;
-  const btn = document.getElementById('botonVista');
-  if (vistaGerencial) {
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Gestión Presupuestal</span>';
-    document.body.classList.remove('vista-operativa');
-    document.body.classList.add('vista-gerencial');
-  } else {
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Estado Ejecución</span>';
-    document.body.classList.remove('vista-gerencial');
-    document.body.classList.add('vista-operativa');
-  }
-}
-
-// -------------------------------------------------------
-// DRAG & DROP
-// -------------------------------------------------------
-
-// v3: drag/drop listeners moved to UI layer (~line 4120) — removing core_js versions to prevent double processing
-// const zonaSoltar = document.getElementById('zonaSoltar');
-// window.addEventListener('dragenter', ...); -- handled by UI layer
-// window.addEventListener('dragover', ...);  -- handled by UI layer
-// window.addEventListener('dragleave', ...); -- handled by UI layer
-// window.addEventListener('drop', ...);      -- handled by UI layer
-
-// -------------------------------------------------------
-// INPUT ARCHIVO
-// -------------------------------------------------------
-// v3: listener moved to UI layer (line ~4135) — removing duplicate to prevent double processing
-// document.getElementById('archivoExcel').addEventListener('change', (e) => {
-//   validarArchivo(e.target.files[0]);
-// });
-
-// -------------------------------------------------------
-// VALIDAR ARCHIVO
-// -------------------------------------------------------
-
-function validarArchivo(archivo) {
-  if (!archivo) return;
-  const ext = archivo.name.split('.').pop().toLowerCase();
-  if (ext !== 'xls') { mostrarError(); return; }
-  document.getElementById('nombreArchivo').innerText = archivo.name;
-  procesarExcel(archivo);
-}
-
-// -------------------------------------------------------
-// ERROR
-// -------------------------------------------------------
-
-function mostrarError() {
-  document.getElementById('mensajeError').classList.remove('oculto');
-}
-
-function cerrarError() {
-  document.getElementById('mensajeError').classList.add('oculto');
-}
-
 // -------------------------------------------------------
 // HELPERS DE TEXTO / NÚMERO
 // -------------------------------------------------------
@@ -5542,15 +5487,6 @@ function esperar(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// -------------------------------------------------------
-// ACTUALIZAR BARRA DE CARGA
-// -------------------------------------------------------
-
-function actualizarCarga(porcentaje, texto) {
-  document.getElementById('barraCarga').style.width   = porcentaje + '%';
-  document.getElementById('porcentajeCarga').innerText = porcentaje + '%';
-  document.getElementById('textoCarga').innerText      = texto;
-}
 
 /* ── 03-data-processing.js ── */
 // ==================================================================
@@ -5591,21 +5527,21 @@ async function procesarExcel(archivo) {
       await esperar(120);
       actualizarCarga(82, 'Construyendo gráficos e insights...');
 
-      renderizarGrafico(raw);
-      renderizarProductos(raw);
       renderizarTablaRestriccion(raw);
+      // poblarFiltrosGeo SÍNCRONO — opciones disponibles cuando el panel sea visible
       poblarFiltrosGeo(raw);
-
-      // Generar insights premium (reemplaza generarHallazgos)
-      const insights = generarInsightsPremium(raw);
-      renderInsights(insights);
 
       document.getElementById('seccionRestriccion').classList.remove('oculto');
       document.getElementById('seccionFiltrosGerencial').classList.remove('oculto');
       document.getElementById('seccionExportar').classList.remove('oculto');
 
-      await esperar(120);
+      await esperar(80);
       actualizarCarga(100, 'Finalizando...');
+      // Gráficos gerenciales — lazy: se renderizan solo al abrir Vista Gerencial
+      setTimeout(() => {
+        const insights = generarInsightsPremium(raw);
+        renderInsights(insights);
+      }, 400);
 
       const fin    = performance.now();
       const tiempo = ((fin - inicio) / 1000).toFixed(2);
@@ -5630,282 +5566,6 @@ async function procesarExcel(archivo) {
 
   reader.readAsArrayBuffer(archivo);
 }
-
-// -------------------------------------------------------
-// ACTUALIZAR ENTIDAD
-// -------------------------------------------------------
-
-function actualizarEntidad(data) {
-  if (!data.length) return;
-  const fila = data[0];
-
-  const ministerio = (fila.pliego || '')
-    .split('.').slice(1).join('.').trim();
-  const programa   = (fila.unidad_ejecutora || '')
-    .split('.').slice(1).join('.').trim();
-
-  const html = `${ministerio}<br>${programa}`;
-  document.getElementById('tituloEntidad').innerHTML    = html;
-  document.getElementById('entidadCabecera').innerHTML  = html;
-  document.getElementById('seccionEntidad').classList.remove('oculto');
-  document.getElementById('informacionCabecera').classList.remove('oculto');
-}
-
-// -------------------------------------------------------
-// FECHA
-// -------------------------------------------------------
-
-function actualizarFecha(nombre) {
-  const match = nombre.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})(\d{2})(\d{2})/);
-  if (!match) return;
-  const fecha = `${match[3]}/${match[2]}/${match[1]}`;
-  const hora  = `${match[4]}:${match[5]}:${match[6]}`;
-  const texto = fecha + ' ' + hora;
-  document.getElementById('fechaActualizacion').innerText = texto;
-  document.getElementById('pieActualizado').innerText     = '📅 Corte de datos: ' + texto;
-}
-
-// -------------------------------------------------------
-// INDICADORES KPI
-// -------------------------------------------------------
-
-function renderizarIndicadores(data) {
-  let pim = 0, certificado = 0, devengado = 0, girado = 0, pagado = 0;
-
-  data.forEach(item => {
-    pim         += Number(item.mto_pim         || 0);
-    certificado += Number(item.mto_certificado || 0);
-
-    for (let i = 1; i <= 12; i++) {
-      const mes = String(i).padStart(2, '0');
-      devengado += Number(item['mto_devenga_' + mes] || 0);
-      girado    += Number(item['mto_girado_'  + mes] || 0);
-      pagado    += Number(item['mto_pagado_'  + mes] || 0);
-    }
-  });
-
-  const ejecucion = pim > 0 ? (devengado / pim) * 100 : 0;
-
-  document.getElementById('kpiPim').innerText  = moneda(pim);
-  document.getElementById('kpiCert').innerText = moneda(certificado);
-  document.getElementById('kpiDev').innerText  = moneda(devengado);
-  document.getElementById('kpiGir').innerText  = moneda(girado);
-  document.getElementById('kpiPag').innerText  = moneda(pagado);
-  document.getElementById('kpiEjec').innerText = ejecucion.toFixed(1) + '%';
-
-  document.getElementById('seccionIndicadores').classList.remove('oculto');
-}
-
-// -------------------------------------------------------
-// PRODUCTOS / PROYECTOS
-// -------------------------------------------------------
-
-function renderizarProductos(data) {
-  const acumulado = {};
-
-  data.forEach(item => {
-    const nombre = item.producto_proyecto || 'SIN NOMBRE';
-    acumulado[nombre] = (acumulado[nombre] || 0) + Number(item.mto_pim || 0);
-  });
-
-  const lista   = Object.entries(acumulado).sort((a, b) => b[1] - a[1]).slice(0, 12);
-  const maximo  = lista[0] ? lista[0][1] : 1;
-
-  let html = '';
-  lista.forEach(item => {
-    const porcentaje = (item[1] / maximo) * 100;
-    html += `
-      <div class="producto-item">
-        <div class="producto-top"><strong>${item[0]}</strong></div>
-        <div class="producto-barra">
-          <div class="producto-barra-fill" style="width:${porcentaje}%"></div>
-        </div>
-        <div class="producto-valores">
-          <span>PIM</span>
-          <strong>${moneda(item[1])}</strong>
-        </div>
-      </div>
-    `;
-  });
-
-  document.getElementById('contenedorProductos').innerHTML = html;
-  document.getElementById('seccionProductos').classList.remove('oculto');
-}
-
-// -------------------------------------------------------
-// GRÁFICO (ApexCharts)
-// -------------------------------------------------------
-
-function renderizarGrafico(data) {
-  const resumen = {};
-
-  data.forEach(item => {
-    const nombre = item.programa_pptal || 'SIN NOMBRE';
-    resumen[nombre] = (resumen[nombre] || 0) + Number(item.mto_pim || 0);
-  });
-
-  const categorias = Object.keys(resumen).slice(0, 8);
-  const valores    = Object.values(resumen).slice(0, 8);
-
-  if (grafico) grafico.destroy();
-
-  grafico = new ApexCharts(
-    document.querySelector('#grafico'),
-    {
-      chart:       { type: 'bar', height: 360, toolbar: { show: false } },
-      series:      [{ name: 'PIM', data: valores }],
-      xaxis:       { categories: categorias },
-      dataLabels:  { enabled: false },
-      colors:      ['#2563eb']
-    }
-  );
-
-  grafico.render();
-  document.getElementById('seccionGrafico').classList.remove('oculto');
-}
-
-// -------------------------------------------------------
-// CONSTRUIR RESUMEN POR TIPO DE GASTO
-// -------------------------------------------------------
-
-function construirResumen(data) {
-  const grupos = {};
-
-  data.forEach(item => {
-    const clasificador = construirClasificador(item);
-    const tipo         = obtenerTipoGasto(clasificador);
-
-    if (!grupos[tipo]) {
-      grupos[tipo] = { tipo, pia: 0, pim: 0, certificado: 0, compromiso: 0, devengado: 0 };
-    }
-
-    grupos[tipo].pia         += Number(item['mto_pia']          || 0);
-    grupos[tipo].pim         += Number(item['mto_pim']          || 0);
-    grupos[tipo].certificado += Number(item['mto_certificado']  || 0);
-    grupos[tipo].compromiso  += Number(item['mto_compro_anual'] || 0);
-
-    for (let i = 1; i <= 12; i++) {
-      grupos[tipo].devengado += Number(item['mto_devenga_' + String(i).padStart(2, '0')] || 0);
-    }
-  });
-
-  const resumen  = Object.values(grupos);
-  const totalPIM = resumen.reduce((acc, x) => acc + x.pim, 0);
-
-  resumen.forEach(r => {
-    r.porcentaje  = totalPIM > 0 ? (r.pim / totalPIM) * 100 : 0;
-    r.avanceCert  = r.pim > 0   ? (r.certificado / r.pim)  * 100 : 0;
-    r.avanceDev   = r.pim > 0   ? (r.devengado   / r.pim)  * 100 : 0;
-    r.saldoCert   = r.pim - r.certificado;
-    r.saldoDev    = r.pim - r.devengado;
-  });
-
-  resumen.sort((a, b) => b.pim - a.pim);
-  return resumen;
-}
-
-/* ── 04-table.js ── */
-// ==================================================================
-// 04-table.js — Tabla de restricciones, drilldown, ordenamiento
-// ==================================================================
-
-let resumenRestriccionCache = [];
-let datosRestriccionRaw    = [];
-
-function renderizarTablaRestriccion(data) {
-  datosRestriccionRaw    = data;
-  resumenRestriccionCache = construirResumen(data);
-  pintarTablaRestriccion(resumenRestriccionCache);
-}
-
-function pintarTablaRestriccion(resumen) {
-  const tbody = document.getElementById('cuerpoRestriccion');
-  const tfoot = document.getElementById('totalRestriccion');
-
-  let totPIA = 0, totPIM = 0, totCert = 0, totDev = 0, totSaldo = 0;
-
-  let html = '';
-  resumen.forEach((item, i) => {
-    totPIA   += item.pia;
-    totPIM   += item.pim;
-    totCert  += item.certificado;
-    totDev   += item.devengado;
-    totSaldo += item.saldoDev;
-
-    const esRestringida = limpiarTexto(item.tipo).includes('RESTRING');
-    const badge = esRestringida
-      ? `<span class="badge-restrin badge-restringida">🔒 Restringida</span>`
-      : `<span class="badge-restrin badge-libre">✅ Sin Restricción</span>`;
-
-    const tipoVisible = item.tipo
-      .replace(/^sin restricci[oó]n\s*[-–]\s*/i, '')
-      .replace(/^restringida\s*[-–]\s*/i, '')
-      .replace(/^sin restricci[oó]n$/i, 'General')
-      || item.tipo;
-
-    const avDev = item.pim > 0 ? (item.devengado / item.pim * 100).toFixed(1) : '0.0';
-    const pctBar = Math.min(100, parseFloat(avDev));
-    const pctColor = pctBar >= 80 ? '#10b981' : pctBar >= 50 ? '#f59e0b' : '#ef4444';
-
-    html += `
-      <tr class="fila-tipo" onclick="toggleDrillDown(this, '${item.tipo.replace(/'/g,"\\'")}')">
-        <td>${i + 1}</td>
-        <td class="col-tipo">
-          <span class="drill-toggle">▶</span>
-          ${tipoVisible}
-        </td>
-        <td>${badge}</td>
-        <td>${numero(item.pia)}</td>
-        <td>${numero(item.pim)}</td>
-        <td>
-          <div class="pct-cell">
-            <span>${item.porcentaje.toFixed(1)}%</span>
-          </div>
-        </td>
-        <td>${numero(item.certificado)}</td>
-        <td>${numero(item.devengado)}</td>
-        <td>
-          <div class="pct-cell">
-            <div class="pct-bar-wrap">
-              <div class="pct-bar-fill" style="width:${pctBar}%;background:${pctColor}"></div>
-            </div>
-            <span>${avDev}%</span>
-          </div>
-        </td>
-        <td>${numero(item.saldoDev)}</td>
-      </tr>
-      <tr class="fila-drill oculto" id="drill-${i}">
-        <td colspan="10" class="drill-celda">
-          <div class="drill-contenido" id="drill-contenido-${i}"></div>
-        </td>
-      </tr>
-    `;
-  });
-
-  tbody.innerHTML = html;
-  tbody._resumen = resumen;
-
-  const avDevTot = totPIM > 0 ? (totDev / totPIM * 100).toFixed(1) : '0.0';
-  tfoot.innerHTML = `
-    <tr>
-      <td></td>
-      <td class="col-tipo">TOTAL GENERAL</td>
-      <td></td>
-      <td>${numero(totPIA)}</td>
-      <td>${numero(totPIM)}</td>
-      <td>100.0%</td>
-      <td>${numero(totCert)}</td>
-      <td>${numero(totDev)}</td>
-      <td>${avDevTot}%</td>
-      <td>${numero(totSaldo)}</td>
-    </tr>
-  `;
-}
-
-// -------------------------------------------------------
-// DRILL-DOWN
-// -------------------------------------------------------
-
 function toggleDrillDown(fila, tipoGasto) {
   const filas = fila.parentElement.querySelectorAll('.fila-tipo');
   let idx = -1;
@@ -5990,16 +5650,18 @@ function toggleDrillDown(fila, tipoGasto) {
 }
 
 function obtenerDatosFiltradosActuales() {
-  const programa  = (document.getElementById('filtroPrograma')?.value  || '').trim();
-  const producto  = (document.getElementById('filtroProducto')?.value  || '').trim();
-  const actividad = (document.getElementById('filtroActividad')?.value || '').trim();
+  const programa  = (document.getElementById('filtroPrograma')?.value     || '').trim();
+  const producto  = (document.getElementById('filtroProducto')?.value     || '').trim();
+  const actividad = (document.getElementById('filtroActividad')?.value    || '').trim();
   const depto     = (document.getElementById('filtroDepartamento')?.value || '').trim();
+  const generica  = (document.getElementById('zskGenericaInput')?.value   || '').trim().toLowerCase();
 
   return datosRestriccionRaw.filter(item => {
     if (programa  && normalizarCampoGeo(item,'programa_pptal')    !== programa)  return false;
     if (producto  && normalizarCampoGeo(item,'producto_proyecto') !== producto)  return false;
     if (actividad && normalizarCampoGeo(item,'activ_obra_accinv') !== actividad) return false;
     if (depto     && normalizarCampoGeo(item,'departamento_meta') !== depto)     return false;
+    if (generica  && !String(item['generica'] || '').toLowerCase().includes(generica)) return false;
     return true;
   });
 }
@@ -6036,15 +5698,30 @@ const CAMPOS_GEO = {
   activ_obra_accinv:     ['activ_obra_accinv','actividad','obra','accion_inversion']
 };
 
+// Cache WeakMap: evita recomputar el mismo (item, campo) más de una vez.
+// Con 5000 filas × 5 campos = 25 000 lookups por filtro → pasan a O(1) en la 2ª llamada.
+const _normGeoCache = new WeakMap();
+
 function normalizarCampoGeo(item, campo) {
+  // Intentar cache primero
+  let itemCache = _normGeoCache.get(item);
+  if (itemCache && campo in itemCache) return itemCache[campo];
+
+  // Calcular valor
   const candidatos = CAMPOS_GEO[campo] || [campo];
+  let resultado = '';
   for (const c of candidatos) {
     const v = item[c];
     if (v !== undefined && v !== null && String(v).trim() !== '' && String(v).trim() !== '0') {
-      return String(v).trim().replace(/^\d+\.\s*/,'');
+      resultado = String(v).trim().replace(/^\d+\.\s*/,'');
+      break;
     }
   }
-  return '';
+
+  // Guardar en cache
+  if (!itemCache) { itemCache = Object.create(null); _normGeoCache.set(item, itemCache); }
+  itemCache[campo] = resultado;
+  return resultado;
 }
 
 // -------------------------------------------------------
@@ -6095,14 +5772,18 @@ function llenarSelect(id, set, placeholder) {
   const sel = document.getElementById(id);
   if (!sel) return;
   const valorActual = sel.value;
+  // Reusar primer option (placeholder), eliminar el resto
   while (sel.options.length > 1) sel.remove(1);
+  // Usar fragment para una sola escritura al DOM
+  const frag = document.createDocumentFragment();
   [...set].sort().forEach(v => {
     if (!v) return;
     const opt = document.createElement('option');
     opt.value = v;
     opt.textContent = v;
-    sel.appendChild(opt);
+    frag.appendChild(opt);
   });
+  sel.appendChild(frag);
   if (valorActual && [...set].includes(valorActual)) {
     sel.value = valorActual;
   }
@@ -6171,11 +5852,17 @@ function limpiarFiltrosGerencial() {
   filtrarVistaGerencial();
 }
 
+let _filtrarGerTimeout = null;
 function filtrarVistaGerencial() {
-  const datos = obtenerDatosFiltradosGerencial();
-  renderizarGrafico(datos);
-  renderizarProductos(datos);
-  renderizarIndicadores(datos);
+  clearTimeout(_filtrarGerTimeout);
+  _filtrarGerTimeout = setTimeout(() => {
+    const datos = obtenerDatosFiltradosGerencial();
+    requestAnimationFrame(() => {
+      renderizarGrafico(datos);
+      renderizarProductos(datos);
+      renderizarIndicadores(datos);
+    });
+  }, 120);
 }
 
 // -------------------------------------------------------
@@ -6207,7 +5894,13 @@ function ordenarTabla(col) {
   filtrarTablaRestriccion();
 }
 
+// Debounce para que el select responda al instante y el filtrado no bloquee la UI
+let _filtrarTimeout = null;
 function filtrarTablaRestriccion() {
+  clearTimeout(_filtrarTimeout);
+  _filtrarTimeout = setTimeout(_ejecutarFiltro, 120);
+}
+function _ejecutarFiltro() {
   const datosFiltrados = obtenerDatosFiltradosActuales();
   let resumen = construirResumen(datosFiltrados);
 
@@ -6238,7 +5931,7 @@ function filtrarTablaRestriccion() {
     });
   }
 
-  pintarTablaRestriccion(resumen);
+  requestAnimationFrame(() => pintarTablaRestriccion(resumen));
 }
 
 /* ── 06-export.js ── */
@@ -6525,300 +6218,6 @@ function exportarPDF() {
 
 // -------------------------------------------------------
 // EXPORTAR EXCEL
-// -------------------------------------------------------
-
-function exportarExcelHermoso() {
-
-  const AZUL_OSCURO  = '1E3A5F';
-  const AZUL_MEDIO   = '2563EB';
-  const AZUL_CLARO   = 'EFF6FF';
-  const VERDE_OSCURO = '065F46';
-  const VERDE_CLARO  = 'D1FAE5';
-  const VERDE_MED    = 'A7F3D0';
-  const ROJO_CLARO   = 'FEE2E2';
-  const ROJO_MED     = 'FECACA';
-  const BLANCO       = 'FFFFFF';
-  const GRIS_TEXTO   = '1E293B';
-
-  const estCabecera = {
-    font:      { bold: true, color: { rgb: BLANCO }, sz: 11 },
-    fill:      { patternType: 'solid', fgColor: { rgb: AZUL_OSCURO } },
-    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-    border:    borde()
-  };
-
-  const estCabeceraNum = {
-    ...estCabecera,
-    alignment: { horizontal: 'right', vertical: 'center', wrapText: true }
-  };
-
-  const estTitulo = {
-    font:      { bold: true, color: { rgb: '1E3A5F' }, sz: 14 },
-    fill:      { patternType: 'solid', fgColor: { rgb: 'DBEAFE' } },
-    alignment: { horizontal: 'center', vertical: 'center' }
-  };
-
-  const estEntidad = {
-    font:      { bold: true, color: { rgb: GRIS_TEXTO }, sz: 10 },
-    fill:      { patternType: 'solid', fgColor: { rgb: AZUL_CLARO } },
-    alignment: { horizontal: 'center', vertical: 'center', wrapText: true }
-  };
-
-  const estTotal = {
-    font:      { bold: true, color: { rgb: BLANCO }, sz: 10 },
-    fill:      { patternType: 'solid', fgColor: { rgb: VERDE_OSCURO } },
-    alignment: { horizontal: 'right', vertical: 'center' },
-    border:    borde()
-  };
-
-  const estTotalTxt = {
-    ...estTotal,
-    alignment: { horizontal: 'left', vertical: 'center' }
-  };
-
-  function borde() {
-    const b = { style: 'thin', color: { rgb: 'CBD5E1' } };
-    return { top: b, bottom: b, left: b, right: b };
-  }
-
-  function celdaDato(valor, alineacion, color) {
-    return {
-      font:      { sz: 9, color: { rgb: GRIS_TEXTO } },
-      fill:      { patternType: 'solid', fgColor: { rgb: color } },
-      alignment: { horizontal: alineacion || 'right', vertical: 'center' },
-      border:    borde()
-    };
-  }
-
-  function celdaRestriccion(tipo, par) {
-    const restring = limpiarTexto(tipo).includes('RESTRING');
-    if (restring) {
-      return celdaDato(tipo, 'left', par ? ROJO_CLARO : ROJO_MED);
-    }
-    return celdaDato(tipo, 'left', par ? VERDE_CLARO : VERDE_MED);
-  }
-
-  function celda(v, s, t) {
-    return { v, s, t: t || (typeof v === 'number' ? 'n' : 's') };
-  }
-
-  function numFmt(v, s, fmt) {
-    return { v, s, t: 'n', z: fmt || '#,##0' };
-  }
-
-  function pctFmt(v, s) {
-    return { v: v / 100, s, t: 'n', z: '0.0%' };
-  }
-
-  const resumen   = construirResumen(datosExcel);
-  const fila0     = datosExcel[0] || {};
-  const ministerio = (fila0.pliego          || '').split('.').slice(1).join('.').trim();
-  const ejecutora  = (fila0.unidad_ejecutora|| '').split('.').slice(1).join('.').trim();
-  const fechaTxt   = document.getElementById('fechaActualizacion').innerText || '--';
-
-  const wb = XLSX.utils.book_new();
-  const NUM_COLS = 12;
-  const COLS     = ['A','B','C','D','E','F','G','H','I','J','K','L'];
-
-  let wsData = [];
-  wsData.push([ '🚀 zaZA PRESUPUESTO — Resumen Ejecutivo por Tipo de Gasto', ...Array(NUM_COLS-1).fill('') ]);
-  wsData.push([ `Entidad: ${ministerio}  |  Unidad Ejecutora: ${ejecutora}  |  Corte: ${fechaTxt}`, ...Array(NUM_COLS-1).fill('') ]);
-  wsData.push(Array(NUM_COLS).fill(''));
-  wsData.push([
-    'N°', 'TIPOS DE GASTO', 'PIA', 'PIM', '% DEL PIM',
-    'CERTIFICACIÓN', 'COMPROMISO', '% AV. CERT.',
-    'DEVENGADO', '% AV. DEV.',
-    'SALDO SIN CERT.', 'SALDO SIN DEVENGAR'
-  ]);
-
-  let totPIA=0, totPIM=0, totCert=0, totComp=0, totDev=0;
-  resumen.forEach((item, i) => {
-    totPIA  += item.pia;
-    totPIM  += item.pim;
-    totCert += item.certificado;
-    totComp += item.compromiso;
-    totDev  += item.devengado;
-    wsData.push([
-      i + 1, item.tipo, item.pia, item.pim, item.porcentaje / 100,
-      item.certificado, item.compromiso, item.avanceCert / 100,
-      item.devengado, item.avanceDev / 100, item.saldoCert, item.saldoDev
-    ]);
-  });
-
-  const avCertTotal = totPIM > 0 ? totCert / totPIM : 0;
-  const avDevTotal  = totPIM > 0 ? totDev  / totPIM : 0;
-  wsData.push([
-    '', 'TOTAL GENERAL', totPIA, totPIM, 1,
-    totCert, totComp, avCertTotal, totDev, avDevTotal,
-    totPIM - totCert, totPIM - totDev
-  ]);
-
-  const ws1 = XLSX.utils.aoa_to_sheet(wsData);
-
-  const FILA_DAT  = 4;
-  const FILA_TOT  = wsData.length - 1;
-
-  ws1['A1'].s = estTitulo;
-  ws1['A2'].s = estEntidad;
-
-  const cabecerasNum = ['C','D','E','F','G','H','I','J','K','L'];
-  ws1['A4'].s = estCabecera;
-  ws1['B4'].s = estCabecera;
-  cabecerasNum.forEach(c => { if (ws1[c+'4']) ws1[c+'4'].s = estCabeceraNum; });
-
-  for (let r = FILA_DAT + 1; r <= FILA_TOT; r++) {
-    const excelRow = r + 1;
-    const item     = resumen[r - FILA_DAT - 1];
-    if (!item) continue;
-    const par      = (r % 2 === 0);
-    const esRestr  = limpiarTexto(item.tipo).includes('RESTRING');
-    const bgBase   = esRestr ? (par ? ROJO_CLARO : ROJO_MED) : (par ? BLANCO : AZUL_CLARO);
-
-    const cA = 'A' + excelRow;
-    if (ws1[cA]) ws1[cA].s = celdaDato('', 'center', bgBase);
-
-    const cB = 'B' + excelRow;
-    if (ws1[cB]) ws1[cB].s = celdaRestriccion(item.tipo, par);
-
-    ['C','D','F','G','I','K','L'].forEach(col => {
-      const ref = col + excelRow;
-      if (ws1[ref]) { ws1[ref].s = celdaDato('', 'right', bgBase); ws1[ref].z = '#,##0'; ws1[ref].t = 'n'; }
-    });
-
-    ['E','H','J'].forEach(col => {
-      const ref = col + excelRow;
-      if (ws1[ref]) { ws1[ref].s = celdaDato('', 'center', bgBase); ws1[ref].z = '0.0%'; ws1[ref].t = 'n'; }
-    });
-  }
-
-  const rowTotal = FILA_TOT + 1;
-  COLS.forEach((col, idx) => {
-    const ref = col + rowTotal;
-    if (ws1[ref]) {
-      ws1[ref].s = idx === 1 ? estTotalTxt : estTotal;
-      if (idx >= 2) { ws1[ref].z = [4, 7, 9].includes(idx) ? '0.0%' : '#,##0'; ws1[ref].t = 'n'; }
-    }
-  });
-
-  ws1['!merges'] = [
-    { s: { r:0, c:0 }, e: { r:0, c: NUM_COLS-1 } },
-    { s: { r:1, c:0 }, e: { r:1, c: NUM_COLS-1 } },
-    { s: { r: rowTotal-1, c:0 }, e: { r: rowTotal-1, c:1 } }
-  ];
-
-  ws1['!cols'] = [
-    { wch: 4 }, { wch: 42 }, { wch: 14 }, { wch: 14 }, { wch: 10 },
-    { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 10 },
-    { wch: 14 }, { wch: 14 }
-  ];
-
-  ws1['!rows'] = [ { hpt: 30 }, { hpt: 24 }, { hpt: 6 }, { hpt: 40 } ];
-
-  XLSX.utils.book_append_sheet(wb, ws1, 'Resumen Ejecutivo');
-
-  // Hoja 2
-  const acumuladoProyecto = {};
-  datosExcel.forEach(item => {
-    const nombre = item.producto_proyecto || 'SIN NOMBRE';
-    if (!acumuladoProyecto[nombre]) acumuladoProyecto[nombre] = { pim: 0, devengado: 0 };
-    acumuladoProyecto[nombre].pim += Number(item.mto_pim || 0);
-    for (let i = 1; i <= 12; i++) {
-      acumuladoProyecto[nombre].devengado += Number(item['mto_devenga_' + String(i).padStart(2,'0')] || 0);
-    }
-  });
-
-  const proyectos = Object.entries(acumuladoProyecto).sort((a, b) => b[1].pim - a[1].pim);
-
-  const ws2Data = [];
-  ws2Data.push(['🚀 zaZA PRESUPUESTO — Detalle por Producto / Proyecto', '','','','']);
-  ws2Data.push([`Entidad: ${ejecutora}  |  Corte: ${fechaTxt}`, '','','','']);
-  ws2Data.push(['','','','','']);
-  ws2Data.push(['N°','PRODUCTO / PROYECTO','PIM','DEVENGADO','% EJECUCIÓN']);
-
-  let ptotPIM = 0, ptotDev = 0;
-  proyectos.forEach(([nombre, vals], i) => {
-    ptotPIM += vals.pim;
-    ptotDev += vals.devengado;
-    const ejec = vals.pim > 0 ? vals.devengado / vals.pim : 0;
-    ws2Data.push([ i+1, nombre, vals.pim, vals.devengado, ejec ]);
-  });
-  const totalEjec = ptotPIM > 0 ? ptotDev / ptotPIM : 0;
-  ws2Data.push(['', 'TOTAL GENERAL', ptotPIM, ptotDev, totalEjec]);
-
-  const ws2 = XLSX.utils.aoa_to_sheet(ws2Data);
-  const COLS2 = ['A','B','C','D','E'];
-  const cabH2 = {
-    font:      { bold: true, color: { rgb: BLANCO }, sz: 11 },
-    fill:      { patternType: 'solid', fgColor: { rgb: AZUL_MEDIO } },
-    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-    border:    borde()
-  };
-
-  ['A4','B4'].forEach(r => { if (ws2[r]) ws2[r].s = { ...cabH2, alignment: { horizontal: r==='B4'?'left':'center', vertical:'center' } }; });
-  ['C4','D4','E4'].forEach(r => { if (ws2[r]) ws2[r].s = cabH2; });
-
-  ws2['A1'].s = estTitulo;
-  ws2['A2'].s = estEntidad;
-
-  for (let r = 5; r <= ws2Data.length; r++) {
-    const isTotal = (r === ws2Data.length);
-    const par     = (r % 2 === 0);
-    const bg      = isTotal ? VERDE_OSCURO : (par ? BLANCO : AZUL_CLARO);
-    const fontClr = isTotal ? BLANCO : GRIS_TEXTO;
-
-    COLS2.forEach((col, ci) => {
-      const ref = col + r;
-      if (!ws2[ref]) return;
-      ws2[ref].s = {
-        font:      { bold: isTotal, sz: 9, color: { rgb: fontClr } },
-        fill:      { patternType: 'solid', fgColor: { rgb: bg } },
-        alignment: { horizontal: ci === 1 ? 'left' : ci === 4 ? 'center' : 'right', vertical: 'center' },
-        border:    borde()
-      };
-      if (ci >= 2) { ws2[ref].t = 'n'; ws2[ref].z = ci === 4 ? '0.0%' : '#,##0'; }
-    });
-  }
-
-  ws2['!merges'] = [
-    { s: { r:0, c:0 }, e: { r:0, c:4 } },
-    { s: { r:1, c:0 }, e: { r:1, c:4 } },
-    { s: { r: ws2Data.length-1, c:0 }, e: { r: ws2Data.length-1, c:1 } }
-  ];
-
-  ws2['!cols'] = [ { wch: 4 }, { wch: 55 }, { wch: 16 }, { wch: 16 }, { wch: 12 } ];
-  ws2['!rows'] = [ { hpt: 30 }, { hpt: 24 }, { hpt: 6 }, { hpt: 40 } ];
-
-  XLSX.utils.book_append_sheet(wb, ws2, 'Productos y Proyectos');
-
-  const fechaArchivo = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `zaZA_Presupuesto_${fechaArchivo}.xlsx`, { bookType: 'xlsx', cellStyles: true });
-}
-
-/* ── 07-insights.js ── */
-// ==================================================================
-// 07-insights.js — Motor de insights (zaZÁ IA)
-// EDITA AQUÍ para cambiar lógica de insights o umbrales por defecto.
-// ==================================================================
-
-const CONFIG_UMBRALES = {
-  restriccionDominante: 0.15,
-  restriccionCritica: 0.40,
-  umbralRedistribucion: 0.40,
-  ejecucionMes: {
-    3: 0.25,
-    6: 0.50,
-    9: 0.75,
-    12: 1.00
-  },
-  desfaseCertMinimo: 0.70,
-  desfaseExecMinimo: 0.60,
-  ventanaMonesesCritica: 4,
-  ventanaEjecucionMinima: 0.70,
-  concentracionMinima: 0.50
-};
-
-// -------------------------------------------------------
-// FUNCIÓN PRINCIPAL: Generar insights premium
 // -------------------------------------------------------
 
 function generarInsightsPremium(datosExcel) {
@@ -7240,215 +6639,6 @@ function insight_10_recomendacionesAutomaticas(metricas, datosExcel, insights) {
 // RENDER INSIGHTS — distribuye a las dos vistas
 // -------------------------------------------------------
 
-function renderInsights(insights) {
-  let htmlGestion = '';
-  let htmlEstado  = '';
-
-  insights.forEach(insight => {
-    if (!insight) return;
-    const card = buildInsightCard(insight);
-    if (insight.vista === 'gestión' || insight.vista === 'ambas') htmlGestion += card;
-    if (insight.vista === 'estado'  || insight.vista === 'ambas') htmlEstado  += card;
-  });
-
-  const gEl = document.getElementById('insightsGestion');
-  const eEl = document.getElementById('insightsEstado');
-  if (gEl) gEl.innerHTML = htmlGestion;
-  if (eEl) eEl.innerHTML = htmlEstado;
-
-  const gPanel = document.getElementById('seccionInsightsGestion');
-  const ePanel = document.getElementById('seccionInsightsEstado');
-  if (gPanel && htmlGestion) gPanel.classList.remove('oculto');
-  if (ePanel && htmlEstado)  ePanel.classList.remove('oculto');
-}
-
-function buildInsightCard(insight) {
-  const nivelClass = {
-    'CRÍTICO':          'insight-critico',
-    'DIAGNÓSTICO':      'insight-diagnostico',
-    'OPORTUNIDAD':      'insight-oportunidad',
-    'ACCIÓN':           'insight-accion',
-    'RESUMEN':          'insight-resumen',
-    'RECOMENDACIONES':  'insight-recomendaciones'
-  }[insight.nivel] || 'insight-default';
-
-  const accionHTML = insight.accion
-    ? `<button class="insight-btn" onclick="aplicarAccionInsight('${insight.accion.tipo}','${insight.accion.parametro}')">${insight.accion.etiqueta} →</button>`
-    : '';
-
-  return `
-    <div class="insight-card ${nivelClass}">
-      <div class="insight-card-header">
-        <span class="insight-card-titulo">${insight.titulo}</span>
-        <span class="insight-card-nivel">${insight.nivel}</span>
-      </div>
-      <p class="insight-card-mensaje">${insight.mensaje.replace(/\n/g,'<br>')}</p>
-      ${accionHTML}
-    </div>`;
-}
-
-// -------------------------------------------------------
-// APLICAR ACCIÓN DESDE INSIGHT
-// -------------------------------------------------------
-
-function aplicarAccionInsight(tipo, parametro) {
-  if (tipo === 'filtro') {
-    if (parametro === 'mostrarRestringidas') {
-      const el = document.getElementById('filtroTipoRestrin');
-      if (el) el.value = 'restringida';
-      filtrarTablaRestriccion();
-    } else if (parametro === 'mostrarLibres') {
-      const el = document.getElementById('filtroTipoRestrin');
-      if (el) el.value = 'sin restriccion';
-      filtrarTablaRestriccion();
-    }
-    // Switch to gestión if in gerencial
-    if (vistaGerencial) cambiarVista();
-  } else if (tipo === 'ordenar') {
-    if (parametro === 'saldo-descendente' || parametro === 'disponible-descendente') {
-      if (vistaGerencial) cambiarVista();
-      ordenarTabla('saldoDev');
-    }
-  } else if (tipo === 'tabla' || tipo === 'recomendacion') {
-    if (!vistaGerencial) cambiarVista();
-  }
-}
-
-// -------------------------------------------------------
-// PANEL DE CONFIGURACIÓN
-// -------------------------------------------------------
-
-function abrirConfig() {
-  // Cargar valores actuales
-  document.getElementById('cfg_restriccionDominante').value = Math.round(CONFIG_UMBRALES.restriccionDominante * 100);
-  document.getElementById('cfg_ejecucionMes6').value        = Math.round(CONFIG_UMBRALES.ejecucionMes[6] * 100);
-  document.getElementById('cfg_ejecucionMes9').value        = Math.round(CONFIG_UMBRALES.ejecucionMes[9] * 100);
-  document.getElementById('cfg_ventanaCritica').value       = CONFIG_UMBRALES.ventanaMonesesCritica;
-  document.getElementById('configOverlay').classList.remove('oculto');
-}
-
-function cerrarConfig() {
-  document.getElementById('configOverlay').classList.add('oculto');
-}
-
-function guardarConfig() {
-  const rd = parseInt(document.getElementById('cfg_restriccionDominante').value, 10) || 15;
-  const m6 = parseInt(document.getElementById('cfg_ejecucionMes6').value, 10)        || 50;
-  const m9 = parseInt(document.getElementById('cfg_ejecucionMes9').value, 10)        || 75;
-  const vc = parseInt(document.getElementById('cfg_ventanaCritica').value, 10)        || 4;
-
-  CONFIG_UMBRALES.restriccionDominante   = rd / 100;
-  CONFIG_UMBRALES.ejecucionMes[6]        = m6 / 100;
-  CONFIG_UMBRALES.ejecucionMes[9]        = m9 / 100;
-  CONFIG_UMBRALES.ventanaMonesesCritica  = vc;
-
-  cerrarConfig();
-
-  // Re-generar insights si hay datos cargados
-  if (datosExcel.length > 0) {
-    const insights = generarInsightsPremium(datosExcel);
-    renderInsights(insights);
-  }
-}
-
-function resetConfig() {
-  CONFIG_UMBRALES.restriccionDominante  = 0.15;
-  CONFIG_UMBRALES.ejecucionMes[6]       = 0.50;
-  CONFIG_UMBRALES.ejecucionMes[9]       = 0.75;
-  CONFIG_UMBRALES.ventanaMonesesCritica = 4;
-
-  document.getElementById('cfg_restriccionDominante').value = 15;
-  document.getElementById('cfg_ejecucionMes6').value        = 50;
-  document.getElementById('cfg_ejecucionMes9').value        = 75;
-  document.getElementById('cfg_ventanaCritica').value       = 4;
-}
-
-// v3: configOverlay click listener moved to UI layer (~line 4070) — avoiding duplicate
-// document.getElementById('configOverlay').addEventListener('click', function(e) {
-//   if (e.target === this) cerrarConfig();
-// });
-
-
-
-// ═══════════════════════════════════════════════════════════════
-// MISSION CONTROL — UI Layer v3
-// ═══════════════════════════════════════════════════════════════
-
-/* ── 08-ui.js ── */
-// ==================================================================
-// 08-ui.js — Capa Mission Control: theme, starfield, listeners, MC renderers,
-// tabs, drag, dark mode, init, modal insight, carrusel insights, ejecución acciones
-// ==================================================================
-
-let insightsCache = [];
-let activeInsightId = null;
-let activeModalInsight = null;
-// vistaGerencial, grafico, datosExcel, ordenActual ya declarados en core_js
-let currentTab = 'gestion';
-let filtroTipoActual = '';
-
-// ── Starfield ──────────────────────────────────────────────────
-function initStarfield() {
-  const canvas = document.getElementById('starfield');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  function resize() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  const stars = Array.from({length:180}, () => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    r: Math.random() * 1.2 + 0.2,
-    vy: Math.random() * 0.2 + 0.05,
-    o: Math.random()
-  }));
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const t = Date.now() / 1000;
-    stars.forEach(s => {
-      const opacity = 0.15 + Math.abs(Math.sin(t * 0.5 + s.x)) * 0.6;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(0,209,255,${opacity})`;
-      ctx.fill();
-      s.y += s.vy;
-      if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-}
-initStarfield();
-
-// ── Count-up animation ─────────────────────────────────────────
-function countUp(el, finalVal, duration, prefix, suffix) {
-  if (!el) return;
-  const start = performance.now();
-  function tick(now) {
-    const t = Math.min((now - start) / duration, 1);
-    const ease = t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t;
-    const val = finalVal * ease;
-    el.textContent = (prefix||'') + new Intl.NumberFormat('es-PE').format(Math.round(val)) + (suffix||'');
-    if (t < 1) requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-}
-
-// ── Loading messages ───────────────────────────────────────────
-const LOAD_MSGS = [
-  {pct:5,  msg:'LEYENDO ARCHIVO XLS...'},
-  {pct:20, msg:'INTERPRETANDO DATOS SIAF...'},
-  {pct:45, msg:'CALCULANDO RESTRICCIONES...'},
-  {pct:65, msg:'GENERANDO INSIGHTS PREMIUM...'},
-  {pct:82, msg:'CONSTRUYENDO VISUALIZACIONES...'},
-  {pct:100,msg:'MISIÓN LISTA ✓'}
-];
-
 function actualizarCarga(pct, msg) {
   const bar = document.getElementById('loadingBar');
   const pctEl = document.getElementById('loadingPct');
@@ -7483,27 +6673,29 @@ async function procesarExcel(archivo) {
       actualizarFecha(archivo.name);
       renderizarIndicadoresMC(raw);
       await esperar(120);
-      actualizarCarga(65, 'GENERANDO INSIGHTS PREMIUM...');
+      actualizarCarga(65, 'GENERANDO VISUALIZACIONES...');
       renderizarTablaRestriccion(raw);
+      // poblarFiltrosGeo diferida: no bloquea el hilo antes de mostrar el dashboard
+      // poblarFiltrosGeo SÍNCRONO — opciones disponibles cuando aparece el dashboard
       poblarFiltrosGeo(raw);
-      const insights = generarInsightsPremium(raw);
-      insightsCache = insights.filter(Boolean);
-      renderInsightCards(insightsCache);
-      await esperar(120);
-      actualizarCarga(82, 'CONSTRUYENDO VISUALIZACIONES...');
-      renderizarGrafico(raw);
-      renderizarProductos(raw);
-      await esperar(120);
+      await esperar(80);
       actualizarCarga(100, 'MISIÓN LISTA ✓');
       const fin = performance.now();
       const tiempo = ((fin - inicio)/1000).toFixed(2);
-      document.getElementById('footerTiempo').textContent = '⚡ Tiempo: ' + tiempo + 's';
-      document.getElementById('footerRegistros').textContent = '📂 Registros: ' + raw.length.toLocaleString();
+      document.getElementById('footerTiempo').textContent = 'Tiempo: ' + tiempo + 's';
+      document.getElementById('footerRegistros').textContent = 'Registros: ' + raw.length.toLocaleString();
       setTimeout(() => {
         document.getElementById('screenLoading').classList.add('hidden');
         document.getElementById('screenDashboard').classList.remove('hidden');
         document.getElementById('btnAutopilot').classList.remove('hidden');
-      }, 600);
+        // Gráficos gerenciales — lazy: se renderizan solo al abrir Vista Gerencial
+        // Insights en background — no bloquean la primera interacción
+        setTimeout(() => {
+          const insights = generarInsightsPremium(raw);
+          insightsCache = insights.filter(Boolean);
+          renderInsightCards(insightsCache);
+        }, 350);
+      }, 300);
     } catch(err) {
       console.error(err);
       mostrarError();
@@ -7598,7 +6790,7 @@ function actualizarFecha(nombre) {
   const el2 = document.getElementById('footerFecha');
   const el3 = document.getElementById('fechaActualizacion');
   if (el1) el1.textContent = fecha;
-  if (el2) el2.textContent = '📅 Corte: ' + txt;
+  if (el2) el2.textContent = txt;           // solo fecha y hora, el emoji 📅 ya está en el HTML
   if (el3) el3.innerText = txt;
 }
 
@@ -7845,6 +7037,14 @@ function toggleTab(tab) {
     if(btnE) btnE.classList.add('active');
     if(btnG) btnG.classList.remove('active');
     vistaGerencial = true;
+    // Lazy render: gráficos gerenciales solo la primera vez que se abre esta vista
+    if (!_graficosRenderizados && datosExcel.length) {
+      _graficosRenderizados = true;
+      requestAnimationFrame(() => {
+        renderizarGrafico(datosExcel);
+        renderizarProductos(datosExcel);
+      });
+    }
   }
 }
 
@@ -7894,6 +7094,50 @@ function renderizarProductos(data) {
     </div>`;
   });
   document.getElementById('contenedorProductos').innerHTML = html;
+}
+
+// ── Build grouped summary from raw data ────────────────────────
+function construirResumen(data) {
+  const grupos = {};
+
+  data.forEach(item => {
+    const clasificador = construirClasificador(item);
+    const tipo         = obtenerTipoGasto(clasificador);
+
+    if (!grupos[tipo]) {
+      grupos[tipo] = { tipo, pia: 0, pim: 0, certificado: 0, compromiso: 0, devengado: 0 };
+    }
+
+    grupos[tipo].pia         += Number(item['mto_pia']          || 0);
+    grupos[tipo].pim         += Number(item['mto_pim']          || 0);
+    grupos[tipo].certificado += Number(item['mto_certificado']  || 0);
+    grupos[tipo].compromiso  += Number(item['mto_compro_anual'] || 0);
+
+    for (let i = 1; i <= 12; i++) {
+      grupos[tipo].devengado += Number(item['mto_devenga_' + String(i).padStart(2, '0')] || 0);
+    }
+  });
+
+  const resumen  = Object.values(grupos);
+  const totalPIM = resumen.reduce((acc, x) => acc + x.pim, 0);
+
+  resumen.forEach(r => {
+    r.porcentaje  = totalPIM > 0 ? (r.pim / totalPIM) * 100 : 0;
+    r.avanceCert  = r.pim > 0   ? (r.certificado / r.pim)  * 100 : 0;
+    r.avanceDev   = r.pim > 0   ? (r.devengado   / r.pim)  * 100 : 0;
+    r.saldoCert   = r.pim - r.certificado;
+    r.saldoDev    = r.pim - r.devengado;
+  });
+
+  resumen.sort((a, b) => b.pim - a.pim);
+  return resumen;
+}
+
+// ── Wrapper: cache raw data, build summary, paint table ─────────
+function renderizarTablaRestriccion(data) {
+  datosRestriccionRaw    = data;
+  resumenRestriccionCache = construirResumen(data);
+  pintarTablaRestriccion(resumenRestriccionCache);
 }
 
 // ── Table rows dark styled ─────────────────────────────────────
@@ -8006,6 +7250,11 @@ document.getElementById('configOverlay')?.addEventListener('click', function(e) 
 });
 
 // ── Autopilot mode ─────────────────────────────────────────────
+function cerrarAutopilotModal() {
+  const m = document.getElementById('autopilotModal');
+  if (m) m.classList.add('hidden');
+}
+
 function modoAutopilot() {
   if (!datosExcel.length) return;
   const btn = document.getElementById('btnAutopilot');
@@ -8098,473 +7347,6 @@ function toggleDarkMode() {
 
 // ══════════════════════════════════════════════════════════════
 // INSIGHT CAROUSEL
-// ══════════════════════════════════════════════════════════════
-let _insCarouselIdx  = 0;
-let _insCarouselTotal = 0;
-let _insCarouselTimer = null;
-
-function insCarouselInit(total) {
-  _insCarouselTotal = total;
-  _insCarouselIdx   = 0;
-
-  // Wrap each card in a slide div
-  const track = document.getElementById('insightsContainer');
-  if (!track) return;
-  const cards = Array.from(track.children);
-  if (!cards.length) return;
-
-  cards.forEach(card => {
-    const slide = document.createElement('div');
-    slide.className = 'ins-carousel-slide';
-    track.insertBefore(slide, card);
-    slide.appendChild(card);
-  });
-
-  // Build dots
-  const dotsEl = document.getElementById('insDots');
-  if (dotsEl) {
-    dotsEl.innerHTML = '';
-    for (let i = 0; i < total; i++) {
-      const d = document.createElement('div');
-      d.className = 'c-dot' + (i === 0 ? ' active' : '');
-      d.onclick = () => insCarouselGoTo(i);
-      dotsEl.appendChild(d);
-    }
-  }
-
-  insCarouselGoTo(0);
-
-  // Auto-advance every 6 seconds
-  clearInterval(_insCarouselTimer);
-  _insCarouselTimer = setInterval(() => {
-    insCarouselMove(1);
-  }, 6000);
-}
-
-function insCarouselGoTo(idx) {
-  const track = document.getElementById('insightsContainer');
-  if (!track) return;
-  _insCarouselIdx = ((idx % _insCarouselTotal) + _insCarouselTotal) % _insCarouselTotal;
-  track.style.transform = `translateX(-${_insCarouselIdx * 100}%)`;
-
-  // Update dots
-  const dots = document.querySelectorAll('#insDots .c-dot');
-  dots.forEach((d, i) => d.classList.toggle('active', i === _insCarouselIdx));
-
-  // Update counter
-  const counter = document.getElementById('insCounter');
-  if (counter) counter.textContent = `${_insCarouselIdx + 1} / ${_insCarouselTotal}`;
-}
-
-function insCarouselMove(dir) {
-  insCarouselGoTo(_insCarouselIdx + dir);
-  // Reset auto-advance timer
-  clearInterval(_insCarouselTimer);
-  _insCarouselTimer = setInterval(() => insCarouselMove(1), 6000);
-}
-
-// (carousel + modal description logic moved to renderInsights wrapper and abrirModalInsight above)
-
-// ══════════════════════════════════════════════════════════════
-// EXPORT EXCEL — Based on working v2 logic with color styling
-// ══════════════════════════════════════════════════════════════
-function exportarExcelHermoso() {
-
-  const AZUL_OSCURO  = '1E3A5F';
-  const AZUL_MEDIO   = '2563EB';
-  const AZUL_CLARO   = 'EFF6FF';
-  const VERDE_OSCURO = '065F46';
-  const VERDE_CLARO  = 'D1FAE5';
-  const VERDE_MED    = 'A7F3D0';
-  const ROJO_CLARO   = 'FEE2E2';
-  const ROJO_MED     = 'FECACA';
-  const BLANCO       = 'FFFFFF';
-  const GRIS_TEXTO   = '1E293B';
-
-  const estCabecera = {
-    font:      { bold: true, color: { rgb: BLANCO }, sz: 11 },
-    fill:      { patternType: 'solid', fgColor: { rgb: AZUL_OSCURO } },
-    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-    border:    borde()
-  };
-  const estCabeceraNum = { ...estCabecera, alignment: { horizontal: 'right', vertical: 'center', wrapText: true } };
-  const estTitulo = {
-    font:      { bold: true, color: { rgb: '1E3A5F' }, sz: 14 },
-    fill:      { patternType: 'solid', fgColor: { rgb: 'DBEAFE' } },
-    alignment: { horizontal: 'center', vertical: 'center' }
-  };
-  const estEntidad = {
-    font:      { bold: true, color: { rgb: GRIS_TEXTO }, sz: 10 },
-    fill:      { patternType: 'solid', fgColor: { rgb: AZUL_CLARO } },
-    alignment: { horizontal: 'center', vertical: 'center', wrapText: true }
-  };
-  const estTotal = {
-    font:      { bold: true, color: { rgb: BLANCO }, sz: 10 },
-    fill:      { patternType: 'solid', fgColor: { rgb: VERDE_OSCURO } },
-    alignment: { horizontal: 'right', vertical: 'center' },
-    border:    borde()
-  };
-  const estTotalTxt = { ...estTotal, alignment: { horizontal: 'left', vertical: 'center' } };
-
-  function borde() {
-    const b = { style: 'thin', color: { rgb: 'CBD5E1' } };
-    return { top: b, bottom: b, left: b, right: b };
-  }
-  function celdaDato(valor, alineacion, color) {
-    return {
-      font:      { sz: 9, color: { rgb: GRIS_TEXTO } },
-      fill:      { patternType: 'solid', fgColor: { rgb: color } },
-      alignment: { horizontal: alineacion || 'right', vertical: 'center' },
-      border:    borde()
-    };
-  }
-  function celdaRestriccion(tipo, par) {
-    const restring = limpiarTexto(tipo).includes('RESTRING');
-    if (restring) return celdaDato(tipo, 'left', par ? ROJO_CLARO : ROJO_MED);
-    return celdaDato(tipo, 'left', par ? VERDE_CLARO : VERDE_MED);
-  }
-  function celda(v, s, t) { return { v, s, t: t || (typeof v === 'number' ? 'n' : 's') }; }
-  function numFmt(v, s, fmt) { return { v, s, t: 'n', z: fmt || '#,##0' }; }
-  function pctFmt(v, s) { return { v: v / 100, s, t: 'n', z: '0.0%' }; }
-
-  const resumen    = construirResumen(datosExcel);
-  const fila0      = datosExcel[0] || {};
-  const ministerio = (fila0.pliego           || '').split('.').slice(1).join('.').trim();
-  const ejecutora  = (fila0.unidad_ejecutora || '').split('.').slice(1).join('.').trim();
-  const fechaTxt   = document.getElementById('fechaActualizacion').innerText || '--';
-
-  const wb      = XLSX.utils.book_new();
-  const NUM_COLS = 12;
-  const COLS    = ['A','B','C','D','E','F','G','H','I','J','K','L'];
-
-  let wsData = [];
-  wsData.push([ 'ZAZA PRESUPUESTO — Resumen Ejecutivo por Tipo de Gasto', ...Array(NUM_COLS-1).fill('') ]);
-  wsData.push([ `Entidad: ${ministerio}  |  Unidad Ejecutora: ${ejecutora}  |  Corte: ${fechaTxt}`, ...Array(NUM_COLS-1).fill('') ]);
-  wsData.push(Array(NUM_COLS).fill(''));
-  wsData.push([
-    'N°', 'TIPOS DE GASTO', 'PIA', 'PIM', '% DEL PIM',
-    'CERTIFICACIÓN', 'COMPROMISO', '% AV. CERT.',
-    'DEVENGADO', '% AV. DEV.',
-    'SALDO SIN CERT.', 'SALDO SIN DEVENGAR'
-  ]);
-
-  let totPIA=0, totPIM=0, totCert=0, totComp=0, totDev=0;
-  resumen.forEach((item, i) => {
-    totPIA  += item.pia;
-    totPIM  += item.pim;
-    totCert += item.certificado;
-    totComp += item.compromiso;
-    totDev  += item.devengado;
-    wsData.push([
-      i + 1, item.tipo, item.pia, item.pim, item.porcentaje / 100,
-      item.certificado, item.compromiso, item.avanceCert / 100,
-      item.devengado, item.avanceDev / 100, item.saldoCert, item.saldoDev
-    ]);
-  });
-
-  const avCertTotal = totPIM > 0 ? totCert / totPIM : 0;
-  const avDevTotal  = totPIM > 0 ? totDev  / totPIM : 0;
-  wsData.push([
-    '', 'TOTAL GENERAL', totPIA, totPIM, 1,
-    totCert, totComp, avCertTotal, totDev, avDevTotal,
-    totPIM - totCert, totPIM - totDev
-  ]);
-
-  const ws1 = XLSX.utils.aoa_to_sheet(wsData);
-  const FILA_DAT = 4;
-  const FILA_TOT = wsData.length - 1;
-
-  ws1['A1'].s = estTitulo;
-  ws1['A2'].s = estEntidad;
-
-  const cabecerasNum = ['C','D','E','F','G','H','I','J','K','L'];
-  ws1['A4'].s = estCabecera;
-  ws1['B4'].s = estCabecera;
-  cabecerasNum.forEach(c => { if (ws1[c+'4']) ws1[c+'4'].s = estCabeceraNum; });
-
-  for (let r = FILA_DAT + 1; r <= FILA_TOT; r++) {
-    const excelRow = r + 1;
-    const item     = resumen[r - FILA_DAT - 1];
-    if (!item) continue;
-    const par     = (r % 2 === 0);
-    const esRestr = limpiarTexto(item.tipo).includes('RESTRING');
-    const bgBase  = esRestr ? (par ? ROJO_CLARO : ROJO_MED) : (par ? BLANCO : AZUL_CLARO);
-
-    const cA = 'A' + excelRow;
-    if (ws1[cA]) ws1[cA].s = celdaDato('', 'center', bgBase);
-    const cB = 'B' + excelRow;
-    if (ws1[cB]) ws1[cB].s = celdaRestriccion(item.tipo, par);
-    ['C','D','F','G','I','K','L'].forEach(col => {
-      const ref = col + excelRow;
-      if (ws1[ref]) { ws1[ref].s = celdaDato('', 'right', bgBase); ws1[ref].z = '#,##0'; ws1[ref].t = 'n'; }
-    });
-    ['E','H','J'].forEach(col => {
-      const ref = col + excelRow;
-      if (ws1[ref]) { ws1[ref].s = celdaDato('', 'center', bgBase); ws1[ref].z = '0.0%'; ws1[ref].t = 'n'; }
-    });
-  }
-
-  const rowTotal = FILA_TOT + 1;
-  COLS.forEach((col, idx) => {
-    const ref = col + rowTotal;
-    if (ws1[ref]) {
-      ws1[ref].s = idx === 1 ? estTotalTxt : estTotal;
-      if (idx >= 2) { ws1[ref].z = [4, 7, 9].includes(idx) ? '0.0%' : '#,##0'; ws1[ref].t = 'n'; }
-    }
-  });
-
-  ws1['!merges'] = [
-    { s: { r:0, c:0 }, e: { r:0, c: NUM_COLS-1 } },
-    { s: { r:1, c:0 }, e: { r:1, c: NUM_COLS-1 } },
-    { s: { r: rowTotal-1, c:0 }, e: { r: rowTotal-1, c:1 } }
-  ];
-  ws1['!cols'] = [
-    { wch: 4 }, { wch: 42 }, { wch: 14 }, { wch: 14 }, { wch: 10 },
-    { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 10 },
-    { wch: 14 }, { wch: 14 }
-  ];
-  ws1['!rows'] = [ { hpt: 30 }, { hpt: 24 }, { hpt: 6 }, { hpt: 40 } ];
-  XLSX.utils.book_append_sheet(wb, ws1, 'Resumen Ejecutivo');
-
-  // ── Hoja 2: Detalle por Producto / Proyecto ──────────────
-  const acumuladoProyecto = {};
-  datosExcel.forEach(item => {
-    const nombre = item.producto_proyecto || 'SIN NOMBRE';
-    if (!acumuladoProyecto[nombre]) acumuladoProyecto[nombre] = { pim: 0, devengado: 0 };
-    acumuladoProyecto[nombre].pim += Number(item.mto_pim || 0);
-    for (let i = 1; i <= 12; i++) {
-      acumuladoProyecto[nombre].devengado += Number(item['mto_devenga_' + String(i).padStart(2,'0')] || 0);
-    }
-  });
-
-  const proyectos = Object.entries(acumuladoProyecto).sort((a, b) => b[1].pim - a[1].pim);
-  const ws2Data = [];
-  ws2Data.push(['ZAZA PRESUPUESTO — Detalle por Producto / Proyecto', '','','','']);
-  ws2Data.push([`Entidad: ${ejecutora}  |  Corte: ${fechaTxt}`, '','','','']);
-  ws2Data.push(['','','','','']);
-  ws2Data.push(['N°','PRODUCTO / PROYECTO','PIM','DEVENGADO','% EJECUCIÓN']);
-
-  let ptotPIM = 0, ptotDev = 0;
-  proyectos.forEach(([nombre, vals], i) => {
-    ptotPIM += vals.pim;
-    ptotDev += vals.devengado;
-    const ejec = vals.pim > 0 ? vals.devengado / vals.pim : 0;
-    ws2Data.push([ i+1, nombre, vals.pim, vals.devengado, ejec ]);
-  });
-  ws2Data.push(['', 'TOTAL GENERAL', ptotPIM, ptotDev, ptotPIM > 0 ? ptotDev / ptotPIM : 0]);
-
-  const ws2   = XLSX.utils.aoa_to_sheet(ws2Data);
-  const COLS2 = ['A','B','C','D','E'];
-  const cabH2 = {
-    font:      { bold: true, color: { rgb: BLANCO }, sz: 11 },
-    fill:      { patternType: 'solid', fgColor: { rgb: AZUL_MEDIO } },
-    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-    border:    borde()
-  };
-
-  ['A4','B4'].forEach(r => { if (ws2[r]) ws2[r].s = { ...cabH2, alignment: { horizontal: r==='B4'?'left':'center', vertical:'center' } }; });
-  ['C4','D4','E4'].forEach(r => { if (ws2[r]) ws2[r].s = cabH2; });
-  ws2['A1'].s = estTitulo;
-  ws2['A2'].s = estEntidad;
-
-  for (let r = 5; r <= ws2Data.length; r++) {
-    const isTotal = (r === ws2Data.length);
-    const par     = (r % 2 === 0);
-    const bg      = isTotal ? VERDE_OSCURO : (par ? BLANCO : AZUL_CLARO);
-    const fontClr = isTotal ? BLANCO : GRIS_TEXTO;
-    COLS2.forEach((col, ci) => {
-      const ref = col + r;
-      if (!ws2[ref]) return;
-      ws2[ref].s = {
-        font:      { bold: isTotal, sz: 9, color: { rgb: fontClr } },
-        fill:      { patternType: 'solid', fgColor: { rgb: bg } },
-        alignment: { horizontal: ci === 1 ? 'left' : ci === 4 ? 'center' : 'right', vertical: 'center' },
-        border:    borde()
-      };
-      if (ci >= 2) { ws2[ref].t = 'n'; ws2[ref].z = ci === 4 ? '0.0%' : '#,##0'; }
-    });
-  }
-
-  ws2['!merges'] = [
-    { s: { r:0, c:0 }, e: { r:0, c:4 } },
-    { s: { r:1, c:0 }, e: { r:1, c:4 } },
-    { s: { r: ws2Data.length-1, c:0 }, e: { r: ws2Data.length-1, c:1 } }
-  ];
-  ws2['!cols'] = [ { wch: 4 }, { wch: 55 }, { wch: 16 }, { wch: 16 }, { wch: 12 } ];
-  ws2['!rows'] = [ { hpt: 30 }, { hpt: 24 }, { hpt: 6 }, { hpt: 40 } ];
-  XLSX.utils.book_append_sheet(wb, ws2, 'Productos y Proyectos');
-
-  const fechaArchivo = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `ZAZA_Presupuesto_${fechaArchivo}.xlsx`, { bookType: 'xlsx', cellStyles: true });
-}
-
-/* ── 09-autopilot.js ── */
-// ==================================================================
-// 09-autopilot.js — Modal carrusel del Autopilot zaZÁ IA + atajos teclado
-// ==================================================================
-
-// ══════════════════════════════════════════════════════════════
-// AUTOPILOT MODAL CAROUSEL
-// ══════════════════════════════════════════════════════════════
-let _apIdx = 0;
-let _apInsights = [];
-let _apTimer = null;
-
-const INS_NIVEL_COLOR = {
-  'CRÍTICO':        'var(--red)',
-  'DIAGNÓSTICO':    'var(--amber)',
-  'OPORTUNIDAD':    'var(--amber)',
-  'ACCIÓN':         'var(--purple)',
-  'RESUMEN':        'var(--cyan)',
-  'RECOMENDACIONES':'var(--green)',
-};
-
-function abrirAutopilotModal() {
-  _apInsights = insightsCache.filter(Boolean);
-  if (!_apInsights.length) { alert('Cargue un archivo primero.'); return; }
-  _apIdx = 0;
-  document.getElementById('autopilotModal').classList.remove('hidden');
-  apBuildDots();
-  apRenderSlide(0);
-  // Auto-advance every 8 seconds
-  clearInterval(_apTimer);
-  _apTimer = setInterval(() => apCarouselMove(1), 8000);
-}
-
-function cerrarAutopilotModal() {
-  document.getElementById('autopilotModal').classList.add('hidden');
-  clearInterval(_apTimer);
-}
-
-function apBuildDots() {
-  const dotsEl = document.getElementById('apDots');
-  if (!dotsEl) return;
-  dotsEl.innerHTML = '';
-  _apInsights.forEach((_, i) => {
-    const d = document.createElement('button');
-    d.style.cssText = `width:10px;height:10px;border-radius:50%;border:none;cursor:pointer;transition:all .2s;background:var(--muted2);padding:0;`;
-    d.onclick = () => apGoTo(i);
-    d.id = 'apDot_' + i;
-    dotsEl.appendChild(d);
-  });
-}
-
-function apGoTo(idx) {
-  _apIdx = ((idx % _apInsights.length) + _apInsights.length) % _apInsights.length;
-  apRenderSlide(_apIdx);
-}
-
-function apCarouselMove(dir) {
-  apGoTo(_apIdx + dir);
-  clearInterval(_apTimer);
-  _apTimer = setInterval(() => apCarouselMove(1), 8000);
-}
-
-function apRenderSlide(idx) {
-  const ins   = _apInsights[idx];
-  const total = _apInsights.length;
-  const color = INS_NIVEL_COLOR[ins.nivel] || 'var(--cyan)';
-  const badgeCls = BADGE_CLASS[ins.nivel] || '';
-
-  // Progress bar
-  const pb = document.getElementById('apProgressBar');
-  if (pb) pb.style.width = ((idx + 1) / total * 100) + '%';
-
-  // Counter
-  const ctr = document.getElementById('apModalCounter');
-  if (ctr) ctr.textContent = (idx + 1) + ' / ' + total;
-
-  // Dots
-  document.querySelectorAll('#apDots button').forEach((d, i) => {
-    d.style.background   = i === idx ? color : 'var(--muted2)';
-    d.style.width        = i === idx ? '28px' : '10px';
-    d.style.borderRadius = i === idx ? '5px' : '50%';
-  });
-
-  // Card content
-  const content = document.getElementById('apCarouselContent');
-  if (!content) return;
-  content.style.opacity = '0';
-
-  const datos = ins.datos || {};
-  let impactHTML = '';
-  if (datos.porcentaje !== undefined) {
-    const pct = parseFloat(datos.porcentaje);
-    impactHTML = `<div style="margin:16px 0;padding:14px;background:var(--surface);border-radius:10px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:8px">IMPACTO</div>
-      <div style="font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;color:${color}">${pct.toFixed(1)}%</div>
-      <div style="height:6px;background:var(--muted2);border-radius:3px;margin-top:8px;overflow:hidden">
-        <div style="height:100%;width:${Math.min(100,pct)}%;background:${color};border-radius:3px;transition:width 1s ease"></div>
-      </div>
-    </div>`;
-  } else if (datos.monto !== undefined) {
-    impactHTML = `<div style="margin:16px 0;padding:14px;background:var(--surface);border-radius:10px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:4px">MONTO INVOLUCRADO</div>
-      <div style="font-size:24px;font-weight:800;font-family:'JetBrains Mono',monospace;color:${color}">${moneda(datos.monto)}</div>
-    </div>`;
-  } else if (datos.recomendaciones && datos.recomendaciones.length) {
-    impactHTML = `<div style="margin:16px 0;display:flex;flex-direction:column;gap:8px">` +
-      datos.recomendaciones.map(r => `<div style="font-size:13px;padding:10px 14px;background:var(--surface);border-radius:8px;border-left:3px solid ${color};color:var(--white)">${r}</div>`).join('') +
-      `</div>`;
-  }
-
-  const accionHTML = ins.accion ? `
-    <div style="margin-top:16px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:8px">ACCIÓN RECOMENDADA</div>
-      <div style="font-size:12px;color:var(--muted);background:var(--surface);border-radius:8px;padding:10px 14px;border-left:3px solid ${color};margin-bottom:12px">${ins.accion.etiqueta}</div>
-      <button onclick="cerrarAutopilotModal();ejecutarAccionModal_ap('${ins.id}')" style="
-        width:100%;padding:13px;
-        background:linear-gradient(135deg,${color},var(--cyan));
-        border:none;border-radius:10px;
-        color:var(--btn-text);font-weight:800;font-size:14px;
-        cursor:pointer;font-family:'Space Grotesk',sans-serif;
-      ">✔ Aplicar esta Acción</button>
-    </div>` : '';
-
-  content.innerHTML = `
-    <div style="
-      background:var(--hull);
-      border:1px solid var(--border);
-      border-left:4px solid ${color};
-      border-radius:16px;padding:28px;
-    ">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:${color};background:var(--surface);padding:4px 10px;border-radius:6px">${ins._displayId || ins.id}</span>
-        <span class="ins-badge ${badgeCls}">${ins.nivel}</span>
-      </div>
-      <div style="font-size:20px;font-weight:800;margin-bottom:12px;color:var(--white);line-height:1.3">${ins.titulo}</div>
-      <div style="height:1px;background:var(--border2);margin-bottom:16px"></div>
-      <div style="font-size:14px;line-height:1.7;color:var(--white)">${ins.mensaje.split('\n').join('<br>')}</div>
-      ${impactHTML}
-      ${accionHTML}
-    </div>`;
-
-  setTimeout(() => { content.style.opacity = '1'; }, 50);
-}
-
-function ejecutarAccionModal_ap(insightId) {
-  const ins = insightsCache.find(i => i && i.id === insightId);
-  if (!ins || !ins.accion) return;
-  aplicarAccionInsight(ins.accion.tipo, ins.accion.parametro);
-  activarInsightCard(insightId);
-}
-
-// Keyboard nav for autopilot modal
-document.addEventListener('keydown', function(e) {
-  if (document.getElementById('autopilotModal').classList.contains('hidden')) return;
-  if (e.key === 'ArrowLeft')  apCarouselMove(-1);
-  if (e.key === 'ArrowRight') apCarouselMove(1);
-  if (e.key === 'Escape')     cerrarAutopilotModal();
-});
-
-/* ── 10-export-excel.js ── */
-// ==================================================================
-// 10-export-excel.js — Override de exportarExcelHermoso (HTML→XLS con colores)
-// ==================================================================
-
-// ══════════════════════════════════════════════════════════════
-// EXPORT EXCEL HTML — Colores reales via HTML→XLS
-// SheetJS community no soporta cellStyles; HTML→XLS sí preserva colores
 // ══════════════════════════════════════════════════════════════
 function exportarExcelHermoso() {
   if (!datosExcel || !datosExcel.length) { alert('Primero cargue un archivo XLS.'); return; }
@@ -8911,7 +7693,7 @@ toggleTab('gestion');
     } catch (e) {}
   }
 
-  // 6. Combobox Generica
+  // 6. Combobox Generica — valores únicos de la columna AC (campo 'generica')
   function poblarGenericas() {
     try {
       const input = $('zskGenericaInput');
@@ -8919,27 +7701,21 @@ toggleTab('gestion');
       if (!input || !list) return;
       if (CFG.filtros && CFG.filtros.placeholderGenerica) input.placeholder = CFG.filtros.placeholderGenerica;
       const data = (typeof datosRestriccionRaw !== 'undefined' && Array.isArray(datosRestriccionRaw)) ? datosRestriccionRaw : [];
-      if (!data.length || typeof construirResumen !== 'function') return;
-      let resumen = [];
-      try { resumen = construirResumen(data); } catch (e) { return; }
+      if (!data.length) return;
       const set = new Set();
-      resumen.forEach(function(r){
-        const limpio = String(r.tipo || '')
-          .replace(/^sin restricci[oó]n\s*[-–]\s*/i, '')
-          .replace(/^restringida\s*[-–]\s*/i, '').trim();
-        if (limpio && limpio.toLowerCase() !== 'general') set.add(limpio);
+      data.forEach(function(item) {
+        const val = String(item['generica'] || '').trim();
+        if (val) set.add(val);
       });
-      list.innerHTML = '';
-      Array.from(set).sort().forEach(function(v){
+      list.innerHTML = '<option value="">Todas</option>';
+      Array.from(set).sort().forEach(function(v) {
         const opt = document.createElement('option');
         opt.value = v;
         list.appendChild(opt);
       });
     } catch (e) {}
   }
-  window.__zskOnGenericaInput = function (val) {
-    const search = $('filtroRestrin');
-    if (search) search.value = val || '';
+  window.__zskOnGenericaInput = function () {
     if (typeof filtrarTablaRestriccion === 'function') filtrarTablaRestriccion();
   };
 
@@ -9044,13 +7820,21 @@ toggleTab('gestion');
           '<section class="zsk-insights-grid" id="zskInsightsGrid"></section>' +
           '<footer class="zsk-modal-foot">' +
             '<div class="zsk-foot-ic">' +
-              '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.04z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.04z"/></svg>' +
+              '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
             '</div>' +
             '<div class="zsk-foot-copy">' +
               '<h5>' + (m.footerTitulo || '¿Necesitas un análisis más profundo?') + '</h5>' +
-              '<p>' + (m.footerTexto || 'Puedo ayudarte a identificar patrones, tendencias y oportunidades específicas en tu presupuesto.') + '</p>' +
+              '<p>' + (m.footerTexto || 'Contáctanos por WhatsApp para consultas personalizadas.') + '</p>' +
             '</div>' +
-            '<button class="zsk-foot-cta" onclick="cerrarAutopilotModal()">' + (m.ctaTexto || 'Hacer nueva consulta') + '</button>' +
+            (function(){
+              var _entidad = (($('hdrEntityName') && $('hdrEntityName').textContent.trim()) || 'Entidad no identificada');
+              var _fecha   = (($('fechaActualizacion') && $('fechaActualizacion').textContent.trim()) || 'Sin fecha de corte');
+              var _msg     = encodeURIComponent('Hola zaZÁ PRESUPUESTO!\n\nEntidad: ' + _entidad + '\nFecha de corte SIAF: ' + _fecha + '\n\nSolicito un análisis más profundo de mi presupuesto.');
+              return '<a class="zsk-foot-cta" href="https://wa.me/51954708174?text=' + _msg + '" target="_blank" rel="noopener">' +
+                '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>' +
+                ' Consultar por WhatsApp' +
+              '</a>';
+            })() +
           '</footer>' +
         '</div>';
 
@@ -10221,26 +9005,6 @@ toggleTab('gestion');
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setupMobileCollapse);
   else setupMobileCollapse();
 
-  // Re-render gerencial usando iconos premium (override del renderTableroPro v7)
-  // Sustituir solo los iconos al insertar el panel
-  if (typeof window.__zskRenderGerencial === 'function') {
-    const origRender = window.__zskRenderGerencial;
-    window.__zskRenderGerencial = function() {
-      origRender.apply(this, arguments);
-      // Reemplazar iconos
-      const cards = document.querySelectorAll('.zsk-prod');
-      const cfg = (window.ZAZA_CONFIG && window.ZAZA_CONFIG.gerencial && window.ZAZA_CONFIG.gerencial.productos) || [];
-      cards.forEach((card, i) => {
-        const illu = card.querySelector('.zsk-prod-illu');
-        const p = cfg[i];
-        if (illu && p && window.__zskIconsPremium[p.icono]) {
-          illu.innerHTML = window.__zskIconsPremium[p.icono];
-        }
-      });
-    };
-    // Trigger re-render
-    setTimeout(() => window.__zskRenderGerencial && window.__zskRenderGerencial(), 100);
-  }
 })();
 </script>
 </body>
