@@ -2363,9 +2363,13 @@ body.dark-mode #autopilotModal:not(.hidden){
   .zsk-section-head{ padding:16px 18px 10px; }
   .zsk-table thead th{ padding:10px 10px; font-size:10.5px; }
   .zsk-table tbody td{ padding:10px; font-size:12px; }
-  .zsk-robot-wrap{ right:16px; bottom:16px; }
+  .zsk-robot-wrap{ right:16px; bottom:16px; z-index:9999; }
   .zsk-robot-btn{ width:62px; height:62px; }
   .zsk-robot-tip{ display:none; }
+}
+/* Robot: fallback para móviles que no soportan body:has() */
+.zsk-robot-wrap[aria-hidden="false"]{
+  display:block !important;
 }
 /* ── CABECERA MOBILE ≤ 520px ──────────────────────────────────── */
 @media (max-width:520px){
@@ -2870,6 +2874,15 @@ body.dark-mode .zsk-kpi.hero{
   50%     { transform:translateY(-1px) rotate(0); }
   80%     { transform:translateY(-3px) rotate(2deg); }
 }
+.zsk-robot-corte{
+  text-align:center;margin-top:6px;
+  background:rgba(15,23,42,.85);border:1px solid rgba(96,165,250,.25);
+  border-radius:8px;padding:4px 10px;backdrop-filter:blur(8px);
+  white-space:nowrap;
+}
+.zsk-robot-corte-lbl{display:block;font-size:9px;color:var(--muted2);letter-spacing:.05em;text-transform:uppercase;}
+.zsk-robot-corte-val{display:block;font-size:12px;font-weight:700;color:#93c5fd;margin-top:2px;}
+.zsk-robot-corte-hora{display:block;font-size:11px;font-weight:600;color:#93c5fd;margin-top:1px;font-family:'JetBrains Mono',monospace;}
 .zsk-robot-wrap .zsk-robot-btn{
   animation:zsk-robot-bob 4.5s ease-in-out infinite !important;
 }
@@ -4594,6 +4607,214 @@ body.dark-mode .zsk-prod{
   font-weight:500;
   letter-spacing:.02em;
 }
+
+/* ══════════════════════════════════════════════════════════
+   NEW DASHBOARD CARDS v2025
+══════════════════════════════════════════════════════════ */
+.nkpi-row{
+  display:grid;
+  grid-template-columns:1.4fr 1fr 1fr 1fr;
+  gap:14px;
+  padding:0 24px 14px;
+}
+.nkpi-c{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px 20px 16px;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+.nkpi-lbl{
+  font-size:10px;font-weight:700;letter-spacing:.09em;
+  color:var(--muted);text-transform:uppercase;
+  display:flex;align-items:center;gap:5px;
+  margin-bottom:12px;
+}
+
+.nkpi-tooltip-box{
+  background:#1e293b;border:1px solid rgba(96,165,250,.35);
+  color:#e2e8f0;font-size:12px;padding:7px 12px;border-radius:8px;
+  max-width:220px;line-height:1.4;pointer-events:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+  backdrop-filter:blur(8px);
+}
+
+.nkpi-lbl-i{
+  font-size:12px;color:#94a3b8;cursor:pointer;
+  font-weight:400;
+  transition:color .15s;
+}
+.nkpi-lbl-i:hover{color:#60a5fa;}
+/* Card 1 */
+.nkpi-c1-body{
+  display:flex;align-items:flex-start;
+  justify-content:space-between;gap:10px;flex:1;
+}
+.nkpi-c1-left{flex:1;min-width:0;}
+.nkpi-big-pct{
+  font-size:42px;font-weight:800;line-height:1;
+  color:var(--white);margin-bottom:6px;
+}
+.nkpi-detail{
+  font-size:11px;color:#94a3b8;
+  margin-bottom:8px;line-height:1.4;
+}
+.nkpi-trend{
+  font-size:11px;font-weight:600;
+  margin-bottom:3px;
+}
+.nkpi-ritmo{font-size:10px;color:#94a3b8;}
+.nkpi-spark-wrap{
+  display:flex;flex-direction:column;
+  align-items:flex-end;flex-shrink:0;padding-top:2px;
+}
+.nkpi-spark-months{
+  display:flex;justify-content:space-between;
+  font-size:9px;color:#94a3b8;width:120px;
+  margin-top:3px;
+}
+/* Cards 2 & 3 */
+.nkpi-big-amt{
+  font-size:26px;font-weight:800;
+  color:#3B82F6;line-height:1.1;margin-bottom:5px;
+}
+.nkpi-sub{
+  font-size:11px;color:var(--muted);
+  margin-bottom:auto;line-height:1.4;
+}
+.nkpi-date{
+  font-size:11px;color:#94a3b8;
+  margin-top:10px;
+}
+/* Card 4 */
+.nkpi-c4-body{
+  display:flex;align-items:flex-start;
+  gap:12px;flex:1;
+}
+.nkpi-shield{font-size:32px;flex-shrink:0;line-height:1;margin-top:2px;}
+.nkpi-estado-nivel{
+  font-size:15px;font-weight:800;margin-bottom:4px;
+}
+.nkpi-estado-sub{
+  font-size:11px;color:#94a3b8;
+  line-height:1.4;margin-bottom:2px;
+}
+.nkpi-estado-link{
+  display:inline-block;margin-top:7px;
+  font-size:11px;color:#3B82F6;
+  text-decoration:none;cursor:pointer;
+}
+.nkpi-estado-link:hover{text-decoration:underline;}
+
+/* COMPOSICIÓN PRESUPUESTAL */
+.ncomp-wrap{
+  display:flex;align-items:center;gap:28px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:14px;padding:18px 24px 16px;
+  margin:0 24px 14px;
+}
+.ncomp-main{flex:1;min-width:0;}
+.ncomp-side{
+  display:flex;align-items:center;gap:18px;
+  flex-shrink:0;
+}
+.ncomp-ttl{
+  font-size:10px;font-weight:700;letter-spacing:.09em;
+  color:var(--muted);text-transform:uppercase;
+  display:flex;align-items:center;gap:5px;
+  margin-bottom:2px;
+}
+.ncomp-stl{font-size:11px;color:#94a3b8;margin-bottom:14px;}
+.ncomp-bar{
+  display:flex;height:28px;border-radius:6px;
+  overflow:hidden;margin-bottom:10px;
+}
+.ncomp-bl{
+  background:#22c55e;display:flex;align-items:center;
+  justify-content:center;transition:width .7s ease;min-width:0;
+}
+.ncomp-br{
+  background:#ef4444;display:flex;align-items:center;
+  justify-content:center;transition:width .7s ease;min-width:0;
+}
+.ncomp-bpct{
+  font-size:11px;font-weight:700;color:#fff;
+  white-space:nowrap;padding:0 6px;
+}
+.ncomp-leg{display:flex;gap:28px;flex-wrap:wrap;}
+.ncomp-leg-row{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;color:var(--muted);margin-bottom:3px;
+}
+.ncomp-leg-amt{
+  font-size:12px;font-weight:700;color:var(--white);
+  padding-left:14px;
+}
+.ndot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ndot-g{background:#22c55e;}
+.ndot-r{background:#ef4444;}
+/* Donut */
+.ncomp-donut-wrap{
+  position:relative;width:110px;height:110px;flex-shrink:0;
+}
+.ncomp-donut-lbl{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;
+}
+.ncomp-donut-pct{
+  font-size:14px;font-weight:800;
+  color:#22c55e;line-height:1.1;
+}
+.ncomp-donut-sub{font-size:9px;color:#94a3b8;}
+/* Donut legend */
+.ncomp-dleg{
+  font-size:11px;color:#94a3b8;
+  display:flex;flex-direction:column;gap:5px;
+}
+.ncomp-dleg-row{display:flex;align-items:center;gap:6px;}
+.ncomp-dleg-pct{font-size:14px;font-weight:800;}
+.ncomp-dleg-amt{
+  font-size:10px;color:#94a3b8;
+  padding-left:14px;margin-top:-2px;
+}
+.ncomp-dtotal{
+  font-size:11px;color:#94a3b8;
+  margin-top:6px;
+}
+
+/* Dato de corte badge */
+.nkpi-corte{
+  display:flex;align-items:center;gap:6px;
+  font-size:10px;color:var(--muted);
+  padding:0 24px 10px;
+  justify-content:flex-end;
+}
+.nkpi-corte-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#22c55e;flex-shrink:0;
+}
+.nkpi-corte-lbl{
+  font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);
+}
+.nkpi-corte-val{color:var(--white);font-weight:600;}
+
+/* Responsive */
+@media(max-width:960px){
+  .nkpi-row{grid-template-columns:1fr 1fr;}
+  .nkpi-row > .nkpi-c:first-child{grid-column:1/-1;}
+  .ncomp-wrap{flex-direction:column;align-items:stretch;}
+  .ncomp-side{justify-content:center;}
+}
+@media(max-width:540px){
+  .nkpi-row{grid-template-columns:1fr;padding:0 12px 12px;}
+  .nkpi-row > .nkpi-c:first-child{grid-column:auto;}
+  .ncomp-wrap{margin:0 12px 12px;}
+  .nkpi-corte{padding:0 12px 10px;}
+}
 </style>
 </head>
 <body>
@@ -4798,6 +5019,115 @@ body.dark-mode .zsk-prod{
       </div>
     </div>
 
+
+    <!-- KPIs REDESIGN v2025 -->
+    <section class="nkpi-row">
+
+      <!-- Card 1: Avance de Ejecución -->
+      <div class="nkpi-c">
+        <div class="nkpi-lbl">AVANCE DE EJECUCIÓN <span class="nkpi-lbl-i" data-tip="Porcentaje del PIM devengado">ⓘ</span></div>
+        <div class="nkpi-c1-body">
+          <div class="nkpi-c1-left">
+            <div class="nkpi-big-pct" id="nkpiEjecPct">—</div>
+            <div class="nkpi-detail" id="nkpiEjecDetail">—</div>
+            <div class="nkpi-trend" id="nkpiEjecTrend">—</div>
+            <div class="nkpi-ritmo" id="nkpiEjecRitmo">—</div>
+          </div>
+          <div class="nkpi-spark-wrap">
+            <svg id="nkpiSparkSvg" viewBox="0 0 120 40" width="120" height="40" preserveAspectRatio="none" style="overflow:visible"></svg>
+            <div class="nkpi-spark-months" id="nkpiSparkMonths"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Devengado -->
+      <div class="nkpi-c">
+        <div class="nkpi-lbl">DEVENGADO (S/) <span class="nkpi-lbl-i" data-tip="Monto total devengado acumulado">ⓘ</span></div>
+        <div class="nkpi-big-amt" id="nkpiDevAmt">—</div>
+        <div class="nkpi-sub">Ejecutado acumulado</div>
+        <div class="nkpi-date" id="nkpiDevDate">—</div>
+      </div>
+
+      <!-- Card 3: PIM Total -->
+      <div class="nkpi-c">
+        <div class="nkpi-lbl">PIM TOTAL (S/) <span class="nkpi-lbl-i" data-tip="Presupuesto Institucional Modificado">ⓘ</span></div>
+        <div class="nkpi-big-amt" id="nkpiPimAmt">—</div>
+        <div class="nkpi-sub">Presupuesto Institucional Modificado</div>
+        <div class="nkpi-date" id="nkpiPimDate">—</div>
+      </div>
+
+      <!-- Card 4: Estado de Ejecución -->
+      <div class="nkpi-c">
+        <div class="nkpi-lbl">ESTADO DE EJECUCIÓN <span class="nkpi-lbl-i" data-tip="Evaluación del ritmo de ejecución">ⓘ</span></div>
+        <div class="nkpi-c4-body">
+          <div class="nkpi-shield" id="nkpiEstadoIcon">🛡️</div>
+          <div>
+            <div class="nkpi-estado-nivel" id="nkpiEstadoNivel">—</div>
+            <div class="nkpi-estado-sub" id="nkpiEstadoDesc">—</div>
+            <div class="nkpi-estado-sub" id="nkpiEstadoAtenciones">—</div>
+            <a class="nkpi-estado-link" onclick="document.getElementById('cuerpoRestriccion')?.scrollIntoView({behavior:'smooth'})">Ver detalle de riesgos →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPOSICIÓN PRESUPUESTAL -->
+    <div class="ncomp-wrap">
+      <div class="ncomp-main">
+        <div class="ncomp-ttl">COMPOSICIÓN PRESUPUESTAL <span class="nkpi-lbl-i" data-tip="Distribución libre vs restringido">ⓘ</span></div>
+        <div class="ncomp-stl">Distribución del presupuesto según tipo de restricción</div>
+        <div class="ncomp-bar">
+          <div class="ncomp-bl" id="ncompBarLibre" style="width:50%"><span class="ncomp-bpct" id="ncompPctLibreBar">—</span></div>
+          <div class="ncomp-br" id="ncompBarRestr" style="width:50%"><span class="ncomp-bpct" id="ncompPctRestrBar">—</span></div>
+        </div>
+        <div class="ncomp-leg">
+          <div>
+            <div class="ncomp-leg-row"><span class="ndot ndot-g"></span>Presupuesto Flexible (Sin restricción)</div>
+            <div class="ncomp-leg-amt" id="ncompAmtLibre">—</div>
+          </div>
+          <div>
+            <div class="ncomp-leg-row"><span class="ndot ndot-r"></span>Con restricciones</div>
+            <div class="ncomp-leg-amt" id="ncompAmtRestr">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="ncomp-side">
+        <div class="ncomp-donut-wrap">
+          <svg viewBox="0 0 110 110" width="110" height="110">
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#ef4444" stroke-width="13"/>
+            <circle id="ncompDonutArc" cx="55" cy="55" r="42" fill="none" stroke="#22c55e"
+                    stroke-width="13" stroke-dasharray="263.89" stroke-dashoffset="0"
+                    stroke-linecap="butt" transform="rotate(-90 55 55)"/>
+          </svg>
+          <div class="ncomp-donut-lbl">
+            <div class="ncomp-donut-pct" id="ncompDonutPct">—</div>
+            <div class="ncomp-donut-sub">Sin restr.</div>
+          </div>
+        </div>
+        <div class="ncomp-dleg">
+          <div class="ncomp-dleg-row"><span class="ndot ndot-g"></span><span class="ncomp-dleg-pct" style="color:#22c55e" id="ncompDLibrePct">—</span>&nbsp;Sin restricción</div>
+          <div class="ncomp-dleg-amt" id="ncompDLibreAmt">—</div>
+          <div class="ncomp-dleg-row" style="margin-top:6px"><span class="ndot ndot-r"></span><span class="ncomp-dleg-pct" style="color:#ef4444" id="ncompDRestrPct">—</span>&nbsp;Con restricciones</div>
+          <div class="ncomp-dleg-amt" id="ncompDRestrAmt">—</div>
+          <div class="ncomp-dtotal" id="ncompDTotal">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IDs heredados (usados por exportaciones y otros módulos) — ocultos -->
+    <span id="briefLibre" style="display:none">—</span>
+    <span id="briefRestr" style="display:none">—</span>
+    <span id="briefPim"   style="display:none">—</span>
+    <span id="briefEjec"  style="display:none">—</span>
+    <span id="briefFecha" style="display:none">—</span>
+    <span id="briefCert"  style="display:none">—</span>
+    <span id="briefDev"   style="display:none">—</span>
+    <span id="zskFootLibre" style="display:none">—</span>
+    <span id="zskFootRestr" style="display:none">—</span>
+    <span id="zskCapacidad" style="display:none">—</span>
+    <span id="zskDonutPct"  style="display:none">0%</span>
+
+    <!-- TABLA -->
     <!-- FILTROS -->
     <section class="zsk-filters" id="filaFiltrosGeoMeta">
       <span class="zsk-filter-tag">
@@ -4839,13 +5169,9 @@ body.dark-mode .zsk-prod{
         <svg class="zsk-fl-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </label>
 
-      <label class="zsk-filter-select zsk-filter-combo">
+      <label class="zsk-filter-select">
         <span class="zsk-fl-lbl">Genérica / Partida</span>
-        <input id="zskGenericaInput" class="zsk-fl-native zsk-fl-input" list="zskGenericaList"
-               placeholder="Todas — escribe o elige"
-               oninput="window.__zskOnGenericaInput && window.__zskOnGenericaInput()"
-               onchange="window.__zskOnGenericaInput && window.__zskOnGenericaInput()">
-        <datalist id="zskGenericaList"></datalist>
+        <select id="zskGenericaInput" class="zsk-fl-native" onchange="filtrarTablaRestriccion()"><option value="">Todos</option></select>
         <svg class="zsk-fl-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </label>
 
@@ -4856,71 +5182,6 @@ body.dark-mode .zsk-prod{
 
     </section>
 
-    <!-- KPIs HERO -->
-    <section class="zsk-kpis">
-      <div class="zsk-kpi hero" id="zskKpiLibre">
-        <div class="zsk-kpi-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l4 4h5a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <div class="zsk-kpi-meta">
-          <div class="zsk-kpi-label">Sin restricción</div>
-          <div class="zsk-kpi-value" id="briefLibre">—</div>
-          <div class="zsk-kpi-foot" id="zskFootLibreWrap"><span id="zskFootLibre">Sin datos cargados</span></div>
-        </div>
-        <div class="zsk-kpi-bar"><span id="zskBarLibre" style="width:0%;background:linear-gradient(90deg,var(--green),#34D399);"></span></div>
-      </div>
-
-      <div class="zsk-kpi danger">
-        <div class="zsk-kpi-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <div class="zsk-kpi-meta">
-          <div class="zsk-kpi-label">Restringido</div>
-          <div class="zsk-kpi-value" id="briefRestr">—</div>
-          <div class="zsk-kpi-foot"><span id="zskFootRestr">Sin datos cargados</span></div>
-        </div>
-        <div class="zsk-kpi-bar"><span id="zskBarRestr" style="width:0%;background:linear-gradient(90deg,var(--red),#FCA5A5);"></span></div>
-      </div>
-
-      <div class="zsk-kpi brand">
-        <div class="zsk-kpi-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        </div>
-        <div class="zsk-kpi-meta">
-          <div class="zsk-kpi-label">PIM Total</div>
-          <div class="zsk-kpi-value" id="briefPim">—</div>
-          <div class="zsk-kpi-foot">Presupuesto institucional modificado</div>
-        </div>
-      </div>
-
-      <div class="zsk-kpi accent">
-        <div class="zsk-kpi-donut" id="zskDonut">
-          <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
-            <circle cx="22" cy="22" r="17" fill="none" stroke="#F3E8FF" stroke-width="6"/>
-            <circle id="zskDonutArc" cx="22" cy="22" r="17" fill="none" stroke="#A855F7" stroke-width="6" stroke-dasharray="106.81" stroke-dashoffset="106.81" stroke-linecap="round" transform="rotate(-90 22 22)"/>
-          </svg>
-          <span class="zsk-donut-pct" id="zskDonutPct">0%</span>
-        </div>
-        <div class="zsk-kpi-meta">
-          <div class="zsk-kpi-label">Avance ejec.</div>
-          <div class="zsk-kpi-value" id="briefEjec">—</div>
-          <div class="zsk-kpi-foot"><span id="zskFootDev">Sin datos</span></div>
-        </div>
-      </div>
-
-      <div class="zsk-kpi warn">
-        <div class="zsk-kpi-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        </div>
-        <div class="zsk-kpi-meta">
-          <div class="zsk-kpi-label">Capacidad</div>
-          <div class="zsk-kpi-value zsk-kpi-value-sm" id="zskCapacidad">—</div>
-          <div class="zsk-kpi-foot" id="zskFootCap">—</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TABLA -->
     <section id="sectionControl" class="zsk-table-section">
       <div class="zsk-section-head">
         <div>
@@ -5174,6 +5435,11 @@ body.dark-mode .zsk-prod{
     <span class="zsk-robot-badge" id="zskRobotBadge">9</span>
     <span class="zsk-robot-tip">zaZÁ IA — Análisis Inteligente</span>
   </button>
+  <div class="zsk-robot-corte" id="zskRobotCorte" style="display:none">
+    <span class="zsk-robot-corte-lbl">Datos a corte</span>
+    <span class="zsk-robot-corte-val" id="zskRobotCorteVal">—</span>
+    <span class="zsk-robot-corte-hora" id="zskRobotCorteHora"></span>
+  </div>
 </div>
 <script>
 /* ── 00-zaza-config.js ── */
@@ -5654,7 +5920,7 @@ function obtenerDatosFiltradosActuales() {
   const producto  = (document.getElementById('filtroProducto')?.value     || '').trim();
   const actividad = (document.getElementById('filtroActividad')?.value    || '').trim();
   const depto     = (document.getElementById('filtroDepartamento')?.value || '').trim();
-  const generica  = (document.getElementById('zskGenericaInput')?.value   || '').trim().toLowerCase();
+  const generica = (document.getElementById('zskGenericaInput')?.value || '').trim().toLowerCase();
 
   return datosRestriccionRaw.filter(item => {
     if (programa  && normalizarCampoGeo(item,'programa_pptal')    !== programa)  return false;
@@ -6217,6 +6483,21 @@ function exportarPDF() {
 }
 
 // -------------------------------------------------------
+// UMBRALES DE ANÁLISIS
+// -------------------------------------------------------
+const CONFIG_UMBRALES = {
+  restriccionDominante:   0.15,
+  restriccionCritica:     0.40,
+  umbralRedistribucion:   0.40,
+  ejecucionMes: { 3:0.25, 6:0.50, 9:0.75, 12:1.00 },
+  desfaseCertMinimo:      0.70,
+  desfaseExecMinimo:      0.60,
+  ventanaMonesesCritica:  4,
+  ventanaEjecucionMinima: 0.70,
+  concentracionMinima:    0.50
+};
+
+// -------------------------------------------------------
 // EXPORTAR EXCEL
 // -------------------------------------------------------
 
@@ -6708,59 +6989,204 @@ async function procesarExcel(archivo) {
 
 // ── Render KPIs (Mission Control style) ───────────────────────
 function renderizarIndicadoresMC(data) {
+  // ── Totales base ──────────────────────────────────────────────
   let pim=0, cert=0, dev=0, gir=0, pag=0;
+  const devMes = new Array(12).fill(0);
   data.forEach(item => {
     pim  += Number(item.mto_pim         || 0);
     cert += Number(item.mto_certificado || 0);
     for (let i=1;i<=12;i++) {
       const m = String(i).padStart(2,'0');
-      dev += Number(item['mto_devenga_'+m] || 0);
+      const d = Number(item['mto_devenga_'+m] || 0);
+      dev += d;
+      devMes[i-1] += d;
       gir += Number(item['mto_girado_'+m]  || 0);
       pag += Number(item['mto_pagado_'+m]  || 0);
     }
   });
-  const ejec = pim>0 ? (dev/pim)*100 : 0;
+  const ejec    = pim>0 ? (dev/pim)*100 : 0;
   const certPct = pim>0 ? (cert/pim)*100 : 0;
   const girPct  = pim>0 ? (gir/pim)*100  : 0;
   const pagPct  = pim>0 ? (pag/pim)*100  : 0;
 
-  document.getElementById('kpiPim').textContent  = moneda(pim);
-  document.getElementById('kpiCert').textContent = moneda(cert);
-  document.getElementById('kpiDev').textContent  = moneda(dev);
-  document.getElementById('kpiGir').textContent  = moneda(gir);
-  document.getElementById('kpiPag').textContent  = moneda(pag);
-  document.getElementById('kpiEjec').textContent = ejec.toFixed(1)+'%';
+  // ── Ritmo esperado — basado en fecha exacta de corte ────────
+  let mesActual = new Date().getMonth() + 1;
+  let diaActual = new Date().getDate();
+  let mesLabel  = '';
+  try {
+    const fechaEl = document.getElementById('briefFecha');
+    if (fechaEl && fechaEl.textContent.match(/\d{2}\/\d{2}\/\d{4}/)) {
+      const partes = fechaEl.textContent.split('/');
+      diaActual = parseInt(partes[0], 10);
+      mesActual = parseInt(partes[1], 10);
+      mesLabel  = partes[0] + '/' + partes[1];
+    }
+  } catch(e) {}
+  if (!mesLabel) mesLabel = String(diaActual).padStart(2,'0') + '/' + String(mesActual).padStart(2,'0');
+  // Días transcurridos / 365 para ritmo proporcional exacto
+  const DIAS_MES = [31,28,31,30,31,30,31,31,30,31,30,31];
+  let diasAcum = diaActual;
+  for (let m = 0; m < mesActual - 1; m++) diasAcum += DIAS_MES[m];
+  const esperado = Math.min((diasAcum / 365) * 100, 100);
+  const trend    = ejec - esperado;
 
-  // Bars
+  // ── Legacy KPIs (tablas, bars) ────────────────────────────────
+  const setTxt = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
   const setBar = (id, pct) => { const el=document.getElementById(id); if(el) el.style.width=Math.min(100,pct)+'%'; };
-  setBar('barCert', certPct);
-  setBar('barDev',  ejec);
-  setBar('barGir',  girPct);
-  setBar('barPag',  pagPct);
-  setBar('barEjec', ejec);
+  setTxt('kpiPim',  moneda(pim));
+  setTxt('kpiCert', moneda(cert));
+  setTxt('kpiDev',  moneda(dev));
+  setTxt('kpiGir',  moneda(gir));
+  setTxt('kpiPag',  moneda(pag));
+  setTxt('kpiEjec', ejec.toFixed(1)+'%');
+  setBar('barCert', certPct); setBar('barDev', ejec); setBar('barGir', girPct);
+  setBar('barPag',  pagPct);  setBar('barEjec', ejec);
 
-  // Mission brief bar
-  document.getElementById('briefPim').textContent  = moneda(pim);
-  document.getElementById('briefCert').textContent = moneda(cert);
-  document.getElementById('briefDev').textContent  = moneda(dev);
-  document.getElementById('briefEjec').textContent = ejec.toFixed(1)+'%';
-
-  // Brief color
+  // ── Brief (hidden legacy) ─────────────────────────────────────
+  setTxt('briefPim',  moneda(pim));
+  setTxt('briefCert', moneda(cert));
+  setTxt('briefDev',  moneda(dev));
+  setTxt('briefEjec', ejec.toFixed(1)+'%');
   const ejecEl = document.getElementById('briefEjec');
-  ejecEl.className = 'brief-value mono ' + (ejec >= 70 ? 'green' : ejec >= 40 ? 'cyan' : 'amber');
+  if (ejecEl) ejecEl.className = 'brief-value mono ' + (ejec>=70?'green':ejec>=40?'cyan':'amber');
 
-  // Calcular libre/restringido para brief
+  // ── Libre / Restringido ───────────────────────────────────────
   let libre=0, restr=0;
   data.forEach(item => {
-    const cls = construirClasificador(item);
+    const cls  = construirClasificador(item);
     const tipo = obtenerTipoGasto(cls);
-    const p = Number(item.mto_pim||0);
+    const p    = Number(item.mto_pim||0);
     if (limpiarTexto(tipo).includes('RESTRING')) restr += p; else libre += p;
   });
-  document.getElementById('briefLibre').textContent = moneda(libre);
-  document.getElementById('briefRestr').textContent = moneda(restr);
+  setTxt('briefLibre', moneda(libre));
+  setTxt('briefRestr', moneda(restr));
   const restrEl = document.getElementById('briefRestr');
-  restrEl.className = 'brief-value mono ' + (restr/pim > 0.4 ? 'red' : 'amber');
+  if (restrEl) restrEl.className = 'brief-value mono ' + (restr/pim>0.4?'red':'amber');
+  const totalComp = libre + restr;
+  const librePct  = totalComp>0 ? (libre/totalComp)*100 : 50;
+  const restrPct  = 100 - librePct;
+
+  // ── NUEVAS TARJETAS KPI ───────────────────────────────────────
+
+  // Tarjeta 1 — Ejecución
+  setTxt('nkpiEjecPct', ejec.toFixed(1)+'%');
+  setTxt('nkpiEjecDetail',
+    'S/ ' + (dev/1e6).toFixed(2) + 'M devengado de S/ ' + (pim/1e6).toFixed(2) + 'M');
+  const trendSign  = trend >= 0 ? '↗' : '↘';
+  const trendColor = trend >= 0 ? '#22c55e' : '#f59e0b';
+  const trendEl    = document.getElementById('nkpiEjecTrend');
+  if (trendEl) {
+    trendEl.textContent = trendSign + ' ' + (trend>=0?'+':'') + trend.toFixed(1) + '% vs esperado';
+    trendEl.style.color = trendColor;
+  }
+  setTxt('nkpiEjecRitmo', 'Ritmo esperado: ' + esperado.toFixed(1) + '% (al ' + mesLabel + ')');
+
+  // Sparkline
+  const sparkSvg = document.getElementById('nkpiSparkSvg');
+  const sparkLbl = document.getElementById('nkpiSparkMonths');
+  if (sparkSvg) {
+    const mesesActivos = devMes.slice(0, mesActual);
+    const maxVal = Math.max(...mesesActivos, 1);
+    const W = 120, H = 40, pts = [];
+    mesesActivos.forEach((v, i) => {
+      const x = mesesActivos.length === 1 ? W/2 : (i / (mesesActivos.length-1)) * W;
+      const y = H - (v / maxVal) * (H - 4) - 2;
+      pts.push(x.toFixed(1) + ',' + y.toFixed(1));
+    });
+    if (pts.length >= 2) {
+      sparkSvg.innerHTML =
+        '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round"/>' +
+        '<circle cx="' + pts[pts.length-1].split(',')[0] + '" cy="' + pts[pts.length-1].split(',')[1] + '" r="3" fill="#3b82f6"/>';
+    }
+  }
+  if (sparkLbl) {
+    const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const lbls  = MESES.slice(0, mesActual);
+    // mostrar solo primero, mitad y último para no saturar
+    const show  = [0, Math.floor((lbls.length-1)/2), lbls.length-1];
+    sparkLbl.innerHTML = '';
+    lbls.forEach((m, i) => {
+      const sp = document.createElement('span');
+      sp.textContent = show.includes(i) ? m : '';
+      sparkLbl.appendChild(sp);
+    });
+  }
+
+  // Tarjeta 2 — Devengado
+  setTxt('nkpiDevAmt', moneda(dev));
+  // nkpiDevDate se actualiza también desde actualizarFecha
+
+  // Tarjeta 3 — PIM
+  setTxt('nkpiPimAmt', moneda(pim));
+  // nkpiPimDate se actualiza también desde actualizarFecha
+
+  // Tarjeta 4 — Estado / Semáforo
+  let estadoIcon, estadoNivel, estadoDesc, estadoColor;
+  const diff = ejec - esperado;
+  if (diff >= 5) {
+    estadoIcon  = '🏆'; estadoNivel = 'ADELANTADO';
+    estadoDesc  = 'Ejecución supera el ritmo esperado';
+    estadoColor = '#22c55e';
+  } else if (diff >= -5) {
+    estadoIcon  = '✅'; estadoNivel = 'EN RITMO';
+    estadoDesc  = 'Ejecución dentro del rango esperado';
+    estadoColor = '#3b82f6';
+  } else if (diff >= -15) {
+    estadoIcon  = '⚠️'; estadoNivel = 'RIESGO MEDIO';
+    estadoDesc  = 'Ejecución por debajo del ritmo esperado';
+    estadoColor = '#f59e0b';
+  } else {
+    estadoIcon  = '🚨'; estadoNivel = 'RIESGO ALTO';
+    estadoDesc  = 'Ejecución significativamente rezagada';
+    estadoColor = '#ef4444';
+  }
+  setTxt('nkpiEstadoIcon',    estadoIcon);
+  const nivelEl = document.getElementById('nkpiEstadoNivel');
+  if (nivelEl) { nivelEl.textContent = estadoNivel; nivelEl.style.color = estadoColor; }
+  setTxt('nkpiEstadoDesc', estadoDesc);
+  // Contar partidas con bajo avance (< 50% del esperado)
+  let atencionesCount = 0;
+  data.forEach(item => {
+    const p = Number(item.mto_pim||0);
+    let d = 0;
+    for (let i=1;i<=mesActual;i++) d += Number(item['mto_devenga_'+String(i).padStart(2,'0')]||0);
+    if (p > 0 && (d/p)*100 < esperado*0.5) atencionesCount++;
+  });
+  setTxt('nkpiEstadoAtenciones', 'Requiere atención en ' + atencionesCount + ' partidas');
+
+  // ── COMPOSICIÓN PRESUPUESTAL ──────────────────────────────────
+  const lPct = librePct.toFixed(1);
+  const rPct = restrPct.toFixed(1);
+  const barL = document.getElementById('ncompBarLibre');
+  const barR = document.getElementById('ncompBarRestr');
+  if (barL) barL.style.width = lPct + '%';
+  if (barR) barR.style.width = rPct + '%';
+  setTxt('ncompPctLibreBar', lPct + '%');
+  setTxt('ncompPctRestrBar', rPct + '%');
+  setTxt('ncompAmtLibre',    moneda(libre));
+  setTxt('ncompAmtRestr',    moneda(restr));
+
+  // Donut (circumference = 2πr = 2π×42 ≈ 263.89)
+  const CIRC = 263.89;
+  const donutArc = document.getElementById('ncompDonutArc');
+  if (donutArc) {
+    donutArc.setAttribute('stroke-dasharray',  CIRC.toFixed(2));
+    donutArc.setAttribute('stroke-dashoffset', (CIRC * (1 - librePct/100)).toFixed(2));
+  }
+  setTxt('ncompDonutPct',  lPct + '%');
+  setTxt('ncompDLibrePct', lPct + '%');
+  setTxt('ncompDLibreAmt', moneda(libre));
+  setTxt('ncompDRestrPct', rPct + '%');
+  setTxt('ncompDRestrAmt', moneda(restr));
+  setTxt('ncompDTotal',    'Total: ' + moneda(totalComp));
+
+  // Pié/legacy
+  const zskDonut = document.getElementById('zskDonutPct');
+  if (zskDonut) zskDonut.textContent = lPct + '%';
+  setTxt('zskFootLibre', moneda(libre));
+  setTxt('zskFootRestr', moneda(restr));
+  const capEl = document.getElementById('zskCapacidad');
+  if (capEl) capEl.textContent = lPct + '%';
 }
 
 // Wrapper para renderizarIndicadores original (vista gerencial usa esto)
@@ -6792,6 +7218,20 @@ function actualizarFecha(nombre) {
   if (el1) el1.textContent = fecha;
   if (el2) el2.textContent = txt;           // solo fecha y hora, el emoji 📅 ya está en el HTML
   if (el3) el3.innerText = txt;
+  // Nuevas tarjetas KPI
+  const corte = document.getElementById('nkpiCorteVal');
+  if (corte) corte.textContent = txt;
+  const devDate = document.getElementById('nkpiDevDate');
+  if (devDate) devDate.textContent = '⊙ Acumulado al ' + fecha;
+  const pimDate = document.getElementById('nkpiPimDate');
+  if (pimDate) pimDate.textContent = '⊙ Actualizado al ' + fecha;
+  // Robot corte badge
+  const robotCorte    = document.getElementById('zskRobotCorte');
+  const robotCorteVal = document.getElementById('zskRobotCorteVal');
+  const robotCorteHra = document.getElementById('zskRobotCorteHora');
+  if (robotCorteVal) robotCorteVal.textContent = fecha;
+  if (robotCorteHra) robotCorteHra.textContent = hora;
+  if (robotCorte)    robotCorte.style.display   = 'block';
 }
 
 // ── Render Insights Cards ──────────────────────────────────────
@@ -7138,6 +7578,24 @@ function renderizarTablaRestriccion(data) {
   datosRestriccionRaw    = data;
   resumenRestriccionCache = construirResumen(data);
   pintarTablaRestriccion(resumenRestriccionCache);
+  // Poblar select genérica con valores únicos de la columna
+  try {
+    const sel = document.getElementById('zskGenericaInput');
+    if (sel && sel.tagName === 'SELECT' && data.length) {
+      const set = new Set();
+      data.forEach(function(item) {
+        const val = String(item['generica'] || '').trim();
+        if (val) set.add(val);
+      });
+      sel.innerHTML = '<option value="">Todos</option>';
+      Array.from(set).sort().forEach(function(v) {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        sel.appendChild(opt);
+      });
+    }
+  } catch(e) {}
 }
 
 // ── Table rows dark styled ─────────────────────────────────────
@@ -7707,12 +8165,14 @@ toggleTab('gestion');
         const val = String(item['generica'] || '').trim();
         if (val) set.add(val);
       });
-      list.innerHTML = '<option value="">Todas</option>';
+      list.innerHTML = '<option value="Todas">Todas</option>';
       Array.from(set).sort().forEach(function(v) {
         const opt = document.createElement('option');
         opt.value = v;
         list.appendChild(opt);
       });
+      // Mostrar "Todas" como valor inicial si el campo está vacío
+      if (!input.value) input.value = 'Todas';
     } catch (e) {}
   }
   window.__zskOnGenericaInput = function () {
@@ -8003,13 +8463,16 @@ toggleTab('gestion');
     setIf('fechaActualizacion', demo.fechaCorte);
   }
 
-  // ── 2) Ocultar robot fuera del dashboard ────────────────────────
+  // ── 2) Sincronizar robot con dashboard ──────────────────────────
   function syncRobotScreen() {
     const wrap = $('zskRobotWrap');
     const dash = $('screenDashboard');
     if (!wrap || !dash) return;
     const dashVisible = !dash.classList.contains('hidden');
-    if (!dashVisible) {
+    if (dashVisible) {
+      wrap.style.display = 'block';
+      wrap.setAttribute('aria-hidden','false');
+    } else {
       wrap.style.display = 'none';
       wrap.setAttribute('aria-hidden','true');
     }
@@ -8720,14 +9183,13 @@ toggleTab('gestion');
 
   // ── 2) CARRUSEL marketing auto-rotativo en upload ──────────────
   function iniciarMktCarrusel() {
-    const track = $('zskMktTrack');
-    const dotsEl = $('zskMktDots');
+    const track = document.getElementById('zskMktTrack');
+    const dotsEl = document.getElementById('zskMktDots');
     if (!track) return;
     const slides = track.querySelectorAll('.zsk-mkt-slide');
     if (!slides.length) return;
     let idx = 0;
 
-    // Construir dots
     if (dotsEl && !dotsEl.children.length) {
       slides.forEach((_, i) => {
         const d = document.createElement('button');
@@ -8753,8 +9215,7 @@ toggleTab('gestion');
     let timer = setInterval(next, 4500);
     function restart() { clearInterval(timer); timer = setInterval(next, 4500); }
 
-    // Pausa al hover
-    const carousel = $('zskMktCarousel');
+    const carousel = document.getElementById('zskMktCarousel');
     if (carousel) {
       carousel.addEventListener('mouseenter', () => clearInterval(timer));
       carousel.addEventListener('mouseleave', restart);
@@ -8773,7 +9234,7 @@ toggleTab('gestion');
   'use strict';
   const $ = id => document.getElementById(id);
 
-  // OVERRIDE v8: robot SOLO en dashboard, NUNCA en upload/loading
+  // OVERRIDE: robot SOLO en dashboard, NUNCA en upload/loading
   window.__zskRobotShowAlways = function () {
     try {
       const wrap = $('zskRobotWrap');
@@ -8782,99 +9243,8 @@ toggleTab('gestion');
       const up   = $('screenUpload');
       const ld   = $('screenLoading');
       const enDashboard = dash && !dash.classList.contains('hidden');
-      const enUpload    = up && !up.classList.contains('hidden');
-      const enLoading   = ld && !ld.classList.contains('hidden');
-      // Solo cuando dashboard este visible Y upload/loading ocultos
-      // Y haya data real cargada (datosExcel poblado)
-      const tieneData = Array.isArray(window.datosExcel) && window.datosExcel.length > 0;
-      const visible = enDashboard && !enUpload && !enLoading && tieneData;
-      wrap.style.cssText = visible
-        ? 'position:fixed;right:28px;bottom:28px;z-index:100;display:block;'
-        : 'display:none !important;';
-      wrap.setAttribute('aria-hidden', visible ? 'false' : 'true');
-    } catch (e) {}
-  };
-
-  // OVERRIDE: abrirModalSiempre y modoAutopilot — solo si hay data
-  const origAbrir = window.abrirAutopilotModal;
-  window.abrirAutopilotModal = function () {
-    if (!(window.insightsCache || []).filter(Boolean).length) {
-      // No hay insights reales — no abrir
-      return;
-    }
-    if (typeof origAbrir === 'function') return origAbrir.apply(this, arguments);
-  };
-
-  const origModo = window.modoAutopilot;
-  window.modoAutopilot = function () {
-    if (!Array.isArray(window.datosExcel) || !window.datosExcel.length) {
-      // Sin data — no hacer nada (el robot ni deberia estar visible aqui)
-      return;
-    }
-    if (typeof origModo === 'function') return origModo.apply(this, arguments);
-  };
-
-  // BADGE: no mostrar fallback cuando no hay data real
-  window.__zskUpdateBadgeReal = function () {
-    const b = $('zskRobotBadge');
-    if (!b) return;
-    const real = (window.insightsCache || []).filter(Boolean).length;
-    if (!real) {
-      b.style.display = 'none';
-      return;
-    }
-    b.style.display = 'grid';
-    b.textContent = real > 99 ? '99+' : String(real);
-  };
-
-  // Reaplicar visibilidad robot constantemente los primeros segundos
-  function loop() {
-    window.__zskRobotShowAlways();
-    window.__zskUpdateBadgeReal();
-  }
-  loop();
-  let n = 0;
-  const t = setInterval(() => { loop(); if (++n >= 40) clearInterval(t); }, 250);
-
-  // Observar cambios de estado del dashboard tambien
-  ['screenDashboard','screenUpload','screenLoading'].forEach(id => {
-    const el = $(id);
-    if (el) new MutationObserver(loop).observe(el, { attributes:true, attributeFilter:['class'] });
-  });
-
-  // Tras renderizar insights por el pipeline, refrescar badge
-  if (typeof window.renderInsights === 'function') {
-    const orig = window.renderInsights;
-    window.renderInsights = function () {
-      const r = orig.apply(this, arguments);
-      setTimeout(loop, 30);
-      return r;
-    };
-  }
-})();
-
-
-/* ════════════════════════════════════════════════════════════════════
-   ░░ EXTENSION v11 — Robot SI aparece tras cargar XLS ░░
-   Bug v10: window.datosExcel undefined (let local). Confiamos solo en
-   el estado de las pantallas.
-   ════════════════════════════════════════════════════════════════════ */
-(function () {
-  'use strict';
-  const $ = id => document.getElementById(id);
-
-  // Simplificacion: robot visible si dashboard visible Y upload/loading ocultos
-  window.__zskRobotShowAlways = function () {
-    try {
-      const wrap = $('zskRobotWrap');
-      if (!wrap) return;
-      const dash = $('screenDashboard');
-      const up   = $('screenUpload');
-      const ld   = $('screenLoading');
-      const enDashboard = dash && !dash.classList.contains('hidden');
-      const enUpload    = up && !up.classList.contains('hidden');
-      const enLoading   = ld && !ld.classList.contains('hidden');
-      // Solo el estado de las pantallas — sin check de variable global
+      const enUpload    = up  && !up.classList.contains('hidden');
+      const enLoading   = ld  && !ld.classList.contains('hidden');
       const visible = enDashboard && !enUpload && !enLoading;
       if (visible) {
         wrap.style.cssText = 'position:fixed;right:28px;bottom:28px;z-index:100;display:block;';
@@ -8886,44 +9256,36 @@ toggleTab('gestion');
     } catch (e) {}
   };
 
-  // Modal IA: abrir si hay btnAutopilot visible (ya analizado) o insightsCache
+  // Modal IA
   window.modoAutopilot = function () {
     try {
-      const insights = (window.insightsCache || window._apInsights || []).filter(Boolean);
+      const insights = (window.insightsCache || []).filter(Boolean);
       const btn = $('btnAutopilot');
       const btnReady = btn && !btn.classList.contains('hidden');
-      // Aceptar si btnAutopilot ya esta listo (pipeline termino) o si hay insights
-      if (!insights.length && !btnReady) {
-        // Aun no hay analisis
-        return;
-      }
-      // Abrir el modal (el v3+ reescribe el contenido en .zsk-modal-panel)
+      if (!insights.length && !btnReady) return;
       const modal = $('autopilotModal');
       if (!modal) return;
       modal.classList.remove('hidden');
       if (typeof window.reescribirModalIA === 'function') {
         setTimeout(window.reescribirModalIA, 10);
       } else if (typeof window.abrirAutopilotModal === 'function') {
-        // Usar la funcion original como fallback
         try { window.abrirAutopilotModal(); } catch (e) {}
       }
-    } catch (e) { console.warn('[zsk-v11] modoAutopilot', e); }
+    } catch (e) { console.warn('[zsk-v10] modoAutopilot', e); }
   };
 
-  // Loop robusto
   function tick() {
     window.__zskRobotShowAlways();
-    // Badge real
     const b = $('zskRobotBadge');
     if (b) {
       const real = (window.insightsCache || []).filter(Boolean).length;
       if (real) { b.style.display = 'grid'; b.textContent = real > 99 ? '99+' : String(real); }
-      else      { b.style.display = 'none'; }
+      else       { b.style.display = 'none'; }
     }
   }
   tick();
   let n = 0;
-  const t = setInterval(() => { tick(); if (++n >= 120) clearInterval(t); }, 250);  // 30 segundos
+  const t = setInterval(() => { tick(); if (++n >= 120) clearInterval(t); }, 250);
 
   ['screenDashboard','screenUpload','screenLoading','btnAutopilot'].forEach(id => {
     const el = $(id);
@@ -8933,48 +9295,42 @@ toggleTab('gestion');
 
 
 /* ════════════════════════════════════════════════════════════════════
-   ░░ EXTENSION v12 — UX premium: iconos, tabs, mobile, loading ░░
+   ░░ EXTENSION v12 — UX premium: iconos, tabs, mobile ░░
    ════════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
 
-  // ── 1) Iconos PREMIUM mas refinados para los 4 productos ─────────
-  // Sobrescribir ICONOS del v7 antes de re-render
+  // ── Iconos premium para los 4 productos gerenciales ─────────
   window.__zskIconsPremium = {
     school: '<svg width="56" height="56" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="zg-saf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FCD34D"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><path d="M32 8L4 22v6l28 14 28-14v-6z" fill="url(#zg-saf)" stroke="#92400E" stroke-width="1.5" stroke-linejoin="round"/><path d="M52 28v10c0 4-9 8-20 8s-20-4-20-8V28" fill="#FBBF24" stroke="#92400E" stroke-width="1.5" stroke-linejoin="round"/><circle cx="32" cy="22" r="3" fill="#7F1D1D"/><path d="M56 24v14" stroke="#92400E" stroke-width="2" stroke-linecap="round"/><circle cx="56" cy="40" r="2.5" fill="#EF4444"/></svg>',
     cube:   '<svg width="56" height="56" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="zg-scd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#DBEAFE"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs><path d="M32 6L8 18v28l24 12 24-12V18z" fill="url(#zg-scd)" stroke="#1E3A8A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 18l24 12 24-12M32 30v28" stroke="#1E3A8A" stroke-width="1.8" stroke-linejoin="round"/><circle cx="32" cy="36" r="4" fill="#fff" stroke="#1E3A8A" stroke-width="1.5"/></svg>',
-    inbox:  '<svg width="56" height="56" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="zg-sin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1F5F9"/><stop offset="1" stop-color="#CBD5E1"/></linearGradient></defs><rect x="6" y="22" width="52" height="36" rx="4" fill="url(#zg-sin)" stroke="#475569" stroke-width="1.8"/><path d="M6 38h14l4 6h16l4-6h14" fill="none" stroke="#475569" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 22l8-12h20l8 12" fill="#E2E8F0" stroke="#475569" stroke-width="1.8" stroke-linejoin="round"/><circle cx="32" cy="16" r="3" fill="#94A3B8"/><text x="32" y="20" text-anchor="middle" font-size="6" font-weight="800" fill="#fff" font-family="Inter">?</text></svg>',
-    team:   '<svg width="56" height="56" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="zg-acc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A7F3D0"/><stop offset="1" stop-color="#10B981"/></linearGradient></defs><circle cx="22" cy="20" r="8" fill="url(#zg-acc)" stroke="#065F46" stroke-width="1.8"/><circle cx="42" cy="20" r="8" fill="url(#zg-acc)" stroke="#065F46" stroke-width="1.8"/><path d="M8 50c0-8 6-14 14-14s14 6 14 14M28 50c0-8 6-14 14-14s14 6 14 14" fill="url(#zg-acc)" stroke="#065F46" stroke-width="1.8" stroke-linejoin="round"/><circle cx="22" cy="20" r="3" fill="#fff"/><circle cx="42" cy="20" r="3" fill="#fff"/></svg>'
+    inbox:  '<svg width="56" height="56" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="zg-sin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1F5F9"/><stop offset="1" stop-color="#CBD5E1"/></linearGradient></defs><rect x="6" y="22" width="52" height="36" rx="4" fill="url(#zg-sin)" stroke="#475569" stroke-width="1.8"/><path d="M6 38h14l4 6h16l4-6h14" fill="none" stroke="#475569" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 22l8-12h20l8 12" fill="#E2E8F0" stroke="#475569" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    team:   '<svg width="56" height="56" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="zg-acc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A7F3D0"/><stop offset="1" stop-color="#10B981"/></linearGradient></defs><circle cx="22" cy="20" r="8" fill="url(#zg-acc)" stroke="#065F46" stroke-width="1.8"/><circle cx="42" cy="20" r="8" fill="url(#zg-acc)" stroke="#065F46" stroke-width="1.8"/><path d="M8 50c0-8 6-14 14-14s14 6 14 14M28 50c0-8 6-14 14-14s14 6 14 14" fill="url(#zg-acc)" stroke="#065F46" stroke-width="1.8" stroke-linejoin="round"/></svg>'
   };
 
-  // ── 2) Ocultar header/filtros en Vista Gerencial + mostrar header propio
+  // ── Ocultar filtros en Vista Gerencial ───────────────────────
   function sincronizarVistaTab() {
     try {
-      const tabEstadoVisible = $('tabEstado') && !$('tabEstado').classList.contains('hidden');
-      const sectionHead = document.querySelector('#sectionControl > .zsk-section-head');
-      const filtrosTop  = document.getElementById('filaFiltrosGeoMeta');
-
-      if (tabEstadoVisible) {
-        if (sectionHead) sectionHead.style.display = 'none';
-        if (filtrosTop)  filtrosTop.style.display  = 'none';
-        // Ocultar filtros gerenciales internos
-        document.querySelectorAll('.zsk-filters-ger').forEach(f => f.style.display = 'none');
+      const tabEst = $('tabEstado');
+      const tabVisible = tabEst && !tabEst.classList.contains('hidden');
+      const sHead = document.querySelector('#sectionControl > .zsk-section-head');
+      const filtrosTop = $('filaFiltrosGeoMeta');
+      if (tabVisible) {
+        if (sHead) sHead.style.display = 'none';
+        if (filtrosTop) filtrosTop.style.display = 'none';
       } else {
-        if (sectionHead) sectionHead.style.display = '';
-        if (filtrosTop)  filtrosTop.style.display  = '';
-        document.querySelectorAll('.zsk-filters-ger').forEach(f => f.style.display = '');
+        if (sHead) sHead.style.display = '';
+        if (filtrosTop) filtrosTop.style.display = '';
       }
     } catch (e) {}
   }
-  // Observar cambios de tab
-  const obsTabEst = $('tabEstado');
-  if (obsTabEst) new MutationObserver(sincronizarVistaTab).observe(obsTabEst, { attributes:true, attributeFilter:['class'] });
+  const obsT = $('tabEstado');
+  if (obsT) new MutationObserver(sincronizarVistaTab).observe(obsT, { attributes:true, attributeFilter:['class'] });
   sincronizarVistaTab();
-  // Reaplicar tras N ticks
   let nv = 0; const tv = setInterval(() => { sincronizarVistaTab(); if (++nv >= 30) clearInterval(tv); }, 300);
 
-  // ── 3) MOBILE: filtros colapsables ────────────────────────────
+  // ── Mobile: filtros colapsables ─────────────────────────────
   function setupMobileCollapse() {
     const filtros = $('filaFiltrosGeoMeta');
     if (!filtros || $('zskFilterToggle')) return;
@@ -8987,25 +9343,24 @@ toggleTab('gestion');
       btn.classList.toggle('open');
     });
     filtros.parentNode.insertBefore(btn, filtros);
-
-    // Botón colapsar exportar
-    const exp = document.querySelector('.zsk-export-section');
-    if (exp && !$('zskExportToggle')) {
-      const eBtn = document.createElement('button');
-      eBtn.id = 'zskExportToggle';
-      eBtn.className = 'zsk-mobile-toggle zsk-mobile-toggle-exp';
-      eBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Exportar / Compartir';
-      eBtn.addEventListener('click', () => {
-        exp.classList.toggle('zsk-collapsed-open');
-        eBtn.classList.toggle('open');
-      });
-      exp.parentNode.insertBefore(eBtn, exp);
-    }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setupMobileCollapse);
   else setupMobileCollapse();
 
+  if (typeof window.__zskRenderGerencial === 'function') {
+    const origRender = window.__zskRenderGerencial;
+    window.__zskRenderGerencial = function() {
+      origRender.apply(this, arguments);
+      const cards = document.querySelectorAll('.zsk-prod');
+      const tipos = ['school','cube','inbox','team'];
+      cards.forEach((card, i) => {
+        const ico = card.querySelector('.zsk-prod-icon');
+        const key = tipos[i] || 'cube';
+        if (ico && window.__zskIconsPremium && window.__zskIconsPremium[key]) {
+          ico.innerHTML = window.__zskIconsPremium[key];
+        }
+      });
+    };
+  }
 })();
-</script>
-</body>
-</html>
+</script></body></html>
