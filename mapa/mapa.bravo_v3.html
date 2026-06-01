@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Locales - ATE</title>
+    
+    <!-- Hojas de estilo -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+            background: #f8f9fa;
+        }
+
+        .map-header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .control-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 300px;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        input[type="text"], input[type="range"] {
+            width: 100%;
+            padding: 6px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .legend {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="map-header">🗺️ Locales - Distrito ATE</div>
+<div id="map"></div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="data.js"></script>
+
+<script>
+    // Configuración de colores tipo semáforo
+    const COLOR_SCALE = [
+        { min: 0, max: 18, color: '#4CAF50' },   // Verde
+        { min: 19, max: 36, color: '#FFEB3B' },  // Amarillo
+        { min: 37, max: 55, color: '#F44336' }   // Rojo
+    ];
+
+    // Función para obtener color
+    const getColor = (users) => {
+        return COLOR_SCALE.find(range => users >= range.min && users <= range.max).color;
+    };
+
+    // Capas base
+    const baseLayers = {
+        "Grises": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'),
+        "Calles": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
+        "Satélite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}')
+    };
+
+    // Inicializar mapa
+    const map = L.map('map', {
+        layers: [baseLayers.Grises]
+    }).setView([-12.02756, -76.83216], 11);
+
+    // Configuración de clusters
+    const markers = L.markerClusterGroup({
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        iconCreateFunction: function (cluster) {
+            const count = cluster.getChildCount();
+            return L.divIcon({
+                html: `<div style="background: #2c3e50; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; border: 2px solid white;">
+                        ${count}
+                      </div>`,
+                className: 'cluster-icon',
+                iconSize: L.point(40, 40)
+            });
+        }
+    });
+
+    // Variables de estado
+    let currentMinUsers = 0;
+    let currentSearchTerm = '';
+
+    // Función para actualizar el mapa
+    function updateMap() {
+        markers.clearLayers();
+        
+        const filtered = puntos.filter(p => {
+            const matchesUsers = p.Usuarios >= currentMinUsers;
+            const matchesSearch = currentSearchTerm === '' || 
+                                p.LOCAL_ID.toString().includes(currentSearchTerm);
+            return matchesUsers && matchesSearch;
+        });
+
+        filtered.forEach(p => {
+            const color = getColor(p.Usuarios);
+            const marker = L.marker([p.lat, p.lon], {
+                icon: L.divIcon({
+                    html: `<div style="background: ${color}; color: #333; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                            ${p.Usuarios}
+                          </div>`,
+                    className: 'local-marker',
+                    iconSize: [32, 32]
+                })
+            }).bindPopup(`
+                <div style="min-width: 200px; padding: 10px;">
+                    <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; border-bottom: 2px solid ${color}; padding-bottom: 5px;">
+                        Local ${p.LOCAL_ID}
+                    </div>
+                    <div style="display: grid; gap: 5px;">
+                        <div><span style="color: #718096;">Usuarios:</span> <strong>${p.Usuarios}</strong></div>
+                        <div><span style="color: #718096;">Coordenadas:</span><br>${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</div>
+                    </div>
+                </div>
+            `);
+            
+            markers.addLayer(marker);
+        });
+        
+        map.addLayer(markers);
+        
+        // Si hay búsqueda específica, hacer zoom
+        if (currentSearchTerm && filtered.length > 0) {
+            const bounds = L.latLngBounds(filtered.map(p => [p.lat, p.lon]));
+            map.fitBounds(bounds.pad(0.1));
+        }
+    }
+
+    // Control de filtros
+    const controlPanel = document.createElement('div');
+    controlPanel.className = 'control-panel';
+    controlPanel.innerHTML = `
+        <div class="filter-group">
+            <div style="font-weight: 500; margin-bottom: 8px;">Buscar Local:</div>
+            <input type="text" id="searchInput" placeholder="Ingrese LOCAL_ID">
+        </div>
+        <div class="filter-group">
+            <div style="font-weight: 500; margin-bottom: 8px;">Usuarios mínimos:</div>
+            <input type="range" id="userFilter" min="0" max="55" value="0">
+            <div style="color: #4a5568; margin-top: 5px;">Mínimo: <span id="filterValue">0</span></div>
+        </div>
+    `;
+    document.body.appendChild(controlPanel);
+
+    // Event listeners
+    document.getElementById('userFilter').addEventListener('input', function(e) {
+        currentMinUsers = parseInt(e.target.value);
+        document.getElementById('filterValue').textContent = currentMinUsers;
+        updateMap();
+    });
+
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        currentSearchTerm = e.target.value.trim();
+        updateMap();
+    });
+
+    // Leyenda semáforo
+    const legend = L.control({position: 'bottomright'});
+    legend.onAdd = () => {
+        const div = L.DomUtil.create('div', 'legend');
+        div.innerHTML = `
+            <h4 style="margin:0 0 12px 0; color: #2c3e50; font-size: 0.95rem;">Leyenda de Usuarios</h4>
+            ${COLOR_SCALE.map(range => `
+                <div style="display: flex; align-items: center; margin: 6px 0;">
+                    <div style="background:${range.color}; width: 20px; height: 20px; border-radius: 50%; margin-right: 8px; border: 2px solid white;"></div>
+                    <div style="font-size: 0.9rem; color: #4a5568;">
+                        ${range.min}-${range.max} usuarios
+                    </div>
+                </div>
+            `).join('')}
+            <div style="display: flex; align-items: center; margin-top: 10px;">
+                <div style="background:#2c3e50; width: 20px; height: 20px; border-radius: 50%; margin-right: 8px; border: 2px solid white;"></div>
+                <div style="font-size: 0.9rem; color: #4a5568;">
+                    Agrupación de locales
+                </div>
+            </div>
+        `;
+        return div;
+    };
+    legend.addTo(map);
+
+    // Control de capas base
+    L.control.layers(baseLayers, null, {
+        position: 'topright',
+        collapsed: false
+    }).addTo(map);
+
+    // Inicializar
+    updateMap();
+</script>
+
+</body>
+</html>
