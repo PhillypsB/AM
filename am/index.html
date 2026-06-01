@@ -402,8 +402,8 @@ if (typeof dataset === 'undefined' || !Array.isArray(dataset)) {
     const cont = document.querySelector('.page-wrapper') || document.body;
     const alerta = document.createElement('div');
     alerta.style.cssText = 'background:#fee2e2;border:1.5px solid #dc2626;color:#7f1d1d;padding:18px 22px;border-radius:12px;margin:24px auto;max-width:900px;font-family:Inter,Segoe UI,sans-serif;';
-    alerta.innerHTML = `<strong>⚠ No se pudo cargar el archivo de datos (<code>am_febrero26.js</code>).</strong>
-      <p style="margin-top:8px">Verifique que <code>am_febrero26.js</code> se encuentre en la misma carpeta que este HTML y vuelva a abrir la página.</p>`;
+    alerta.innerHTML = `<strong>⚠ No se pudo cargar el archivo de datos (<code>data/am_febrero26.js</code>).</strong>
+      <p style="margin-top:8px">Verifique que <code>data/am_febrero26.js</code> se encuentre en la misma carpeta que este HTML y vuelva a abrir la página.</p>`;
     cont.prepend(alerta);
   });
   // define dataset vacío para no romper el resto del script
