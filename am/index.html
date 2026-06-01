@@ -396,19 +396,7 @@ const DATOS_CORTE_LABEL_CORTO   = "Abr 2026";
 const PROX_ACTUALIZACION_CORTO  = "16 Jun";
 const PROX_DATOS_LABEL_CORTO    = "MAY 2026";
 
-// Guard: si el dataset no cargó, avisar al usuario con un mensaje claro
-if (typeof dataset === 'undefined' || !Array.isArray(dataset)) {
-  document.addEventListener('DOMContentLoaded', () => {
-    const cont = document.querySelector('.page-wrapper') || document.body;
-    const alerta = document.createElement('div');
-    alerta.style.cssText = 'background:#fee2e2;border:1.5px solid #dc2626;color:#7f1d1d;padding:18px 22px;border-radius:12px;margin:24px auto;max-width:900px;font-family:Inter,Segoe UI,sans-serif;';
-    alerta.innerHTML = `<strong>⚠ No se pudo cargar el archivo de datos (<code>data/am_febrero26.js</code>).</strong>
-      <p style="margin-top:8px">Verifique que <code>data/am_febrero26.js</code> se encuentre en la misma carpeta que este HTML y vuelva a abrir la página.</p>`;
-    cont.prepend(alerta);
-  });
-  // define dataset vacío para no romper el resto del script
-  window.dataset = [];
-}
+
 
 // Helpers de footer (reutilizados para pantalla y Word)
 function _fmtFechaHora(d = new Date()) {
