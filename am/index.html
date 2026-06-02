@@ -63,6 +63,19 @@ body{
 }
 .corte-label{font-size:.75rem;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.05em}
 .corte-value{font-size:.95rem;font-weight:700;color:#fff}
+.corte-select{
+  background:transparent;
+  border:none;
+  color:#fff;
+  font-size:.95rem;
+  font-weight:700;
+  cursor:pointer;
+  font-family:inherit;
+  outline:none;
+  padding:2px 4px;
+  max-width:190px;
+}
+.corte-select option{color:#1e293b;background:#fff;font-weight:600}
 
 /* ── PAGE WRAPPER ────────────────────────────── */
 .page-wrapper{max-width:1240px;margin:0 auto;padding:28px 20px;display:flex;flex-direction:column;gap:24px}
@@ -315,7 +328,7 @@ body{
   </div>
   <div class="corte-pill">
     <span class="corte-label">📅&nbsp;Corte:</span>
-    <span id="corteDisplay" class="corte-value">—</span>
+    <select id="selectCorte" class="corte-select"></select>
   </div>
 </header>
 
@@ -340,10 +353,6 @@ body{
         <div class="select-group">
           <label for="selectDistrito">Distrito</label>
           <select id="selectDistrito"></select>
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="filtrar()">🔍 Consultar</button>
-          <button class="btn btn-secondary" onclick="limpiar()">✕ Limpiar</button>
         </div>
       </div>
     </div>
@@ -396,20 +405,6 @@ const DATOS_CORTE_LABEL_CORTO   = "Abr 2026";
 const PROX_ACTUALIZACION_CORTO  = "16 Jun";
 const PROX_DATOS_LABEL_CORTO    = "MAY 2026";
 
-// Guard: si el dataset no cargó, avisar al usuario con un mensaje claro
-if (typeof dataset === 'undefined' || !Array.isArray(dataset)) {
-  document.addEventListener('DOMContentLoaded', () => {
-    const cont = document.querySelector('.page-wrapper') || document.body;
-    const alerta = document.createElement('div');
-    alerta.style.cssText = 'background:#fee2e2;border:1.5px solid #dc2626;color:#7f1d1d;padding:18px 22px;border-radius:12px;margin:24px auto;max-width:900px;font-family:Inter,Segoe UI,sans-serif;';
-    alerta.innerHTML = `<strong>⚠ No se pudo cargar el archivo de datos (<code>am_febrero26.js</code>).</strong>
-      <p style="margin-top:8px">Verifique que <code>am_febrero26.js</code> se encuentre en la misma carpeta que este HTML y vuelva a abrir la página.</p>`;
-    cont.prepend(alerta);
-  });
-  // define dataset vacío para no romper el resto del script
-  window.dataset = [];
-}
-
 // Helpers de footer (reutilizados para pantalla y Word)
 function _fmtFechaHora(d = new Date()) {
   const pad = n => String(n).padStart(2, '0');
@@ -445,13 +440,30 @@ const LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAg0AAABaCAYAA
 // ══════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════
-const ultimaFecha      = new Date(FECHA_CORTE);
+let   ultimaFecha      = new Date(FECHA_CORTE);
 const opciones         = { month: 'long' };
 let   mesNombre        = ultimaFecha.toLocaleDateString('es-PE', opciones).toUpperCase();
 let   año              = ultimaFecha.getFullYear();
 
-// Mostrar corte en header
-document.getElementById('corteDisplay').textContent = mesNombre + ' ' + año;
+// Poblar select de corte (fechas únicas del dataset, orden descendente)
+const fechasCorte = [...new Set(dataset.map(d => d.fecha))].sort((a, b) => b.localeCompare(a));
+const selectCorte = document.getElementById('selectCorte');
+fechasCorte.forEach(f => {
+  const fdObj  = new Date(f);
+  const fLabel = fdObj.getFullYear() + ' - ' + fdObj.toLocaleDateString('es-PE', { month: 'long' }).toUpperCase();
+  const opt    = document.createElement('option');
+  opt.value = f;
+  opt.text  = fLabel;
+  if (f === FECHA_CORTE) opt.selected = true;
+  selectCorte.add(opt);
+});
+
+selectCorte.addEventListener('change', () => {
+  ultimaFecha = new Date(selectCorte.value);
+  mesNombre   = ultimaFecha.toLocaleDateString('es-PE', { month: 'long' }).toUpperCase();
+  año         = ultimaFecha.getFullYear();
+  if (selectDep.value) filtrar();
+});
 
 const selectDep  = document.getElementById('selectDepartamento');
 const selectProv = document.getElementById('selectProvincia');
@@ -475,6 +487,7 @@ selectDep.addEventListener('change', () => {
     opt.value = opt.text = prov;
     selectProv.add(opt);
   });
+  if (dep) filtrar(); else limpiar();
 });
 
 selectProv.addEventListener('change', () => {
@@ -487,6 +500,11 @@ selectProv.addEventListener('change', () => {
     opt.value = opt.text = dist;
     selectDist.add(opt);
   });
+  if (dep) filtrar();
+});
+
+selectDist.addEventListener('change', () => {
+  if (selectDep.value) filtrar();
 });
 
 // ══════════════════════════════════════════════════
@@ -1788,7 +1806,7 @@ async function exportarPDF() {
       const id = (sel.id||'').toLowerCase();
       const name = (sel.name||'').toLowerCase();
       const first = ((sel.options[0] && sel.options[0].textContent) || '').toLowerCase();
-      if (id.includes('depart') || id.includes('prov') || id.includes('dist') || name.includes('depart') || name.includes('prov') || name.includes('dist') || first.includes('departamento') || first.includes('provincia') || first.includes('distrito') || sel.options.length > 20) {
+      if (!id.includes('corte') && (id.includes('depart') || id.includes('prov') || id.includes('dist') || name.includes('depart') || name.includes('prov') || name.includes('dist') || first.includes('departamento') || first.includes('provincia') || first.includes('distrito') || sel.options.length > 20)) {
         setupObserversForSelect(sel);
       }
     });
