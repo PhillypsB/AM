@@ -403,18 +403,24 @@ body{
 
 <script>
 // ══════════════════════════════════════════════════
-//  CONFIGURACIÓN  ← ACTUALIZAR CADA MES
+//  CONFIGURACIÓN  ← derivada automáticamente del dataset
 // ══════════════════════════════════════════════════
-const FECHA_CORTE = "2026-04-30";
-// ── VERSIÓN ─ formato: v[AÑO].[MES]-r[N]  (incrementar r cada cambio publicado)
-const APP_VERSION = "v2026.06-r1";
-const DATOS_CORTE_LABEL = "ABRIL 2026";
-const PROX_ACTUALIZACION = "16 de JUNIO";
-const PROX_DATOS_LABEL = "MAYO 2026";
-// Versiones abreviadas para la línea de footer
-const DATOS_CORTE_LABEL_CORTO   = "Abr 2026";
-const PROX_ACTUALIZACION_CORTO  = "16 Jun";
-const PROX_DATOS_LABEL_CORTO    = "MAY 2026";
+const FECHA_CORTE = dataset.reduce((max, d) => d.fecha > max ? d.fecha : max, "");
+
+const _fcDate  = new Date(FECHA_CORTE + "T12:00:00");
+const _nxtDate = new Date(_fcDate.getFullYear(), _fcDate.getMonth() + 1, 1);
+const _ML = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+const _MC = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+const DATOS_CORTE_LABEL        = _ML[_fcDate.getMonth()]  + " " + _fcDate.getFullYear();
+const DATOS_CORTE_LABEL_CORTO  = _MC[_fcDate.getMonth()]  + " " + _fcDate.getFullYear();
+const PROX_DATOS_LABEL         = _ML[_nxtDate.getMonth()] + " " + _nxtDate.getFullYear();
+const PROX_DATOS_LABEL_CORTO   = _MC[_nxtDate.getMonth()] + " " + _nxtDate.getFullYear();
+const PROX_ACTUALIZACION       = "16 de " + _ML[_nxtDate.getMonth()];
+const PROX_ACTUALIZACION_CORTO = "16 " + _MC[_nxtDate.getMonth()];
+// ── VERSIÓN ─ formato: v[AÑO].[MES]-r1  (año/mes de publicación)
+const _pubDate    = new Date();
+const APP_VERSION = "v" + _pubDate.getFullYear() + "." + String(_pubDate.getMonth() + 1).padStart(2, '0') + "-r1";
 
 // Helpers de footer (reutilizados para pantalla y Word)
 function _fmtFechaHora(d = new Date()) {
@@ -586,10 +592,10 @@ function filtrar() {
 
     const distritosSAF = new Set(dataset
       .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep && (!prov || d.provincia === prov))
-      .filter(d => d.nfamilia_saf > 0).map(d => d.distrito));
+      .filter(d => d.nfamilia_saf > 0).map(d => `${d.departamento}|${d.provincia}|${d.distrito}`));
     const distritosSCD = new Set(dataset
       .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep && (!prov || d.provincia === prov))
-      .filter(d => d.nniños_scd > 0).map(d => d.distrito));
+      .filter(d => d.nniños_scd > 0).map(d => `${d.departamento}|${d.provincia}|${d.distrito}`));
     const provinciasSAF = new Set(dataset
       .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep)
       .filter(d => d.nfamilia_saf > 0).map(d => d.provincia));
@@ -672,29 +678,23 @@ function renderKPIs(d, dep, prov, dist) {
 
   // ── SAF ──────────────────────────────────────────────────────────
   const safRows = `
-    <tr><td>👨‍👩‍👧‍👦 Familias ENE 2024</td><td>${d.familias_2024.toLocaleString('es-PE')}</td></tr>
-    <tr><td>🏛 Comités de Gestión</td><td>${d.CG_SAF}</td></tr>
-    <tr><td>👥 Facilitadoras</td><td>${d.FACILITADOR_SAF}</td></tr>
+    <tr><td>🤰 Gestantes</td><td>${d.gestantes_SAF.toLocaleString('es-PE')}</td></tr>
+    <tr><td>🧒 Niños SAF</td><td>${d.niños_saf.toLocaleString('es-PE')}</td></tr>
+    ${nivelDistrito  ? `<tr><td>🏛 Comités de Gestión</td><td>${d.CG_SAF}</td></tr>` : ''}
+    ${nivelDistrito  ? `<tr><td>👥 Facilitadoras</td><td>${d.FACILITADOR_SAF}</td></tr>` : ''}
     ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${d.dist_saf}</td></tr>` : ''}
     ${nivelDepto     ? `<tr><td>🗺 Provincias con atención</td><td>${d.prov_saf}</td></tr>` : ''}
-    <tr class="exec-row"><td>💰 Ejecución</td><td class="exec-val">S/. ${d.ejec_saf.toLocaleString('es-PE',{minimumFractionDigits:2})}</td></tr>
   `;
 
   // ── SCD ──────────────────────────────────────────────────────────
   const scdRows = `
-    <tr><td>🧒 Niños ENE 2024</td><td>${d.niños_2024.toLocaleString('es-PE')}</td></tr>
-    <tr><td>🏛 Comités de Gestión</td><td>${d.CG_SCD}</td></tr>
-    <tr><td>👩 Madres Cuidadoras</td><td>${d.MadresCuidadoras_SCD.toLocaleString('es-PE')}</td></tr>
+    <tr><td>🏘 CIAI</td><td>${d.CIAI_SCD.toLocaleString('es-PE')}</td></tr>
+    ${nivelDistrito  ? `<tr><td>🏛 Comités de Gestión</td><td>${d.CG_SCD}</td></tr>` : ''}
+    ${nivelDistrito  ? `<tr><td>👩 Madres Cuidadoras</td><td>${d.MadresCuidadoras_SCD.toLocaleString('es-PE')}</td></tr>` : ''}
     ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${d.dist_scd}</td></tr>` : ''}
     ${nivelDepto     ? `<tr><td>🗺 Provincias con atención</td><td>${d.prov_scd}</td></tr>` : ''}
     ${d.SA_SCD       ? `<tr><td>🏫 Servicios Adicionales</td><td>${d.SA_SCD}</td></tr>` : ''}
-    <tr class="exec-row"><td>💰 Ejecución</td><td class="exec-val">S/. ${d.ejec_scd.toLocaleString('es-PE',{minimumFractionDigits:2})}</td></tr>
   `;
-
-  // ── SCD: KPI superior (sin Madres Cuidadoras — va en tabla) ──────
-  // Tercer KPI: CIAI si tiene valor, si no CG_SCD
-  const scdKpi3Val   = d.CIAI_SCD > 0 ? d.CIAI_SCD.toLocaleString('es-PE') : d.CG_SCD.toLocaleString('es-PE');
-  const scdKpi3Label = d.CIAI_SCD > 0 ? 'CIAI' : 'Comités de Gestión';
 
   return `
   <div class="service-card saf-card">
@@ -706,22 +706,16 @@ function renderKPIs(d, dep, prov, dist) {
       </div>
       ${focBadge(focSAF)}
     </div>
-    <div class="kpi-grid">
+    <div class="kpi-grid kpi-grid-2">
       <div class="kpi-block primary-kpi">
         <div class="kpi-emoji">👨‍👩‍👧‍👦</div>
         <div class="kpi-value">${d.familias_2025.toLocaleString('es-PE')}</div>
         <div class="kpi-label">Familias</div>
-        ${trendBadge(crSAF, upSAF)}
       </div>
       <div class="kpi-block">
-        <div class="kpi-emoji">🤰</div>
-        <div class="kpi-value">${d.gestantes_SAF.toLocaleString('es-PE')}</div>
-        <div class="kpi-label">Gestantes</div>
-      </div>
-      <div class="kpi-block">
-        <div class="kpi-emoji">🧒</div>
-        <div class="kpi-value">${d.niños_saf.toLocaleString('es-PE')}</div>
-        <div class="kpi-label">Niños SAF</div>
+        <div class="kpi-emoji">💰</div>
+        <div class="kpi-value" style="font-size:1.0rem">S/. ${d.ejec_saf.toLocaleString('es-PE',{minimumFractionDigits:2})}</div>
+        <div class="kpi-label">Ejecución</div>
       </div>
     </div>
     <div class="detail-section">
@@ -743,12 +737,11 @@ function renderKPIs(d, dep, prov, dist) {
         <div class="kpi-emoji">🧒</div>
         <div class="kpi-value">${d.niños_2025.toLocaleString('es-PE')}</div>
         <div class="kpi-label">Niños SCD</div>
-        ${trendBadge(crSCD, upSCD)}
       </div>
       <div class="kpi-block">
-        <div class="kpi-emoji">🏘</div>
-        <div class="kpi-value">${d.CIAI_SCD.toLocaleString('es-PE')}</div>
-        <div class="kpi-label">CIAI</div>
+        <div class="kpi-emoji">💰</div>
+        <div class="kpi-value" style="font-size:1.0rem">S/. ${d.ejec_scd.toLocaleString('es-PE',{minimumFractionDigits:2})}</div>
+        <div class="kpi-label">Ejecución</div>
       </div>
     </div>
     <div class="detail-section">
@@ -764,9 +757,12 @@ function compartirWhatsApp() {
   if (!window.ultimoResultado) return alert('Primero realice una consulta.');
   const d = window.ultimoResultado;
 
-  const dep = d.departamento;
+  const dep  = d.departamento;
   const prov = d.provincia;
   const dist = d.distrito;
+  const nivelDistrito = !!dist;
+  const safCGLines = nivelDistrito ? `🏛 Comités de Gestión: ${d.CG_SAF}  \n👥 Facilitadoras: ${d.FACILITADOR_SAF}  \n` : '';
+  const scdCGLines = nivelDistrito ? `🏛 Comités de Gestión: ${d.CG_SCD}  \n👩 Madres Cuidadoras: ${d.MadresCuidadoras_SCD}  \n` : '';
 
   const nombreUbicacion = [dep];
   if (prov) nombreUbicacion.push(prov);
@@ -784,24 +780,18 @@ ${encabezadoUbicacion}
 📅 *Reporte:* ${mesNombre} ${año}  
 
 *🔴 Servicio de Acompañamiento a Familias (SAF) -* ${dist && d.CUMPLE_SAF !== undefined ? `${getEtiquetaFocalizacion(d.CUMPLE_SAF).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SAF).texto}` : ''}  
-👨‍👩‍👧‍👦 Familias (ENE 2024): ${d.familias_2024.toLocaleString('es-PE')}  
-👨‍👩‍👧‍👦 Familias (${mesNombre} ${año}): ${d.familias_2025.toLocaleString('es-PE')}  
+👨‍👩‍👧‍👦 Familias: ${d.familias_2025.toLocaleString('es-PE')}
 🤰 Gestantes: ${d.gestantes_SAF}
 🧒 Niños: ${d.niños_saf}
-🏛 Comités de Gestión: ${d.CG_SAF}  
-👥 Facilitadoras: ${d.FACILITADOR_SAF}  
-📌 Distritos con atención: ${d.dist_saf}  
+${safCGLines}📌 Distritos con atención: ${d.dist_saf}
 📌 Provincias con atención: ${d.prov_saf}  
 💰 Ejecución: S/. ${d.ejec_saf.toLocaleString('es-PE', { minimumFractionDigits: 2 })}  
 
 
 *🟢 Servicio de Cuidado Diurno (SCD) -* ${dist && d.CUMPLE_SCD !== undefined ? `${getEtiquetaFocalizacion(d.CUMPLE_SCD).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SCD).texto}` : ''}  
-🧒 Niños (ENE 2024): ${d.niños_2024.toLocaleString('es-PE')}  
-🧒 Niños (${mesNombre} ${año}): ${d.niños_2025.toLocaleString('es-PE')}  
-🏛 Comités de Gestión: ${d.CG_SCD}  
-👩 Madres Cuidadoras: ${d.MadresCuidadoras_SCD}  
-🏘 CIAI: ${d.CIAI_SCD}  
-📌 Distritos con atención: ${d.dist_scd}  
+🧒 Niños: ${d.niños_2025.toLocaleString('es-PE')}
+🏘 CIAI: ${d.CIAI_SCD}
+${scdCGLines}📌 Distritos con atención: ${d.dist_scd}
 📌 Provincias con atención: ${d.prov_scd}  
 💰 Ejecución: S/. ${d.ejec_scd.toLocaleString('es-PE', { minimumFractionDigits: 2 })}  
 
@@ -835,12 +825,12 @@ function calcularResumen(dep, prov = null, dist = null) {
   const distritosSAF = new Set(dataset
     .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep && (!prov || d.provincia === prov))
     .filter(d => d.nfamilia_saf > 0)
-    .map(d => d.distrito));
+    .map(d => `${d.departamento}|${d.provincia}|${d.distrito}`));
 
   const distritosSCD = new Set(dataset
     .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep && (!prov || d.provincia === prov))
     .filter(d => d.nniños_scd > 0)
-    .map(d => d.distrito));
+    .map(d => `${d.departamento}|${d.provincia}|${d.distrito}`));
 
   const provinciasSAF = new Set(dataset
     .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep)
@@ -1537,27 +1527,21 @@ async function exportarPDF() {
   function tablasKV(resumen, nivel) {
     const nivelDistrito = (nivel === 'distrito');
     const nivelDepto    = (nivel === 'departamento');
-    const crSAF = resumen.familias_2024 ? (((resumen.familias_2025 - resumen.familias_2024) / resumen.familias_2024) * 100).toFixed(1) : null;
-    const crSCD = resumen.niños_2024    ? (((resumen.niños_2025    - resumen.niños_2024)    / resumen.niños_2024)    * 100).toFixed(1) : null;
     const saf = [];
     filaKV(saf,'Familias',           resumen.familias_2025.toLocaleString('es-PE'));
-    filaKV(saf,'Familias (ENE 2024)',resumen.familias_2024.toLocaleString('es-PE'));
-    if (crSAF!==null) filaKV(saf,'Variación vs ENE 2024', `${parseFloat(crSAF)>=0?'+':''}${crSAF}%`);
     filaKV(saf,'Niños',              resumen.niños_saf.toLocaleString('es-PE'));
     filaKV(saf,'Gestantes',          resumen.gestantes_SAF.toLocaleString('es-PE'));
-    filaKV(saf,'Comités de Gestión', resumen.CG_SAF);
-    filaKV(saf,'Facilitadoras',      resumen.FACILITADOR_SAF);
+    if (nivelDistrito) filaKV(saf,'Comités de Gestión', resumen.CG_SAF);
+    if (nivelDistrito) filaKV(saf,'Facilitadoras',      resumen.FACILITADOR_SAF);
     if (!nivelDistrito) filaKV(saf,'Distritos con atención',  resumen.dist_saf);
     if (nivelDepto)     filaKV(saf,'Provincias con atención', resumen.prov_saf);
     filaKV(saf,'Ejecución', 'S/. ' + resumen.ejec_saf.toLocaleString('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}));
 
     const scd = [];
     filaKV(scd,'Niños',              resumen.niños_2025.toLocaleString('es-PE'));
-    filaKV(scd,'Niños (ENE 2024)',   resumen.niños_2024.toLocaleString('es-PE'));
-    if (crSCD!==null) filaKV(scd,'Variación vs ENE 2024', `${parseFloat(crSCD)>=0?'+':''}${crSCD}%`);
     filaKV(scd,'CIAI',               resumen.CIAI_SCD.toLocaleString('es-PE'));
-    filaKV(scd,'Madres Cuidadoras',  resumen.MadresCuidadoras_SCD.toLocaleString('es-PE'));
-    filaKV(scd,'Comités de Gestión', resumen.CG_SCD);
+    if (nivelDistrito) filaKV(scd,'Comités de Gestión', resumen.CG_SCD);
+    if (nivelDistrito) filaKV(scd,'Madres Cuidadoras',  resumen.MadresCuidadoras_SCD.toLocaleString('es-PE'));
     if (!nivelDistrito) filaKV(scd,'Distritos con atención',  resumen.dist_scd);
     if (nivelDepto)     filaKV(scd,'Provincias con atención', resumen.prov_scd);
     if (resumen.SA_SCD) filaKV(scd,'Servicios Adicionales',   resumen.SA_SCD);
