@@ -63,6 +63,16 @@ body{
 }
 .corte-label{font-size:.75rem;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.05em}
 .corte-value{font-size:.95rem;font-weight:700;color:#fff}
+.version-badge{
+  font-size:.7rem;
+  font-weight:700;
+  color:rgba(255,255,255,.6);
+  letter-spacing:.04em;
+  padding:4px 10px;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:50px;
+  white-space:nowrap;
+}
 .corte-select{
   background:transparent;
   border:none;
@@ -326,9 +336,12 @@ body{
       <p>Programa Nacional Cuna Más</p>
     </div>
   </div>
-  <div class="corte-pill">
-    <span class="corte-label">📅&nbsp;Corte:</span>
-    <select id="selectCorte" class="corte-select"></select>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div class="corte-pill">
+      <span class="corte-label">📅&nbsp;Corte:</span>
+      <select id="selectCorte" class="corte-select"></select>
+    </div>
+    <span id="versionBadge" class="version-badge"></span>
   </div>
 </header>
 
@@ -396,7 +409,8 @@ body{
 //  CONFIGURACIÓN  ← ACTUALIZAR CADA MES
 // ══════════════════════════════════════════════════
 const FECHA_CORTE = "2026-04-30";
-const APP_VERSION = "v2026.02-r3";      // versión del reporte (corte + release)
+// ── VERSIÓN ─ formato: v[AÑO].[MES]-r[N]  (incrementar r cada cambio publicado)
+const APP_VERSION = "v2026.06-r1";
 const DATOS_CORTE_LABEL = "ABRIL 2026";
 const PROX_ACTUALIZACION = "16 de JUNIO";
 const PROX_DATOS_LABEL = "MAYO 2026";
@@ -428,10 +442,12 @@ function buildFooterPlain(fechaHora) {
   ];
 }
 
-// Inyecta la información del footer en pantalla
+// Inyecta la información del footer y el badge de versión en el header
 document.addEventListener('DOMContentLoaded', () => {
   const fTxt = document.getElementById('appFooterText');
   if (fTxt) fTxt.innerHTML = buildFooterLine();
+  const vBadge = document.getElementById('versionBadge');
+  if (vBadge) vBadge.textContent = APP_VERSION;
 });
 
 // Logo PNCM/MIDIS (compartido entre exportaciones)
