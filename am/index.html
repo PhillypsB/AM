@@ -336,12 +336,9 @@ body{
       <p>Programa Nacional Cuna Más</p>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <div class="corte-pill">
-      <span class="corte-label">📅&nbsp;Corte:</span>
-      <select id="selectCorte" class="corte-select"></select>
-    </div>
-    <span id="versionBadge" class="version-badge"></span>
+  <div class="corte-pill">
+    <span class="corte-label">📅&nbsp;Corte:</span>
+    <select id="selectCorte" class="corte-select"></select>
   </div>
 </header>
 
@@ -402,7 +399,7 @@ body{
 </div><!-- /page-wrapper -->
 
 <!-- DATA -->
-<script src="data/am_abril26.js"></script>
+<script src="bd.js"></script>
 
 <script>
 // ══════════════════════════════════════════════════
@@ -442,12 +439,10 @@ function buildFooterPlain(fechaHora) {
   ];
 }
 
-// Inyecta la información del footer y el badge de versión en el header
+// Inyecta la información del footer en pantalla
 document.addEventListener('DOMContentLoaded', () => {
   const fTxt = document.getElementById('appFooterText');
   if (fTxt) fTxt.innerHTML = buildFooterLine();
-  const vBadge = document.getElementById('versionBadge');
-  if (vBadge) vBadge.textContent = APP_VERSION;
 });
 
 // Logo PNCM/MIDIS (compartido entre exportaciones)
