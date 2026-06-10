@@ -1,0 +1,98 @@
+/* ══════════════════════════════════════════
+   responsive.css — Mobile first improvements
+   Breakpoints: 900 / 740 / 540 / 400px
+══════════════════════════════════════════ */
+
+/* ── 900px: hero colapsa a 1 col ── */
+@media(max-width:900px){
+  .hero-split{grid-template-columns:1fr;height:auto}
+  .hero-text{
+    padding:clamp(32px,6vw,52px) clamp(16px,5vw,48px);
+    border-right:none;border-bottom:1px solid var(--border);
+  }
+  .hero-carousel{
+    height:auto;min-height:320px;max-height:460px;
+    padding:16px clamp(14px,4vw,32px);
+  }
+  .slide{grid-template-columns:0 1fr}
+  .asb{display:none}
+  .krow{grid-template-columns:1fr 1fr;gap:5px}
+  .g2{grid-template-columns:1fr;gap:6px}
+  .win-chrome{padding:7px 10px}
+  .acont{padding:8px 10px;gap:7px}
+  .kpi{padding:6px 8px}
+  .kv{font-size:14px}
+  .cnav{display:none}
+  .hero-screen-name{justify-content:center;align-self:center}
+}
+
+/* ── 740px: nav hamburger ── */
+@media(max-width:740px){
+  .nav-links{display:none}
+  .nav-hamburger{display:flex}
+
+  /* hero text más compacto */
+  h1{font-size:clamp(1.8rem,7vw,2.8rem)}
+  .h-btns{flex-direction:column;align-items:flex-start}
+  .btn-p,.btn-g{width:100%;justify-content:center}
+
+  /* sobre grid */
+  .sobre-grid{grid-template-columns:1fr}
+  .sphoto{aspect-ratio:16/7}
+
+  /* footer */
+  .ft-main{grid-template-columns:1fr;gap:28px}
+  .ft-wm{font-size:clamp(52px,16vw,100px)}
+  .ft-lockup .hat{height:clamp(90px,14vh,140px)}
+}
+
+/* ── 540px: tarjetas 1 col, tabs nav ocultos ── */
+@media(max-width:540px){
+  .sobre-grid{grid-template-columns:1fr}
+  .win-tabs .wt{display:none}
+  .win-ttl-bar{display:none}
+  /* Carousel simplificado en mobile pequeño */
+  .krow{grid-template-columns:1fr 1fr;gap:4px}
+  .kv{font-size:13px;line-height:1}
+  .kl{font-size:8px}
+  .kd{display:none}
+  .apanel{padding:7px}
+  .ph{margin-bottom:5px}
+  .mt th,.mt td{font-size:9px;padding:3px 4px}
+  .snums{grid-template-columns:1fr 1fr 1fr}
+  /* hero carousel más bajo */
+  .hero-carousel{height:auto;min-height:280px;max-height:380px}
+  /* h-proof oculto en pantallas muy pequeñas */
+  .h-proof{display:none}
+}
+
+/* ── 400px: ajustes finales ── */
+@media(max-width:400px){
+  .wrap{padding:0 14px}
+  h1{font-size:1.65rem}
+  h2{font-size:1.5rem}
+  .nav-logo .hat{height:36px}
+  .nav-logo .wm{font-size:22px}
+  .ft-wm{font-size:clamp(44px,14vw,80px)}
+  .c-call{width:100%;justify-content:center}
+  .wm-rule{width:90vw}
+  .hero-carousel{min-height:240px;max-height:320px}
+  .krow{grid-template-columns:1fr 1fr}
+  .g2 .apanel:last-child{display:none}
+}
+
+/* ── Touch: targets mínimos 44px ── */
+@media(pointer:coarse){
+  a,button,.wt,.ndot{min-height:44px;display:inline-flex;align-items:center}
+  .ndot{min-height:20px;min-width:20px;display:flex}
+  .abtn{padding:6px 12px}
+  .nav-drawer a{padding:16px 0}
+}
+
+/* ── Landscape mobile ── */
+@media(max-height:500px) and (max-width:900px){
+  .hero-split{height:auto}
+  .hero-text{padding:24px clamp(16px,5vw,48px)}
+  .hero-carousel{min-height:240px;max-height:300px}
+  .h-proof{display:none}
+}

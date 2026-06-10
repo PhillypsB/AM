@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BRAV[O] · Hacemos que funcione</title>
+<meta name="description" content="Aplicaciones web, automatización y soluciones digitales. Resultados medibles desde el primer día. Phillyps Bravo · Lima, Perú.">
+<meta name="author" content="Phillyps Bravo">
+<meta name="theme-color" content="#E600FA">
+<!-- Open Graph -->
+<meta property="og:title" content="BRAV[O] · Hacemos que funcione">
+<meta property="og:description" content="Sistemas que resuelven problemas reales. Sin tecnología de moda.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://phillyps-bravo.vercel.app">
+<meta property="og:image" content="https://phillyps-bravo.vercel.app/img/phillyps.jfif">
+<meta property="og:image:alt" content="Phillyps Bravo · BRAVO">
+
+<!-- Favicon SVG -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<!-- Tipografías -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- ═══════════════════════════════════════════════
+     CSS — orden de carga importante
+     01 → variables   (editar aquí para cambiar colores)
+     02 → base        (reset, tipografía, botones)
+     03 → cursor      (cursor diamante)
+     04 → nav         (navegación + hamburguesa)
+     05 → hero        (hero split + carousel)
+     06 → sections    (soluciones unificada, sobre)
+     07 → contact/ft  (contacto + footer)
+     08 → responsive  (mobile-first)
+════════════════════════════════════════════════ -->
+<link rel="stylesheet" href="css/01-tokens.css">
+<link rel="stylesheet" href="css/02-base.css">
+<link rel="stylesheet" href="css/03-cursor.css">
+<link rel="stylesheet" href="css/04-nav.css">
+<link rel="stylesheet" href="css/05-hero.css">
+<link rel="stylesheet" href="css/06-sections.css">
+<link rel="stylesheet" href="css/07-contacto-footer.css">
+<link rel="stylesheet" href="css/08-responsive.css">
+<link rel="stylesheet" href="css/09-hatbot.css">
+
+<!-- GSAP (contadores + scroll horizontal del método) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+
+<!-- ═══ JS — theme primero (evita flash) ═══ -->
+<script src="js/theme.js"></script>
+</head>
+
+<body>
+
+<!-- SVG defs -->
+<svg width="0" height="0" style="position:absolute;pointer-events:none">
+  <defs>
+    <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="var(--accent)"/>
+      <stop offset="100%" stop-color="var(--accent-hi)"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<!-- Cursor -->
+<div id="sp"></div>
+<div id="cring"></div>
+<div id="cdot"></div>
+
+<!-- ═══════ NAV ═══════ -->
+<nav>
+  <div class="wrap nav-i">
+    <a href="#" class="nav-logo">
+      <img class="hat" src="img/hat.png" alt="">
+      <span class="wm"><span class="w">BRAV</span><span class="brk">[</span><span class="o">O</span><span class="brk">]</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="#soluciones">Soluciones</a>
+      <a href="#sobre">Sobre mí</a>
+    </div>
+    <button id="navHamburger" class="nav-hamburger" aria-label="Menú" aria-expanded="false"><span></span><span></span><span></span></button>
+    <div class="nav-right">
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Cambiar acento: lila o magenta" title="Acento: lila / magenta"><span class="tt-swatch"></span></button>
+      <a class="nav-btn" href="#contacto">Hablemos</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ MENÚ MOBILE DRAWER ═══ -->
+<nav class="nav-drawer" aria-label="Menú mobile">
+  <a href="#soluciones">Soluciones</a>
+  <a href="#sobre">Sobre mí</a>
+  <a href="#contacto" class="nd-cta">Hablemos →</a>
+</nav>
+
+<!-- ═══════ HERO SPLIT ═══════ -->
+<div class="hero-split">
+
+  <!-- LEFT: texto -->
+  <div class="hero-text">
+    <div class="h-badge rv">Automatización · Sistemas · Soluciones Digitales</div>
+    <h1 class="rv">
+      <span class="dim">Construyo sistemas que</span><br>
+      <span class="acc">resuelven problemas reales.</span>
+    </h1>
+    <p class="h-sub rv">
+      Aplicaciones web, automatización y soluciones digitales
+      para organizaciones que necesitan más control,
+      menos trabajo manual y mejores resultados.
+    </p>
+    <div class="h-btns rv">
+      <a class="btn-p" href="#soluciones">Ver soluciones</a>
+      <a class="btn-g" href="#contacto">Contactar</a>
+    </div>
+    <div class="h-proof rv">
+      <span class="proof-item">Software real construido y en producción</span>
+      <span class="proof-item">Resultados medibles desde el primer día</span>
+      <span class="proof-item">Implementación completa y acompañamiento</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: carousel -->
+  <div class="hero-carousel">
+    <div class="hero-screen-name"><span class="dotp"></span><span class="nm" id="scrName">Mi Mantenimiento <small>Dashboard</small></span></div>
+    <div class="hero-stage">
+      <button class="cnav prev" onclick="gsPrev()" aria-label="Pantalla anterior">&#8249;</button>
+      <button class="cnav next" onclick="gsNext()" aria-label="Pantalla siguiente">&#8250;</button>
+    <div class="app-win">
+      <div class="win-chrome">
+        <div class="wdots"><div class="wd wd-r"></div><div class="wd wd-y"></div><div class="wd wd-g"></div></div>
+        <div class="win-ttl-bar" id="wttl">Mi Mantenimiento · Dashboard</div>
+        <div class="win-tabs" id="wtabs">
+          <div class="wt on" onclick="gs(0)">Mant.</div>
+          <div class="wt" onclick="gs(1)">ZaZá</div>
+          <div class="wt" onclick="gs(2)">CRM</div>
+          <div class="wt" onclick="gs(3)">Ayudas</div>
+          <div class="wt" onclick="gs(4)">Sello</div>
+        </div>
+      </div>
+
+      <div class="slides-wrap" id="slides-wrap">
+
+        <!-- SLIDE 1: Mi Mantenimiento -->
+        <div class="slide on">
+          <div class="asb">
+            <div class="asb-logo"><div class="asb-dot"></div>Mantenimiento</div>
+            <div class="asb-sec">Principal</div>
+            <div class="asb-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>Solicitudes</div>
+            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Estadísticas</div>
+          </div>
+          <div class="amain">
+            <div class="atop">
+              <div class="abc"><span>Dashboard</span><span class="abc-s">/</span><strong>Solicitudes</strong></div>
+              <div class="acts"><button class="abtn">+ Nueva</button><button class="abtn">Exportar</button></div>
+            </div>
+            <div class="acont">
+              <div class="krow">
+                <div class="kpi"><div class="kv w">24</div><div class="kl">Abiertas</div><div class="kd dn">↑ 3 hoy</div></div>
+                <div class="kpi"><div class="kv g">1.2h</div><div class="kl">Tiempo prom.</div><div class="kd up">↓ 85%</div></div>
+                <div class="kpi"><div class="kv g">96%</div><div class="kl">Resolución</div><div class="kd up">↑ 12%</div></div>
+                <div class="kpi"><div class="kv g">0</div><div class="kl">Perdidas</div><div class="kd up">Perfecto</div></div>
+              </div>
+              <div class="g2">
+                <div class="apanel">
+                  <div class="ph"><div class="pt">Solicitudes recientes</div><div class="pbadge">Live</div></div>
+                  <table class="mt"><thead><tr><th>ID</th><th>Descripción</th><th>Técnico</th><th>Estado</th></tr></thead><tbody>
+                    <tr><td>#1042</td><td>Aire acond. 3B</td><td>Carlos R.</td><td><span class="chip cp">En proceso</span></td></tr>
+                    <tr><td>#1041</td><td>Filtración 204</td><td>Luis M.</td><td><span class="chip co">Abierto</span></td></tr>
+                    <tr><td>#1040</td><td>Electricidad 1A</td><td>Pedro G.</td><td><span class="chip cd">Resuelto</span></td></tr>
+                    <tr><td>#1039</td><td>Agua P4</td><td>Ana V.</td><td><span class="chip cd">Resuelto</span></td></tr>
+                  </tbody></table>
+                </div>
+                <div class="apanel">
+                  <div class="ph"><div class="pt">Solicitudes / semana</div></div>
+                  <div class="bch">
+                    <div class="bc"><div class="bcf" style="height:55%"></div><div class="bcl">L</div></div>
+                    <div class="bc"><div class="bcf" style="height:72%"></div><div class="bcl">M</div></div>
+                    <div class="bc"><div class="bcf" style="height:44%"></div><div class="bcl">X</div></div>
+                    <div class="bc"><div class="bcf" style="height:82%"></div><div class="bcl">J</div></div>
+                    <div class="bc"><div class="bcf" style="height:60%"></div><div class="bcl">V</div></div>
+                    <div class="bc"><div class="bcf" style="height:28%"></div><div class="bcl">S</div></div>
+                    <div class="bc"><div class="bcf" style="height:18%"></div><div class="bcl">D</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 2: ZaZá -->
+        <div class="slide">
+          <div class="asb">
+            <div class="asb-logo"><div class="asb-dot"></div>zaZÁ Events</div>
+            <div class="asb-sec">Gestión</div>
+            <div class="asb-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Scanner QR</div>
+            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Asistentes</div>
+          </div>
+          <div class="amain">
+            <div class="atop">
+              <div class="abc"><span>zaZÁ</span><span class="abc-s">/</span><strong>Noche de Gala 2025</strong></div>
+              <div class="acts"><button class="abtn" style="background:rgba(52,211,153,.12);color:#34D399">● En vivo</button></div>
+            </div>
+            <div class="acont">
+              <div class="krow">
+                <div class="kpi"><div class="kv g">342</div><div class="kl">Validados</div><div class="kd up">68% aforo</div></div>
+                <div class="kpi"><div class="kv g">0</div><div class="kl">Duplicados</div><div class="kd up">Sin errores</div></div>
+                <div class="kpi"><div class="kv">3.2s</div><div class="kl">Por scan</div><div class="kd up">Muy rápido</div></div>
+                <div class="kpi"><div class="kv w">158</div><div class="kl">Disponibles</div><div class="kd">500 total</div></div>
+              </div>
+              <div class="g2">
+                <div class="apanel">
+                  <div class="ph"><div class="pt">Últimos accesos</div><div class="pbadge">Live</div></div>
+                  <table class="mt"><thead><tr><th>Ticket</th><th>Tipo</th><th>Hora</th><th>Estado</th></tr></thead><tbody>
+                    <tr><td>#2847</td><td>VIP</td><td>21:34</td><td><span class="chip cd">✓ Válido</span></td></tr>
+                    <tr><td>#2846</td><td>General</td><td>21:33</td><td><span class="chip cd">✓ Válido</span></td></tr>
+                    <tr><td>#2845</td><td>VIP</td><td>21:33</td><td><span class="chip cd">✓ Válido</span></td></tr>
+                    <tr><td>#2844</td><td>General</td><td>21:32</td><td><span class="chip cd">✓ Válido</span></td></tr>
+                  </tbody></table>
+                </div>
+                <div class="apanel">
+                  <div class="ph"><div class="pt">Aforo</div></div>
+                  <div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--app-muted);margin-bottom:2px"><span>Capacidad</span><span style="color:var(--app-accent)">68%</span></div><div class="prog"><div class="pf" style="width:68%"></div></div></div>
+                  <div class="dw">
+                    <svg class="dsv" viewBox="0 0 80 80"><circle class="dbg" cx="40" cy="40" r="28"/><circle class="dring" cx="40" cy="40" r="28" stroke-dasharray="119 37"/></svg>
+                    <div class="dlabs">
+                      <div class="dli"><div class="ddot" style="background:var(--accent-m)"></div>VIP: 120</div>
+                      <div class="dli"><div class="ddot" style="background:#34D399"></div>General: 222</div>
+                      <div class="dli"><div class="ddot" style="background:rgba(255,255,255,.12)"></div>Libres: 158</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 3: Potenciales CRM -->
+        <div class="slide">
+          <div class="asb">
+            <div class="asb-logo"><div class="asb-dot"></div>Potenciales</div>
+            <div class="asb-sec">Pipeline</div>
+            <div class="asb-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Pipeline</div>
+            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Contactos</div>
+          </div>
+          <div class="amain">
+            <div class="atop">
+              <div class="abc"><span>Potenciales</span><span class="abc-s">/</span><strong>Pipeline comercial</strong></div>
+              <div class="acts"><button class="abtn">+ Oportunidad</button></div>
+            </div>
+            <div class="acont">
+              <div class="krow">
+                <div class="kpi"><div class="kv g">S/.74k</div><div class="kl">Pipeline total</div><div class="kd up">+40% cierre</div></div>
+                <div class="kpi"><div class="kv">8</div><div class="kl">Activas</div><div class="kd up">+2 semana</div></div>
+                <div class="kpi"><div class="kv g">40%</div><div class="kl">Tasa cierre</div><div class="kd up">↑ vs 28%</div></div>
+                <div class="kpi"><div class="kv w">3</div><div class="kl">Follow-up</div><div class="kd">Hoy</div></div>
+              </div>
+              <div class="g2" style="grid-template-columns:1fr 1fr 1fr">
+                <div class="apanel"><div class="ph"><div class="pt">Contacto</div><div class="pbadge">3</div></div><div style="display:flex;flex-direction:column;gap:4px"><div style="padding:6px 8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa A</div><div style="font-size:8px;color:var(--app-accent)">S/.4,200</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:20%"></div></div></div><div style="padding:6px 8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa B</div><div style="font-size:8px;color:var(--app-accent)">S/.8,500</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:30%"></div></div></div></div></div>
+                <div class="apanel"><div class="ph"><div class="pt">Propuesta</div><div class="pbadge" style="color:#FBBF24;background:rgba(251,191,36,.1)">2</div></div><div style="display:flex;flex-direction:column;gap:4px"><div style="padding:6px 8px;background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.1);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa C</div><div style="font-size:8px;color:#FBBF24">S/.12,000</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:60%"></div></div></div><div style="padding:6px 8px;background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.1);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa D</div><div style="font-size:8px;color:#FBBF24">S/.6,800</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:55%"></div></div></div></div></div>
+                <div class="apanel"><div class="ph"><div class="pt">Cierre</div><div class="pbadge" style="color:#34D399;background:rgba(52,211,153,.1)">3</div></div><div style="display:flex;flex-direction:column;gap:4px"><div style="padding:6px 8px;background:rgba(52,211,153,.04);border:1px solid rgba(52,211,153,.12);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa E</div><div style="font-size:8px;color:#34D399">S/.18k ✓</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:90%;background:linear-gradient(90deg,#059669,#34D399)"></div></div></div><div style="padding:6px 8px;background:rgba(52,211,153,.04);border:1px solid rgba(52,211,153,.12);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa F</div><div style="font-size:8px;color:#34D399">S/.24.5k ✓</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:95%;background:linear-gradient(90deg,#059669,#34D399)"></div></div></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 4: Ayudas Memoria -->
+        <div class="slide">
+          <div class="asb">
+            <div class="asb-logo"><div class="asb-dot"></div>Ayudas Memoria</div>
+            <div class="asb-sec">Gestión</div>
+            <div class="asb-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>Compromisos</div>
+            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Alertas</div>
+          </div>
+          <div class="amain">
+            <div class="atop">
+              <div class="abc"><span>Ayudas Memoria</span><span class="abc-s">/</span><strong>Semana 23 · 2025</strong></div>
+              <div class="acts"><button class="abtn">Reporte</button></div>
+            </div>
+            <div class="acont">
+              <div class="krow">
+                <div class="kpi"><div class="kv g">92%</div><div class="kl">Cumplimiento</div><div class="kd up">↑ 8%</div></div>
+                <div class="kpi"><div class="kv g">24</div><div class="kl">A tiempo</div><div class="kd up">Sin retrasos</div></div>
+                <div class="kpi"><div class="kv w">3</div><div class="kl">Por vencer</div><div class="kd">Esta semana</div></div>
+                <div class="kpi"><div class="kv g">4h</div><div class="kl">Recuperadas</div><div class="kd up">Semanal</div></div>
+              </div>
+              <div class="g2">
+                <div class="apanel">
+                  <div class="ph"><div class="pt">Compromisos activos</div></div>
+                  <table class="mt"><thead><tr><th>Compromiso</th><th>Vence</th><th>Estado</th></tr></thead><tbody>
+                    <tr><td>Informe trimestral</td><td>Jun 15</td><td><span class="chip cd">✓ Listo</span></td></tr>
+                    <tr><td>Reunión comité</td><td>Jun 16</td><td><span class="chip cp">En proceso</span></td></tr>
+                    <tr><td>Respuesta Of. 142</td><td>Jun 17</td><td><span class="chip co">Pendiente</span></td></tr>
+                    <tr><td>Plan contingencia</td><td>Jun 20</td><td><span class="chip co">Pendiente</span></td></tr>
+                  </tbody></table>
+                </div>
+                <div class="apanel">
+                  <div class="ph"><div class="pt">Distribución</div></div>
+                  <div class="dw">
+                    <svg class="dsv" viewBox="0 0 80 80"><circle class="dbg" cx="40" cy="40" r="28"/><circle class="dring" cx="40" cy="40" r="28" stroke-dasharray="109 47"/></svg>
+                    <div class="dlabs">
+                      <div class="dli"><div class="ddot" style="background:#34D399"></div>A tiempo: 24</div>
+                      <div class="dli"><div class="ddot" style="background:#FBBF24"></div>Por vencer: 3</div>
+                      <div class="dli"><div class="ddot" style="background:var(--accent-m)"></div>Vencidos: 2</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 5: Sello Municipal -->
+        <div class="slide">
+          <div class="asb">
+            <div class="asb-logo"><div class="asb-dot"></div>Sello Municipal</div>
+            <div class="asb-sec">Trámites</div>
+            <div class="asb-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Trámites</div>
+            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Aprobados</div>
+          </div>
+          <div class="amain">
+            <div class="atop">
+              <div class="abc"><span>Sello Municipal</span><span class="abc-s">/</span><strong>Trámites del día</strong></div>
+              <div class="acts"><button class="abtn">Estadísticas</button></div>
+            </div>
+            <div class="acont">
+              <div class="krow">
+                <div class="kpi"><div class="kv g">96%</div><div class="kl">Reducción tiempo</div><div class="kd up">3d → 2h</div></div>
+                <div class="kpi"><div class="kv g">47</div><div class="kl">Trámites hoy</div><div class="kd up">↑ Récord</div></div>
+                <div class="kpi"><div class="kv w">2h</div><div class="kl">Tiempo prom.</div><div class="kd up">Era 3 días</div></div>
+                <div class="kpi"><div class="kv g">0</div><div class="kl">Papel usado</div><div class="kd up">100% digital</div></div>
+              </div>
+              <div class="g2">
+                <div class="apanel">
+                  <div class="ph"><div class="pt">Trámites recientes</div></div>
+                  <table class="mt"><thead><tr><th>ID</th><th>Tipo</th><th>Tiempo</th><th>Estado</th></tr></thead><tbody>
+                    <tr><td>#T-847</td><td>Licencia comercial</td><td>1h 45m</td><td><span class="chip cd">Aprobado</span></td></tr>
+                    <tr><td>#T-846</td><td>Permiso de obra</td><td>2h 10m</td><td><span class="chip cd">Aprobado</span></td></tr>
+                    <tr><td>#T-845</td><td>Certif. PB</td><td>—</td><td><span class="chip cp">En revisión</span></td></tr>
+                    <tr><td>#T-844</td><td>Lic. comercial</td><td>1h 55m</td><td><span class="chip cd">Aprobado</span></td></tr>
+                  </tbody></table>
+                </div>
+                <div class="apanel">
+                  <div class="ph"><div class="pt">Trámites / semana</div></div>
+                  <div class="bch">
+                    <div class="bc"><div class="bcf" style="height:60%"></div><div class="bcl">L</div></div>
+                    <div class="bc"><div class="bcf" style="height:75%"></div><div class="bcl">M</div></div>
+                    <div class="bc"><div class="bcf" style="height:65%"></div><div class="bcl">X</div></div>
+                    <div class="bc"><div class="bcf" style="height:90%"></div><div class="bcl">J</div></div>
+                    <div class="bc"><div class="bcf" style="height:100%"></div><div class="bcl">V</div></div>
+                    <div class="bc"><div class="bcf" style="height:32%"></div><div class="bcl">S</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /slides-wrap -->
+
+      <div class="wdots-nav" id="wdots-nav">
+        <div class="ndot on" onclick="gs(0)"></div>
+        <div class="ndot" onclick="gs(1)"></div>
+        <div class="ndot" onclick="gs(2)"></div>
+        <div class="ndot" onclick="gs(3)"></div>
+        <div class="ndot" onclick="gs(4)"></div>
+      </div>
+    </div><!-- /app-win -->
+    </div><!-- /hero-stage -->
+  </div><!-- /hero-carousel -->
+</div><!-- /hero-split -->
+
+<!-- 5% gap -->
+<div class="hero-gap"></div>
+
+<!-- ═══════ SOLUCIONES (unificada: qué construyo + resultados + portafolio) ═══════ -->
+<section id="soluciones" class="sec-dark">
+  <div class="wrap sec">
+    <div class="rv"><div class="sol-badge">Sistemas en producción</div></div>
+    <span class="eyebrow rv" style="color:var(--accent-m)">Soluciones implementadas</span>
+    <h2 class="rv" style="color:#fff">Soluciones que ya están funcionando<br><span style="background:linear-gradient(90deg,var(--accent-m),var(--accent-hi));-webkit-background-clip:text;background-clip:text;color:transparent">en organizaciones reales.</span></h2>
+    <p class="lead rv" style="color:rgba(255,255,255,.38);margin-top:10px">Sin buzzwords. Cada solución resuelve un problema específico y su resultado se mide. Los sistemas, en vivo, arriba.</p>
+
+    <div class="sol-grid">
+
+      <!-- IZQUIERDA: soluciones con resultado -->
+      <div class="sol-list stg">
+
+        <div class="sol-card">
+          <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg></div>
+          <div class="sol-body">
+            <div class="sol-name">Aplicaciones Web a Medida</div>
+            <div class="sol-desc">Sistemas para operar con control. Sin hojas de cálculo, sin WhatsApp.</div>
+          </div>
+          <div class="sol-metric"><span class="sol-mn"><span data-target="5" data-suffix="+">0+</span></span><span class="sol-ml">sistemas activos</span><span class="sol-mp">En producción</span></div>
+        </div>
+
+        <div class="sol-card">
+          <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <div class="sol-body">
+            <div class="sol-name">Dashboards e Indicadores</div>
+            <div class="sol-desc">Los datos que importan, visibles en tiempo real. Sin esperas, sin reportes manuales.</div>
+          </div>
+          <div class="sol-metric"><span class="sol-mn"><span data-target="4" data-suffix="h">0h</span></span><span class="sol-ml">semanales recuperadas</span><span class="sol-mp">Ayudas Memoria</span></div>
+        </div>
+
+        <div class="sol-card">
+          <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke-linejoin="round"/></svg></div>
+          <div class="sol-body">
+            <div class="sol-name">Automatización de Procesos</div>
+            <div class="sol-desc">Lo que tomaba horas ocurre solo. Sin intervención, sin errores.</div>
+          </div>
+          <div class="sol-metric"><span class="sol-mn"><span data-target="85" data-suffix="%">0%</span></span><span class="sol-ml">menos tiempo de respuesta</span><span class="sol-mp">Mi Mantenimiento</span></div>
+        </div>
+
+        <div class="sol-card">
+          <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="sol-body">
+            <div class="sol-name">Gestión Documental</div>
+            <div class="sol-desc">Flujos con validación, firma digital y trazabilidad. Sin papel, sin colas.</div>
+          </div>
+          <div class="sol-metric"><span class="sol-mn"><span data-target="96" data-suffix="%">0%</span></span><span class="sol-ml">menos tiempo por trámite</span><span class="sol-mp">Sello Municipal</span></div>
+        </div>
+
+        <div class="sol-card">
+          <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div class="sol-body">
+            <div class="sol-name">Sistemas de Seguimiento</div>
+            <div class="sol-desc">Tickets, compromisos y pipeline bajo control. Nada se pierde.</div>
+          </div>
+          <div class="sol-metric"><span class="sol-mn">+<span data-target="40" data-suffix="%">0%</span></span><span class="sol-ml">cierre de oportunidades</span><span class="sol-mp">Potenciales</span></div>
+        </div>
+
+        <div class="sol-card">
+          <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+          <div class="sol-body">
+            <div class="sol-name">Integración de Información</div>
+            <div class="sol-desc">Tus sistemas se hablan entre sí: la información fluye y se consolida sola, sin copiar y pegar.</div>
+          </div>
+          <div class="sol-metric"><span class="sol-mn"><span data-target="0" data-suffix="">0</span></span><span class="sol-ml">errores de validación</span><span class="sol-mp">zaZÁ</span></div>
+        </div>
+
+      </div><!-- /sol-list -->
+
+      <!-- DERECHA: cómo trabajamos + CTA -->
+      <aside class="sol-aside rv-r">
+
+        <div class="sol-how">
+          <div class="sol-how-ttl">Cómo trabajamos</div>
+          <div class="sol-pill">
+            <div class="sol-pill-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+            <div><strong>Enfoque práctico</strong><span>Resultados desde las primeras semanas.</span></div>
+          </div>
+          <div class="sol-pill">
+            <div class="sol-pill-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div><strong>Implementación real</strong><span>Funciona desde el día uno.</span></div>
+          </div>
+          <div class="sol-pill">
+            <div class="sol-pill-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></div>
+            <div><strong>Acompañamiento</strong><span>Evolucionamos contigo, no te dejamos solo.</span></div>
+          </div>
+        </div>
+
+        <div class="sol-cta">
+          <div class="sol-cta-ttl">¿Tu proyecto?</div>
+          <p>Tienes un proceso que mejorar o un sistema que construir.</p>
+          <a class="btn-p" href="#contacto" style="font-size:13px;padding:10px 20px">Cuéntame →</a>
+        </div>
+
+      </aside>
+
+    </div><!-- /sol-grid -->
+  </div>
+</section>
+
+<!-- ═══════ EL MÉTODO (la estrella recorre el camino) ═══════ -->
+<section class="metodo" aria-label="El método de trabajo">
+  <div class="wrap">
+    <div class="met-card rv">
+      <div class="met-label">— el método de trabajo</div>
+      <span class="eyebrow">El método</span>
+      <h2>Así pasa de problema<br><span class="mag">a solución que funciona.</span></h2>
+      <div class="met-flow">
+        <div class="met-track" aria-hidden="true">
+          <div class="met-line-bg"></div>
+          <div class="met-line-fill" id="metFill"></div>
+          <div class="met-star" id="metStar">✦</div>
+        </div>
+        <div class="met-steps">
+          <div class="mstep"><div class="mdot"></div><strong>Escuchamos</strong><span>Tu problema, sin filtros.</span></div>
+          <div class="mstep"><div class="mdot"></div><strong>Diseñamos</strong><span>Lo más simple que funcione.</span></div>
+          <div class="mstep"><div class="mdot"></div><strong>Construimos</strong><span>Software real, no maquetas.</span></div>
+          <div class="mstep"><div class="mdot"></div><strong>Implementamos</strong><span>Funcionando en tu operación.</span></div>
+          <div class="mstep"><div class="mdot"></div><strong>Mejoramos</strong><span>Evoluciona contigo.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ SOBRE ═══════ -->
+<section id="sobre" class="sec">
+  <div class="wrap">
+    <span class="eyebrow rv">El constructor</span>
+
+    <div class="sv2-grid">
+
+      <!-- ── COLUMNA IZQUIERDA: foto + enfoque ── -->
+      <div class="sv2-photo-col rv-l">
+
+        <!-- Foto -->
+        <div class="sv2-photo-card sc-hover">
+          <img src="img/phillyps.jfif"
+               alt="Phillyps Bravo" loading="lazy" class="sv2-img"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="sv2-img-fb" style="display:none">PB</div>
+        </div>
+
+      </div><!-- /photo-col -->
+
+      <!-- ── COLUMNA DERECHA: nombre + features + stats ── -->
+      <div class="sv2-content rv">
+
+        <!-- Nombre -->
+        <div class="sv2-name-block">
+          <p class="sv2-tag">Diseño y construyo soluciones digitales</p>
+          <h2 class="sv2-nombre">Phillyps <span class="sv2-grad">Bravo</span></h2>
+          <p class="sv2-bio">Construyo soluciones que funcionan desde el primer día.
+            Mi enfoque: entender el problema real, diseñar lo más simple posible y construirlo.</p>
+        </div>
+
+        <!-- Features con hover -->
+        <div class="sv2-features">
+
+          <div class="sv2-feat sv2-feat-hover">
+            <div class="sv2-feat-ic sv2-ic-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="currentColor" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="sv2-feat-txt">
+              <strong>Acción sobre análisis</strong>
+              <span>Un prototipo que aprende vale más que un documento que especula.</span>
+            </div>
+            <div class="sv2-feat-arrow">→</div>
+          </div>
+
+          <div class="sv2-feat sv2-feat-hover">
+            <div class="sv2-feat-ic sv2-ic-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <circle cx="12" cy="12" r="10" stroke="currentColor"/>
+                <circle cx="12" cy="12" r="6"  stroke="currentColor"/>
+                <circle cx="12" cy="12" r="2"  stroke="currentColor"/>
+              </svg>
+            </div>
+            <div class="sv2-feat-txt">
+              <strong>Simple sobre complejo</strong>
+              <span>La tecnología innecesaria es el problema más caro.</span>
+            </div>
+            <div class="sv2-feat-arrow">→</div>
+          </div>
+
+          <div class="sv2-feat sv2-feat-hover">
+            <div class="sv2-feat-ic sv2-ic-3">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10" stroke="currentColor"/>
+                <line x1="12" y1="20" x2="12" y2="4"  stroke="currentColor"/>
+                <line x1="6"  y1="20" x2="6"  y2="14" stroke="currentColor"/>
+              </svg>
+            </div>
+            <div class="sv2-feat-txt">
+              <strong>Resultados sobre características</strong>
+              <span>Construyo cambios medibles, no listas de funcionalidades.</span>
+            </div>
+            <div class="sv2-feat-arrow">→</div>
+          </div>
+
+        </div><!-- /features -->
+
+      </div><!-- /content -->
+    </div><!-- /grid -->
+  </div>
+</section>
+
+<hr class="hr">
+
+<!-- ═══════ CONTACTO ═══════ -->
+<section id="contacto" class="sec contacto-dark">
+  <div class="wrap">
+    <span class="eyebrow rv">La conversación</span>
+    <h2 class="c-h rv">Cuéntame qué necesitas <span class="mag">resolver</span>.</h2>
+    <p class="cv2-sub rv">Sin formularios eternos ni reuniones de venta. Una línea basta para empezar.</p>
+
+    <!-- Cómo es el proceso -->
+    <div class="cv2-steps stg">
+      <div class="cv2-step"><span class="cv2-n">1</span><div><strong>Me escribes</strong><span>Tu problema, en una línea.</span></div></div>
+      <div class="cv2-step"><span class="cv2-n">2</span><div><strong>Lo conversamos</strong><span>30 minutos, sin compromiso.</span></div></div>
+      <div class="cv2-step"><span class="cv2-n">3</span><div><strong>Recibes una propuesta clara</strong><span>Alcance, tiempo y resultado esperado.</span></div></div>
+    </div>
+
+    <!-- Panel unificado -->
+    <div class="cv2 rv">
+
+      <div class="cv2-col cv2-left">
+        <div class="cv2-avail"><span class="cv2-dot"></span>Te leo y te respondo personalmente</div>
+        <p class="c-pitch">Si tienes un proceso manual o un sistema que aún no existe, <b>veámoslo juntos</b>.</p>
+        <a class="c-call" href="https://wa.me/51954708174" target="_blank" rel="noopener">Agendemos una llamada →</a>
+        <div class="c-or">o escríbeme directo</div>
+        <div class="c-pills">
+          <a class="c-pill" href="https://wa.me/51954708174" target="_blank" rel="noopener" aria-label="Escríbeme por WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8z"/></svg>WhatsApp</a>
+          <a class="c-pill" href="mailto:phillyps@outlook.com" aria-label="Escríbeme un correo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>Correo</a>
+          <a class="c-pill" href="https://pe.linkedin.com/in/phillyps" target="_blank" rel="noopener" aria-label="Mi perfil de LinkedIn"><span class="pin">in</span>LinkedIn</a>
+        </div>
+      </div>
+
+      <div class="cv2-col">
+        <div class="c-form">
+          <div class="ftitle">Construyámoslo juntos</div>
+          <div class="fsub2">Describe tu reto. Lo demás lo vemos en la llamada.</div>
+          <div class="fg2">
+            <div class="fg"><label class="fl" for="fn">Nombre</label><input class="fi" id="fn" type="text" placeholder="Tu nombre" required></div>
+            <div class="fg"><label class="fl" for="fe">Correo</label><input class="fi" id="fe" type="email" placeholder="tu@correo.com" required></div>
+          </div>
+          <div class="fg"><label class="fl" for="fm">¿Cuál es tu problema?</label><textarea class="fta" id="fm" placeholder="El proceso o sistema que quieres resolver..." required></textarea></div>
+          <button class="fsub" id="fsub">Cuéntame tu reto →</button>
+          <div class="fnote">Tu mensaje se abre directo en WhatsApp. Sin registros, sin spam.</div>
+        </div>
+      </div>
+
+    </div><!-- /cv2 -->
+  </div>
+</section>
+
+<!-- ═══════ MODAL DETALLE SOLUCIÓN ═══════ -->
+<div class="modal" id="solModal" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+  <div class="modal-bg" data-close></div>
+  <div class="modal-card">
+    <button class="modal-x" data-close aria-label="Cerrar">✕</button>
+    <span class="modal-tag" id="mTag"></span>
+    <h3 id="mTitle"></h3>
+    <div class="modal-h">El problema</div>
+    <p class="modal-prob" id="mProb"></p>
+    <div class="modal-h">Lo que construyo</div>
+    <p class="modal-sol" id="mSol"></p>
+    <div class="modal-res"><span class="modal-rn" id="mNum"></span><span class="modal-rl" id="mLbl"></span></div>
+    <a class="btn-p" href="#contacto" data-close style="font-size:13px;padding:11px 22px">Necesito algo así →</a>
+  </div>
+</div>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer>
+  <div class="wrap">
+          <div class="ft-hero"><div class="ft-sparkle-a"></div><div class="ft-sparkle-b"></div><div class="ft-sparkle-c"></div>
+        <div class="ft-lockup">
+          <img class="hat" src="img/hat.png" alt="BRAVO — sombrero de transformación">
+          <div class="ft-wm"><span class="w">BRAV</span><span class="brk">[</span><span class="o">O</span><span class="brk">]</span></div>
+          <div class="wm-rule"><span class="star">✦</span></div>
+          <div class="ft-slogan"><span class="br">&lt;</span> Hacemos que funcione<span class="cur">_</span> <span class="br">&gt;</span></div>
+        </div>
+        <a class="c-call" href="#contacto">Agendemos una llamada →</a>
+      </div>
+      <div class="ft-bottom">
+        <div class="ft-copy">© 2026 BRAVO · Lima, Perú</div>
+        <div class="ft-made">Hacemos que funcione.</div>
+      </div>
+  </div>
+</footer>
+
+</body>
+
+<!-- ═══════════════════════════════════════════════
+     JS — orden:
+     nav.js      → hamburguesa mobile
+     cursor.js   → cursor diamante
+     carousel.js → hero slides
+     app.js      → reveals, contadores, form, scroll
+════════════════════════════════════════════════ -->
+<script src="js/nav.js" defer></script>
+<script src="js/cursor.js" defer></script>
+<script src="js/carousel.js" defer></script>
+<script src="js/app.js" defer></script>
+<script src="js/modal.js" defer></script>
+<script src="js/hatbot.js" defer></script>
+</html>

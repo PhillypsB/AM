@@ -1,0 +1,37 @@
+/* ══════════════════════════════════════════
+   cursor.css — Cursor diamante mágico
+══════════════════════════════════════════ */
+*{cursor:none !important}
+#cdot{
+  position:fixed;top:0;left:0;
+  width:11px;height:11px;
+  background:var(--accent);
+  pointer-events:none;z-index:99999;
+  transform:translate(-50%,-50%) rotate(45deg);
+  border-radius:2px;
+  box-shadow:0 0 10px rgba(var(--ac-rgb),.9),0 0 22px rgba(var(--ac-rgb),.5);
+  transition:width .18s var(--ease),height .18s var(--ease),background .15s,box-shadow .15s;
+}
+#cring{
+  position:fixed;top:0;left:0;width:34px;height:34px;border-radius:50%;
+  border:1.5px solid rgba(var(--ac-rgb),.45);
+  pointer-events:none;z-index:99998;
+  transform:translate(-50%,-50%);
+  transition:width .25s var(--ease),height .25s var(--ease),border-color .25s,background .25s;
+}
+#cring::after{
+  content:"";position:absolute;inset:-4px;border-radius:50%;
+  border:1px solid rgba(var(--ac-rgb),.18);
+  animation:ringExpand 2.5s ease-out infinite;
+}
+@keyframes ringExpand{
+  0%{transform:scale(1);opacity:.6}
+  100%{transform:scale(1.7);opacity:0}
+}
+body.cur-link #cring{width:52px;height:52px;border-color:rgba(var(--ac-rgb),.85);background:rgba(var(--ac-rgb),.06)}
+body.cur-link #cdot{width:7px;height:7px;background:var(--accent-m)}
+body.cur-card #cring{width:64px;height:64px;border-color:rgba(var(--ac2-rgb),.7)}
+body.cur-card #cdot{background:var(--accent-m)}
+body.cur-down #cdot{width:7px;height:7px;transform:translate(-50%,-50%) rotate(45deg) scale(.7)}
+body.cur-down #cring{width:20px;height:20px;background:rgba(var(--ac-rgb),.12)}
+@media(pointer:coarse){*{cursor:auto !important}#cdot,#cring{display:none}}
