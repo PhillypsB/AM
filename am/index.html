@@ -365,6 +365,23 @@ body{
           <select id="selectDistrito"></select>
         </div>
       </div>
+      <div class="filter-row" style="margin-top:14px;padding-top:14px;border-top:1px dashed #e2e8f0;">
+        <div class="select-group" style="max-width:220px;">
+          <label for="selectEspecial" style="display:flex;align-items:center;gap:6px;">
+            <span style="background:#1d4ed8;color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:50px;letter-spacing:.05em;">ESPECIAL</span>
+            <span>Ámbito especial</span>
+          </label>
+          <select id="selectEspecial" onchange="if(this.value) filtrarEspecial();">
+            <option value="">— Ninguno —</option>
+            <option value="VRAEM">🌿 VRAEM</option>
+            <option value="NOR-VRAEM">🌿 NOR-VRAEM</option>
+          </select>
+        </div>
+
+        <div id="especial-info" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 14px;font-size:.8rem;color:#1d4ed8;align-items:center;gap:8px;">
+          <span id="especial-label"></span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -398,8 +415,14 @@ body{
 
 </div><!-- /page-wrapper -->
 
+<!-- LIBRERÍAS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <!-- DATA -->
-<script src="am/bd.js"></script>
+<script src="bd.js"></script>
 
 <script>
 // ══════════════════════════════════════════════════
@@ -408,14 +431,15 @@ body{
 const FECHA_CORTE = dataset.reduce((max, d) => d.fecha > max ? d.fecha : max, "");
 
 const _fcDate  = new Date(FECHA_CORTE + "T12:00:00");
-const _nxtDate = new Date(_fcDate.getFullYear(), _fcDate.getMonth() + 1, 1);
+const _nxtDate   = new Date(_fcDate.getFullYear(), _fcDate.getMonth() + 2, 1); // fecha próx. actualización
+const _datosDate = new Date(_fcDate.getFullYear(), _fcDate.getMonth() + 1, 1); // mes de datos incluidos
 const _ML = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 const _MC = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
-const DATOS_CORTE_LABEL        = _ML[_fcDate.getMonth()]  + " " + _fcDate.getFullYear();
-const DATOS_CORTE_LABEL_CORTO  = _MC[_fcDate.getMonth()]  + " " + _fcDate.getFullYear();
-const PROX_DATOS_LABEL         = _ML[_nxtDate.getMonth()] + " " + _nxtDate.getFullYear();
-const PROX_DATOS_LABEL_CORTO   = _MC[_nxtDate.getMonth()] + " " + _nxtDate.getFullYear();
+const DATOS_CORTE_LABEL        = _ML[_fcDate.getMonth()]    + " " + _fcDate.getFullYear();
+const DATOS_CORTE_LABEL_CORTO  = _MC[_fcDate.getMonth()]    + " " + _fcDate.getFullYear();
+const PROX_DATOS_LABEL         = _ML[_datosDate.getMonth()] + " " + _datosDate.getFullYear();
+const PROX_DATOS_LABEL_CORTO   = _MC[_datosDate.getMonth()] + " " + _datosDate.getFullYear();
 const PROX_ACTUALIZACION       = "16 de " + _ML[_nxtDate.getMonth()];
 const PROX_ACTUALIZACION_CORTO = "16 " + _MC[_nxtDate.getMonth()];
 // ── VERSIÓN ─ formato: v[AÑO].[MES]-r1  (año/mes de publicación)
@@ -429,12 +453,29 @@ function _fmtFechaHora(d = new Date()) {
 }
 function buildFooterLine(fechaHora) {
   const fh = fechaHora || _fmtFechaHora();
-  const linea1 = `📅 Datos actualizados a: <strong>${DATOS_CORTE_LABEL_CORTO}</strong> | ` +
-                 `🔄 Próxima actualización: <strong>${PROX_ACTUALIZACION_CORTO}</strong> (incluye ${PROX_DATOS_LABEL_CORTO})`;
-  const linea2 = `🤖 Generado por: <strong>UPPM–PNCM–MIDIS</strong> | ` +
-                 `📊 Versión: <strong>${APP_VERSION}</strong> | ` +
-                 `🕒 Fecha y hora: <strong>${fh}</strong>`;
-  return `<div>${linea1}</div><div>${linea2}</div>`;
+  const sep = '<span style="color:#d1d5db;margin:0 5px;">|</span>';
+  const linea1 =
+    `📅 <span style="color:#9ca3af;font-style:italic;">Datos actualizados a:</span> ` +
+    `<strong style="color:#374151;">${DATOS_CORTE_LABEL_CORTO}</strong>` +
+    `${sep}` +
+    `🔄 <span style="color:#9ca3af;font-style:italic;">Próxima actualización:</span> ` +
+    `<strong style="color:#374151;">${PROX_ACTUALIZACION_CORTO}</strong> ` +
+    `<span style="color:#9ca3af;">(incluye ${PROX_DATOS_LABEL_CORTO})</span>`;
+  const linea2 =
+    `🗄️ <span style="color:#9ca3af;font-style:italic;">Fuente:</span> ` +
+    `<strong style="color:#374151;">SISTEMA INTEGRADO</strong>` +
+    `${sep}` +
+    `🕒 <span style="color:#9ca3af;font-style:italic;">Fecha y hora:</span> ` +
+    `<strong style="color:#374151;">${fh}</strong>`;
+  const linea3 =
+    `📊 <span style="color:#9ca3af;font-style:italic;">Versión:</span> ` +
+    `<strong style="color:#374151;">${APP_VERSION}</strong>` +
+    `${sep}` +
+    `⚙️ <span style="color:#9ca3af;font-style:italic;">Generado por:</span> ` +
+    `<strong style="color:#374151;">UPPM–PNCM–MIDIS</strong>`;
+  return `<div style="margin-bottom:1px;">${linea1}</div>` +
+         `<div style="margin-bottom:1px;">${linea2}</div>` +
+         `<div>${linea3}</div>`;
 }
 // Versión en texto plano (una sola línea con saltos) para jsPDF
 function buildFooterPlain(fechaHora) {
@@ -552,6 +593,246 @@ function limpiar() {
 // ══════════════════════════════════════════════════
 //  FILTRAR + RENDERIZAR KPIs
 // ══════════════════════════════════════════════════
+// ── Ámbitos especiales ────────────────────────────────────────────────────
+const AMBITOS_ESPECIALES = {
+  VRAEM: {
+    label: 'Valle de los Ríos Apurímac, Ene y Mantaro (VRAEM)',
+    ubigeos: new Set([
+  '030202',
+  '030208',
+  '030219',
+  '030604',
+  '030605',
+  '030606',
+  '030609',
+  '030610',
+  '030611',
+  '030612',
+  '050401',
+  '050402',
+  '050403',
+  '050404',
+  '050405',
+  '050406',
+  '050407',
+  '050408',
+  '050409',
+  '050410',
+  '050411',
+  '050412',
+  '050413',
+  '050501',
+  '050502',
+  '050503',
+  '050504',
+  '050505',
+  '050506',
+  '050507',
+  '050508',
+  '050509',
+  '050510',
+  '050511',
+  '050512',
+  '050513',
+  '050514',
+  '050515',
+  '080907',
+  '080910',
+  '080911',
+  '080912',
+  '080913',
+  '080916',
+  '080917',
+  '080918',
+  '090503',
+  '090507',
+  '090509',
+  '090510',
+  '090701',
+  '090702',
+  '090703',
+  '090704',
+  '090705',
+  '090706',
+  '090707',
+  '090709',
+  '090710',
+  '090711',
+  '090713',
+  '090714',
+  '090715',
+  '090716',
+  '090717',
+  '090718',
+  '090719',
+  '090720',
+  '090721',
+  '090722',
+  '090723',
+  '090724',
+  '090725',
+  '120124',
+  '120135',
+  '120203',
+  '120604',
+  '120606',
+  '120608',
+  '120609'
+    ])
+  },
+  'NOR-VRAEM': {
+    label: 'Nor Valle del Río Apurímac y Ene (NOR-VRAEM)',
+    ubigeos: new Set(['120303', '120601', '120602', '120603', '120604', '120605', '120606', '120607', '120608', '250202', '250203', '250201'])
+  }
+};
+
+function filtrarEspecial() {
+  const selectEsp = document.getElementById('selectEspecial');
+  const ambito    = selectEsp.value;
+  if (!ambito) { alert('Por favor seleccione un ámbito especial.'); return; }
+
+  const config  = AMBITOS_ESPECIALES[ambito];
+  const fStr    = ultimaFecha.toISOString().split('T')[0];
+  const datosAm = dataset.filter(d => config.ubigeos.has(d.ubigeo) && d.fecha === fStr);
+
+  if (!datosAm.length) {
+    alert('No se encontraron datos para el ámbito seleccionado en el corte actual.');
+    return;
+  }
+
+  const sumBy = (key) => datosAm.reduce((s,d) => s+(d[key]||0), 0);
+  const distSAF = new Set(datosAm.filter(d=>d.nfamilia_saf>0).map(d=>d.departamento+'|'+d.provincia+'|'+d.distrito));
+  const distSCD = new Set(datosAm.filter(d=>d.nniños_scd>0).map(d=>d.departamento+'|'+d.provincia+'|'+d.distrito));
+  const provSAF = new Set(datosAm.filter(d=>d.nfamilia_saf>0).map(d=>d.provincia));
+  const provSCD = new Set(datosAm.filter(d=>d.nniños_scd>0).map(d=>d.provincia));
+  const depsSAF = new Set(datosAm.filter(d=>d.nfamilia_saf>0).map(d=>d.departamento));
+  const depsSCD = new Set(datosAm.filter(d=>d.nniños_scd>0).map(d=>d.departamento));
+
+  const resumen = {
+    familias_2025: sumBy('nfamilia_saf'), familias_2024: 0,
+    gestantes_SAF: sumBy('ngestantes_saf'), niños_saf: sumBy('nniños_saf'),
+    niños_2025: sumBy('nniños_scd'), niños_2024: 0,
+    ejec_saf: sumBy('ejecucion_saf'), ejec_scd: sumBy('ejecucion_scd'),
+    CG_SAF: sumBy('CG_SAF'), FACILITADOR_SAF: sumBy('FACILITADOR_SAF'),
+    CG_SCD: sumBy('CG_SCD'), MadresCuidadoras_SCD: sumBy('MadresCuidadoras_SCD'),
+    CIAI_SCD: sumBy('CIAI_SCD'), SA_SCD: sumBy('SA_SCD'),
+    dist_saf: distSAF.size, dist_scd: distSCD.size,
+    prov_saf: provSAF.size, prov_scd: provSCD.size,
+    dep_saf: depsSAF.size, dep_scd: depsSCD.size,
+    departamento: ambito, provincia: '', distrito: '',
+    CUMPLE_SAF: null, CUMPLE_SCD: null,
+    _esEspecial: true, _ambitoLabel: config.label, _ambito: ambito,
+    _datos: datosAm
+  };
+
+  document.getElementById('resultadosTitulo').textContent   = ambito;
+  document.getElementById('resultadosSubtitulo').textContent = config.label + ' · ' + mesNombre + ' ' + año;
+
+  // Mostrar info badge
+  const info = document.getElementById('especial-info');
+  info.style.display = 'flex';
+  document.getElementById('especial-label').innerHTML =
+    `<strong>${ambito}</strong> — ${datosAm.length} registros · ${distSAF.size+distSCD.size} distritos ·
+     ${[...new Set(datosAm.map(d=>d.departamento))].length} departamentos`;
+
+  document.getElementById('loadingState').classList.remove('hidden');
+  document.getElementById('resultadosArea').classList.add('hidden');
+
+  setTimeout(() => {
+    // Render KPIs globales del ámbito
+    let htmlSalida = renderKPIsEspecial(resumen, ambito, datosAm, fStr);
+    // Tabla de cobertura por departamento dentro del ámbito
+    htmlSalida += generarTablaCoberturaEspecial(datosAm, ambito);
+    document.getElementById('resultados').innerHTML = htmlSalida;
+    window.ultimoResultado = resumen;
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('resultadosArea').classList.remove('hidden');
+    setExportButtons(true);
+  }, 40);
+}
+
+function renderKPIsEspecial(res, ambito, datos, fStr) {
+  const fN = n => (n||0).toLocaleString('es-PE');
+  const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2});
+  const crSAF = null; const crSCD = null;
+  return renderKPIs(res, ambito, '', '');
+}
+
+function generarTablaCoberturaEspecial(datosAm, titulo) {
+  // Agrupa por departamento dentro del ámbito
+  const mapa = {};
+  datosAm.forEach(r => {
+    const k = r.departamento;
+    if (!mapa[k]) mapa[k] = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
+    mapa[k].fam  += r.nfamilia_saf  ||0;
+    mapa[k].nSaf += r.nniños_saf    ||0;
+    mapa[k].gest += r.ngestantes_saf||0;
+    mapa[k].eSaf += r.ejecucion_saf ||0;
+    mapa[k].uScd += r.nniños_scd    ||0;
+    mapa[k].ciai += r.CIAI_SCD      ||0;
+    mapa[k].eScd += r.ejecucion_scd ||0;
+  });
+  const deps = Object.keys(mapa).sort((a,b)=>a.localeCompare(b,'es'));
+  const fmt  = n => Math.round(n).toLocaleString('es-PE');
+  const fmtS = n => n>0?'S/. '+Math.round(n).toLocaleString('es-PE'):'S/ 0';
+
+  let tot = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
+  let filas = '';
+  deps.forEach((dep,i) => {
+    const m = mapa[dep];
+    Object.keys(tot).forEach(k => tot[k]+=m[k]);
+    const bg = i%2===1?'background:#f8fafc;':'';
+    filas += `<tr style="${bg}">
+      <td style="text-align:left;padding:4px 8px;border:1px solid #e2e8f0;font-weight:600;">${dep}</td>
+      <td style="text-align:right;padding:4px 8px;border:1px solid #e2e8f0;">${fmt(m.fam)}</td>
+      <td style="text-align:right;padding:4px 8px;border:1px solid #e2e8f0;">${fmt(m.nSaf)}</td>
+      <td style="text-align:right;padding:4px 8px;border:1px solid #e2e8f0;">${fmt(m.gest)}</td>
+      <td style="text-align:right;padding:4px 8px;border:1px solid #e2e8f0;font-weight:600;">${fmtS(m.eSaf)}</td>
+      <td style="text-align:right;padding:4px 8px;border:1px solid #e2e8f0;">${fmt(m.uScd)}</td>
+      <td style="text-align:right;padding:4px 8px;border:1px solid #e2e8f0;">${fmt(m.ciai)}</td>
+      <td style="text-align:right;padding:4px 8px;border:1px solid #e2e8f0;font-weight:600;">${fmtS(m.eScd)}</td>
+    </tr>`;
+  });
+
+  return `<div class="cobertura-card" style="margin-top:24px;background:#fff;padding:18px;border-radius:12px;
+    box-shadow:0 2px 16px rgba(0,0,0,.07);border:1px solid #e2e8f0;overflow-x:auto;grid-column:1 / -1;">
+    <h3 style="font-size:1rem;font-weight:700;color:#1e293b;margin-bottom:12px;">
+      COBERTURA ${titulo} — Por Departamento
+    </h3>
+    <table style="width:100%;border-collapse:collapse;font-size:.83rem;">
+      <thead>
+        <tr>
+          <th rowspan="2" style="background:#4b5563;color:#fff;border:1px solid #374151;padding:5px 8px;text-align:left;">DEPARTAMENTO</th>
+          <th colspan="4" style="background:#6b7280;color:#fff;border:1px solid #374151;padding:5px;text-align:center;">Serv. Acompañamiento a Familias</th>
+          <th colspan="3" style="background:#9ca3af;color:#fff;border:1px solid #374151;padding:5px;text-align:center;">Serv. Cuidado Diurno</th>
+        </tr>
+        <tr>
+          <th style="background:#e5e7eb;border:1px solid #d1d5db;padding:3px 6px;text-align:center;">FAMILIAS</th>
+          <th style="background:#e5e7eb;border:1px solid #d1d5db;padding:3px 6px;text-align:center;">NIÑAS/OS</th>
+          <th style="background:#e5e7eb;border:1px solid #d1d5db;padding:3px 6px;text-align:center;">GESTANTES</th>
+          <th style="background:#e5e7eb;border:1px solid #d1d5db;padding:3px 6px;text-align:center;">S/. EJEC.</th>
+          <th style="background:#f3f4f6;border:1px solid #d1d5db;padding:3px 6px;text-align:center;">USUARIOS</th>
+          <th style="background:#f3f4f6;border:1px solid #d1d5db;padding:3px 6px;text-align:center;">CIAI</th>
+          <th style="background:#f3f4f6;border:1px solid #d1d5db;padding:3px 6px;text-align:center;">S/. EJEC.</th>
+        </tr>
+      </thead>
+      <tbody>${filas}</tbody>
+      <tfoot>
+        <tr style="font-weight:700;">
+          <td style="background:#e5e7eb;padding:4px 8px;border:1px solid #d1d5db;text-align:left;">Total ${titulo}</td>
+          <td style="background:#e5e7eb;padding:4px 8px;border:1px solid #d1d5db;text-align:right;">${fmt(tot.fam)}</td>
+          <td style="background:#e5e7eb;padding:4px 8px;border:1px solid #d1d5db;text-align:right;">${fmt(tot.nSaf)}</td>
+          <td style="background:#e5e7eb;padding:4px 8px;border:1px solid #d1d5db;text-align:right;">${fmt(tot.gest)}</td>
+          <td style="background:#e5e7eb;padding:4px 8px;border:1px solid #d1d5db;text-align:right;">${fmtS(tot.eSaf)}</td>
+          <td style="background:#f3f4f6;padding:4px 8px;border:1px solid #d1d5db;text-align:right;">${fmt(tot.uScd)}</td>
+          <td style="background:#f3f4f6;padding:4px 8px;border:1px solid #d1d5db;text-align:right;">${fmt(tot.ciai)}</td>
+          <td style="background:#f3f4f6;padding:4px 8px;border:1px solid #d1d5db;text-align:right;">${fmtS(tot.eScd)}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>`;
+}
+
 function filtrar() {
   const dep  = selectDep.value;
   const prov = selectProv.value;
@@ -865,45 +1146,233 @@ function calcularResumen(dep, prov = null, dist = null) {
   };
 }
 
+// ── Resumen a nivel nacional (todos los departamentos) ─────────────────────
+function calcularResumenNacional() {
+  const ultimaFechaStr = ultimaFecha.toISOString().split('T')[0];
+  const datos = dataset.filter(d => d.fecha === ultimaFechaStr);
+  const sumBy = (key) => datos.reduce((s, d) => s + (d[key] || 0), 0);
+  const depsSAF = new Set(datos.filter(d => d.nfamilia_saf > 0).map(d => d.departamento));
+  const depsSCD = new Set(datos.filter(d => d.nniños_scd   > 0).map(d => d.departamento));
+  const distSAF = new Set(datos.filter(d => d.nfamilia_saf > 0).map(d => d.departamento+'|'+d.provincia+'|'+d.distrito));
+  const distSCD = new Set(datos.filter(d => d.nniños_scd   > 0).map(d => d.departamento+'|'+d.provincia+'|'+d.distrito));
+  const provSAFnac = new Set(datos.filter(d => d.nfamilia_saf > 0).map(d => d.departamento+'|'+d.provincia));
+  const provSCDnac = new Set(datos.filter(d => d.nniños_scd   > 0).map(d => d.departamento+'|'+d.provincia));
+  // Unión de distritos con cobertura (SAF o SCD)
+  const distUnion = new Set([...distSAF, ...distSCD]);
+  const TOTAL_DISTRITOS_PERU = 1874; // distritos oficiales según INEI
+  return {
+    familias_2025: sumBy('nfamilia_saf'),
+    gestantes_SAF: sumBy('ngestantes_saf'),
+    niños_saf:     sumBy('nniños_saf'),
+    niños_2025:    sumBy('nniños_scd'),
+    ejec_saf:      sumBy('ejecucion_saf'),
+    ejec_scd:      sumBy('ejecucion_scd'),
+    CIAI_SCD:      sumBy('CIAI_SCD'),
+    dep_saf:  depsSAF.size,
+    dep_scd:  depsSCD.size,
+    dist_saf: distSAF.size,
+    dist_scd: distSCD.size,
+    dist_union: distUnion.size,
+    total_distritos: TOTAL_DISTRITOS_PERU,
+    pct_cobertura: ((distUnion.size / TOTAL_DISTRITOS_PERU) * 100).toFixed(1),
+    pct_saf: ((distSAF.size / TOTAL_DISTRITOS_PERU) * 100).toFixed(1),
+    pct_scd: ((distSCD.size / TOTAL_DISTRITOS_PERU) * 100).toFixed(1),
+    prov_saf: provSAFnac.size, prov_scd: provSCDnac.size,
+    CG_SAF: 0, FACILITADOR_SAF: 0, CG_SCD: 0, MadresCuidadoras_SCD: 0,
+    familias_2024:0, niños_2024:0
+  };
+}
+
+// ── Genera la tabla de cobertura nacional (por departamento) ───────────────
+// ── Prólogo institucional ─────────────────────────────────────────────────
+function generarPrologo() {
+  return `
+    <div style="margin:10px 0 14px 0;padding:10px 14px 8px 14px;border-left:4px solid #9ca3af;background:#f9fafb;font-family:'Segoe UI',sans-serif;">
+      <p style="font-size:8.5pt;font-style:italic;color:#374151;margin:0 0 8px 0;line-height:1.65;text-align:justify;">
+        El <strong style="font-style:normal;">Programa Nacional Cuna Más (PNCM)</strong> es un programa social focalizado adscrito al
+        <strong style="font-style:normal;">Ministerio de Desarrollo e Inclusión Social (MIDIS)</strong>, cuyo objetivo es mejorar el
+        desarrollo infantil de niñas, niños y madres gestantes. El PNCM opera a través de dos servicios complementarios:
+      </p>
+      <div style="margin:6px 0 8px 12px;">
+        <p style="font-size:8.5pt;font-style:italic;color:#374151;margin:0 0 6px 0;line-height:1.65;text-align:justify;">
+          <span style="font-weight:700;font-style:normal;color:#4b5563;">● Servicio de Cuidado Diurno (SCD)</span> —
+          brinda cuidado y atención integral a niñas y niños de <em>6 a 36 meses</em> que requieren cuidado extrafamiliar,
+          implementado a través de los <strong style="font-style:normal;">Centros Infantiles de Atención Integral (CIAI)</strong>
+          y Servicios Alimentarios (SA).
+        </p>
+        <p style="font-size:8.5pt;font-style:italic;color:#374151;margin:0;line-height:1.65;text-align:justify;">
+          <span style="font-weight:700;font-style:normal;color:#4b5563;">● Servicio de Acompañamiento a Familias (SAF)</span> —
+          brinda acompañamiento a familias con niñas, niños y gestantes para fortalecer las capacidades de los cuidadores
+          principales y favorecer el desarrollo integral de la primera infancia.
+        </p>
+      </div>
+      <p style="font-size:8.5pt;font-style:italic;color:#374151;margin:0 0 6px 0;line-height:1.65;text-align:justify;">
+        Ambos servicios se implementan bajo el modelo de <strong style="font-style:normal;">cogestión comunitaria</strong><sup>1</sup>,
+        una estrategia de corresponsabilidad entre el Estado y la comunidad organizada. El PNCM brinda capacitación,
+        asistencia técnica y recursos financieros; la comunidad, a través de sus <strong style="font-style:normal;">Comités de Gestión</strong>,
+        participa activamente en la administración y operación de los servicios.
+      </p>
+      <p style="font-size:7.5pt;color:#9ca3af;margin:6px 0 0 0;line-height:1.4;border-top:1px solid #e5e7eb;padding-top:5px;font-style:normal;">
+        <sup>1</sup> Directiva "Modelo de Cogestión Comunal para la Implementación y Funcionamiento de los Servicios del
+        Programa Nacional Cuna Más", versión 9 — RDE N° 135-2024-MIDIS/PNCM.
+      </p>
+    </div>`;
+}
+
+function generarResumenNacional(resNac) {
+  const mesMin = (mesNombre||'').toLowerCase();
+  const tot  = resNac.ejec_saf + resNac.ejec_scd;
+  const pSAF = tot > 0 ? ((resNac.ejec_saf/tot)*100).toFixed(1) : '0.0';
+  const pSCD = tot > 0 ? ((resNac.ejec_scd/tot)*100).toFixed(1) : '0.0';
+  const fN   = n => (n||0).toLocaleString('es-PE');
+  const fS   = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  // 24 departamentos + Provincia Constitucional del Callao = 25 jurisdicciones
+  const depLabel = '24 departamentos y la Provincia Constitucional del Callao';
+
+  // ── Estilos tarjeta KPI mejorada ─────────────────────────────────────────
+  const C = {
+    wrap:  'padding:3px;vertical-align:top;',
+    card:  'border:none;border-radius:0;padding:5px 8px 4px;text-align:center;background:#fff;',
+    lbl:   'font-size:7pt;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;line-height:1.3;',
+    val:   'font-size:11pt;font-weight:700;color:#111827;line-height:1;margin-bottom:2px;',
+    sub:   'font-size:6.5pt;color:#9ca3af;line-height:1.3;',
+    exec:  'font-size:9pt;font-weight:700;color:#374151;line-height:1.2;',
+    sec:   'border-left:3px solid #6b7280;background:#f9fafb;padding:5px 10px;font-size:9pt;font-weight:700;color:#374151;margin:12px 0 6px 0;',
+  };
+  const card = (label, value, sub='', isExec=false) => `
+    <td style="${C.wrap}">
+      <div style="${C.card}">
+        <div style="${C.lbl}">${label}</div>
+        <div style="${isExec ? C.exec : C.val}">${value}</div>
+        ${sub ? `<div style="${C.sub}">${sub}</div>` : ''}
+      </div>
+    </td>`;
+
+  const fmtEjec = n => 'S/. ' + Math.round(n||0).toLocaleString('es-PE');
+  const bloqueTerritorioNacional = `
+    <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:10px 0 14px 0;border:none;">
+      <tr>
+        <td style="width:38%;padding:0 12px 0 0;vertical-align:top;border:none;">
+          <div style="border-top:3px solid #374151;padding:12px 14px;background:#f9fafb;text-align:center;">
+            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">Cobertura territorial PNCM</div>
+            <div style="font-size:28pt;font-weight:800;color:#111827;line-height:1;">${resNac.pct_cobertura}%</div>
+            <div style="font-size:7.5pt;color:#6b7280;margin-top:3px;line-height:1.2;">distritos a nivel nacional<br><strong style="font-size:8.5pt;color:#374151;">${fN(resNac.dist_union)} de ${fN(resNac.total_distritos)} distritos</strong></div>
+          </div>
+        </td>
+        <td style="width:31%;padding:0 12px 0 0;vertical-align:top;border:none;">
+          <div style="border-top:3px solid #6b7280;padding:12px;background:#f9fafb;text-align:center;">
+            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">SAF — Presencia</div>
+            <div style="font-size:20pt;font-weight:800;color:#374151;line-height:1;">${resNac.pct_saf}%</div>
+            <div style="font-size:7.5pt;color:#6b7280;margin-top:3px;"><strong style="color:#111827;">${fN(resNac.dist_saf)}</strong> distritos con SAF</div>
+          </div>
+        </td>
+        <td style="width:31%;padding:0;vertical-align:top;border:none;">
+          <div style="border-top:3px solid #9ca3af;padding:12px;background:#f9fafb;text-align:center;">
+            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">SCD — Presencia</div>
+            <div style="font-size:20pt;font-weight:800;color:#374151;line-height:1;">${resNac.pct_scd}%</div>
+            <div style="font-size:7.5pt;color:#6b7280;margin-top:3px;"><strong style="color:#111827;">${fN(resNac.dist_scd)}</strong> distritos con SCD</div>
+          </div>
+        </td>
+      </tr>
+    </table>`;
+
+  return `
+    <h2>COBERTURA NACIONAL — PNCM | ${mesNombre} ${año}</h2>
+    <p style="margin-bottom:14px;line-height:1.7;">Entre enero y ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó a nivel nacional un monto total de <strong>S/ ${fN(Math.round(tot))}</strong>, de los cuales <strong>S/ ${fN(Math.round(resNac.ejec_saf))} (${pSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fN(Math.round(resNac.ejec_scd))} (${pSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
+    <p style="margin-bottom:14px;line-height:1.7;">Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fN(resNac.familias_2025)} familias</strong>, conformadas por <strong>${fN(resNac.niños_saf)} niñas y niños</strong> y <strong>${fN(resNac.gestantes_SAF)} gestantes</strong>, con presencia en <strong>${fN(resNac.dist_saf)} distritos</strong> de los <strong>${depLabel}</strong>.</p>
+    <p style="margin-bottom:14px;line-height:1.7;">Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> brinda atención a <strong>${fN(resNac.niños_2025)} niñas y niños</strong> en <strong>${fN(resNac.CIAI_SCD)} Centros Infantiles de Atención Integral (CIAI)</strong>, distribuidos en <strong>${fN(resNac.dist_scd)} distritos</strong> de los <strong>${depLabel}</strong>.</p>
+
+    ${bloqueTerritorioNacional}
+    <p style="${C.sec}">Servicio de Acompañamiento a Familias (SAF)</p>
+    <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;border:none;margin-bottom:10px;table-layout:fixed;">
+      <tr>
+        ${card('Familias',         fN(resNac.familias_2025), 'beneficiarias del programa')}
+        ${card('Niñas y niños',    fN(resNac.niños_saf),     'en el SAF')}
+        ${card('Gestantes',        fN(resNac.gestantes_SAF), 'atendidas')}
+        ${card('Departamento',     depLabel.startsWith('24')?'25':'25', '24 dep. + Callao')}
+        ${card('Provincias',       fN(resNac.prov_saf),      'con cobertura SAF')}
+        ${card('Distritos',        fN(resNac.dist_saf),      'con cobertura SAF')}
+        ${card('Ejecución',        fmtEjec(resNac.ejec_saf), 'enero–'+mesMin+' '+año, true)}
+      </tr>
+    </table>
+
+    <p style="${C.sec}">Servicio de Cuidado Diurno (SCD)</p>
+    <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;border:none;margin-bottom:8px;table-layout:fixed;">
+      <tr>
+        ${card('Niñas y niños',    fN(resNac.niños_2025),    'usuarios del SCD')}
+        ${card('CIAI',             fN(resNac.CIAI_SCD),      'centros de atención')}
+        ${card('Departamento',     '25',                      '24 dep. + Callao')}
+        ${card('Provincias',       fN(resNac.prov_scd),      'con cobertura SCD')}
+        ${card('Distritos',        fN(resNac.dist_scd),      'con cobertura SCD')}
+        ${card('Ejecución',        fmtEjec(resNac.ejec_scd), 'enero–'+mesMin+' '+año, true)}
+      </tr>
+    </table>
+  `;
+}
+
+// Estilos reutilizables celdas KPI Word
+// ── Paleta monocromática (grises) + amarillo para resaltado ───────────────
+const _KL = 'padding:4px 10px;border:1px solid #d1d5db;font-size:8.5pt;text-align:left;color:#374151;background:#f9fafb;width:65%;';
+const _KV = 'padding:4px 10px;border:1px solid #d1d5db;font-size:8.5pt;text-align:right;font-weight:700;color:#111827;width:35%;';
+const _KE = 'padding:4px 10px;border:1px solid #9ca3af;font-size:9pt;text-align:right;font-weight:700;color:#111827;background:#e5e7eb;width:35%;';
+
 function generarTablaSAF(d, encabezadoUbicacion, dist, prov) {
   const nivelDistrito = !!dist;
   const nivelDepto    = !dist && !prov;
+  const fN = n => (n||0).toLocaleString('es-PE');
+  const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
   return `
-    <h3>🔴 Servicio de Acompañamiento a Familias (SAF)</h3>
-    <table border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; width: 100%;">
-      <tr><th>Servicio SAF<br>${encabezadoUbicacion}</th><th>${mesNombre} ${año}</th></tr>
-      <tr><td>👨‍👩‍👧‍👦 Familias (ENE 2024)</td><td>${d.familias_2024.toLocaleString('es-PE')}</td></tr>
-      <tr><td>👨‍👩‍👧‍👦 Familias</td><td>${d.familias_2025.toLocaleString('es-PE')}</td></tr>
-      <tr><td>🤰 Gestantes</td><td>${d.gestantes_SAF}</td></tr>
-      <tr><td>🧒 Niños</td><td>${d.niños_saf}</td></tr>
-      ${nivelDistrito ? `<tr><td>🏛 Comités de Gestión</td><td>${d.CG_SAF}</td></tr>` : ''}
-      ${nivelDistrito ? `<tr><td>👥 Facilitadoras</td><td>${d.FACILITADOR_SAF}</td></tr>` : ''}
-      ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${d.dist_saf}</td></tr>` : ''}
-      ${nivelDepto     ? `<tr><td>📌 Provincias con atención</td><td>${d.prov_saf}</td></tr>` : ''}
-      <tr><td>💰 Ejecución</td><td>S/. ${d.ejec_saf.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</td></tr>
-      ${nivelDistrito && d.CUMPLE_SAF != null ? `<tr><td>📍 Estado de focalización</td><td>${getEtiquetaFocalizacion(d.CUMPLE_SAF).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SAF).texto}</td></tr>` : ''}
-    </table><br><br><br><br>
-  `;
+    <table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;margin:6px 0 0 0;font-family:'Segoe UI',sans-serif;">
+      <thead>
+        <tr><th colspan="2" style="background:#6b7280;color:#fff;padding:5px 10px;font-size:9.5pt;text-align:left;border-radius:2px 2px 0 0;letter-spacing:.01em;">
+          Servicio de Acompañamiento a Familias (SAF)
+        </th></tr>
+        <tr>
+          <th style="background:#f3f4f6;color:#374151;padding:3px 10px;font-size:8pt;text-align:left;border:1px solid #d1d5db;">${encabezadoUbicacion}</th>
+          <th style="background:#f3f4f6;color:#374151;padding:3px 10px;font-size:8pt;text-align:right;border:1px solid #d1d5db;">${mesNombre} ${año}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="${_KL}">👨‍👩‍👧‍👦&nbsp; Familias</td><td style="${_KV}">${fN(d.familias_2025)}</td></tr>
+        <tr><td style="${_KL}">🤰&nbsp; Gestantes</td><td style="${_KV}">${fN(d.gestantes_SAF)}</td></tr>
+        <tr><td style="${_KL}">🧒&nbsp; Niñas y niños</td><td style="${_KV}">${fN(d.niños_saf)}</td></tr>
+        ${nivelDistrito?`<tr><td style="${_KL}">🏛&nbsp; Comités de Gestión</td><td style="${_KV}">${d.CG_SAF}</td></tr>`:''}
+        ${nivelDistrito?`<tr><td style="${_KL}">👥&nbsp; Facilitadoras</td><td style="${_KV}">${d.FACILITADOR_SAF}</td></tr>`:''}
+        ${!nivelDistrito?`<tr><td style="${_KL}">📌&nbsp; Distritos con atención</td><td style="${_KV}">${d.dist_saf}</td></tr>`:''}
+        ${nivelDepto?`<tr><td style="${_KL}">📌&nbsp; Provincias con atención</td><td style="${_KV}">${d.prov_saf}</td></tr>`:''}
+        <tr><td style="${_KL}">💰&nbsp; Ejecución</td><td style="${_KE}">${fS(d.ejec_saf)}</td></tr>
+        ${nivelDistrito&&d.CUMPLE_SAF!=null?`<tr><td style="${_KL}">📍&nbsp; Estado de focalización</td><td style="${_KV}">${getEtiquetaFocalizacion(d.CUMPLE_SAF).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SAF).texto}</td></tr>`:''}
+      </tbody>
+    </table>`;
 }
 
 function generarTablaSCD(d, encabezadoUbicacion, dist, prov) {
   const nivelDistrito = !!dist;
   const nivelDepto    = !dist && !prov;
-  return `<br><br><br><br>
-    <h3>🟢 Servicio de Cuidado Diurno (SCD)</h3>
-    <table border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; width: 100%;">
-      <tr><th>Servicio SCD<br>${encabezadoUbicacion}</th><th>${mesNombre} ${año}</th></tr>
-      <tr><td>🧒 Niños (ENE 2024)</td><td>${d.niños_2024.toLocaleString('es-PE')}</td></tr>
-      <tr><td>🧒 Niños</td><td>${d.niños_2025.toLocaleString('es-PE')}</td></tr>
-      ${nivelDistrito ? `<tr><td>🏛 Comités de Gestión</td><td>${d.CG_SCD}</td></tr>` : ''}
-      ${nivelDistrito ? `<tr><td>👩 Madres Cuidadoras</td><td>${d.MadresCuidadoras_SCD}</td></tr>` : ''}
-      <tr><td>🏘 CIAI</td><td>${d.CIAI_SCD}</td></tr>
-      ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${d.dist_scd}</td></tr>` : ''}
-      ${nivelDepto     ? `<tr><td>📌 Provincias con atención</td><td>${d.prov_scd}</td></tr>` : ''}
-      <tr><td>💰 Ejecución</td><td>S/. ${d.ejec_scd.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</td></tr>
-      ${nivelDistrito && d.CUMPLE_SCD != null ? `<tr><td>📍 Estado de focalización</td><td>${getEtiquetaFocalizacion(d.CUMPLE_SCD).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SCD).texto}</td></tr>` : ''}
-    </table>
-  `;
+  const fN = n => (n||0).toLocaleString('es-PE');
+  const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return `
+    <table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;margin:6px 0 0 0;font-family:'Segoe UI',sans-serif;">
+      <thead>
+        <tr><th colspan="2" style="background:#9ca3af;color:#fff;padding:5px 10px;font-size:9.5pt;text-align:left;border-radius:2px 2px 0 0;letter-spacing:.01em;">
+          Servicio de Cuidado Diurno (SCD)
+        </th></tr>
+        <tr>
+          <th style="background:#f3f4f6;color:#374151;padding:3px 10px;font-size:8pt;text-align:left;border:1px solid #d1d5db;">${encabezadoUbicacion}</th>
+          <th style="background:#f3f4f6;color:#374151;padding:3px 10px;font-size:8pt;text-align:right;border:1px solid #d1d5db;">${mesNombre} ${año}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="${_KL}">🧒&nbsp; Niñas y niños</td><td style="${_KV}">${fN(d.niños_2025)}</td></tr>
+        <tr><td style="${_KL}">🏘&nbsp; CIAI</td><td style="${_KV}">${fN(d.CIAI_SCD)}</td></tr>
+        ${nivelDistrito?`<tr><td style="${_KL}">🏛&nbsp; Comités de Gestión</td><td style="${_KV}">${d.CG_SCD}</td></tr>`:''}
+        ${nivelDistrito?`<tr><td style="${_KL}">👩&nbsp; Madres Cuidadoras</td><td style="${_KV}">${fN(d.MadresCuidadoras_SCD)}</td></tr>`:''}
+        ${!nivelDistrito?`<tr><td style="${_KL}">📌&nbsp; Distritos con atención</td><td style="${_KV}">${d.dist_scd}</td></tr>`:''}
+        ${nivelDepto?`<tr><td style="${_KL}">📌&nbsp; Provincias con atención</td><td style="${_KV}">${d.prov_scd}</td></tr>`:''}
+        <tr><td style="${_KL}">💰&nbsp; Ejecución</td><td style="${_KE}">${fS(d.ejec_scd)}</td></tr>
+        ${nivelDistrito&&d.CUMPLE_SCD!=null?`<tr><td style="${_KL}">📍&nbsp; Estado de focalización</td><td style="${_KV}">${getEtiquetaFocalizacion(d.CUMPLE_SCD).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SCD).texto}</td></tr>`:''}
+      </tbody>
+    </table>`;
 }
 
 // ──────────────────────────────────────────────────
@@ -1171,11 +1640,19 @@ function exportarExcel() {
 function generarTablaCobertura(nivel, dep, prov, dist, opts) {
   opts = opts || {};
   const forWord = !!opts.forWord;
-  const fz = forWord ? '8pt' : '0.8rem';        // tamaño letra tabla
-  const fzHead = forWord ? '8pt' : '0.8rem';
-  const fzTitle = forWord ? '10pt' : '1rem';
-  const padCell = forWord ? '2px 5px' : '4px 8px';
-  const padHead = forWord ? '3px 4px' : '6px';
+  const fz      = forWord ? '7pt'  : '0.8rem';
+  const fzHead  = forWord ? '7pt'  : '0.8rem';
+  const fzTitle = forWord ? '9pt'  : '1rem';
+  const padCell = forWord ? '1px 3px'  : '4px 8px';
+  const padHead = forWord ? '1px 3px'  : '6px';
+  // Colores cabecera tabla cobertura
+  // Paleta monocromática — solo grises; amarillo para resaltado
+  // Cabeceras todas en escala de grises — sin rojo ni verde
+  const thSAF   = forWord ? 'background:#6b7280;color:#fff;' : 'background:#e5e7eb;color:#1f2937;';
+  const thSCD   = forWord ? 'background:#9ca3af;color:#fff;' : 'background:#f3f4f6;color:#1f2937;';
+  const thSAF2  = forWord ? 'background:#e5e7eb;color:#374151;' : 'background:#e5e7eb;color:#374151;';
+  const thSCD2  = forWord ? 'background:#f3f4f6;color:#374151;' : 'background:#f3f4f6;color:#374151;';
+  const thGray  = forWord ? 'background:#4b5563;color:#fff;' : 'background:#f1f5f9;color:#1e293b;';
   const ultimaFechaStr = ultimaFecha.toISOString().split('T')[0];
   const base = dataset.filter(d => d.fecha === ultimaFechaStr);
 
@@ -1218,10 +1695,19 @@ function generarTablaCobertura(nivel, dep, prov, dist, opts) {
   const fmt    = n => (Math.round(n)).toLocaleString('es-PE');
   const fmtSol = n => n > 0 ? 'S/. ' + Math.round(n).toLocaleString('es-PE') : 'S/ 0';
 
+  // ── Colores de bordes y celdas según destino ──────────────────────────────
+  const brd   = '1px solid ' + (forWord ? '#374151' : '#cbd5e1');
+  const brdSAF = '1px solid ' + (forWord ? '#374151' : '#cbd5e1');
+  const brdSCD = '1px solid ' + (forWord ? '#374151' : '#cbd5e1');
+  // Total row background
+  const bgTotSAF = forWord ? '#d1d5db' : '#e5e7eb';
+  const bgTotSCD = forWord ? '#e5e7eb' : '#f3f4f6';
+  const bgTotNom = forWord ? '#e5e7eb' : '#f1f5f9';
+
   const tot = {familias:0,ninos_saf:0,gestantes:0,ejec_saf:0,usuarios:0,ciai:0,ejec_scd:0};
   let filas = '';
-  nombres.forEach(n => {
-    const m = mapa[n];
+  nombres.forEach((n, idx) => {
+    const m   = mapa[n];
     tot.familias  += m.familias;
     tot.ninos_saf += m.ninos_saf;
     tot.gestantes += m.gestantes;
@@ -1229,49 +1715,57 @@ function generarTablaCobertura(nivel, dep, prov, dist, opts) {
     tot.usuarios  += m.usuarios;
     tot.ciai      += m.ciai;
     tot.ejec_scd  += m.ejec_scd;
-    const sel = (n === seleccionado);
-    const bg  = sel ? 'background:#fff176;font-weight:700;' : '';
-    filas += `<tr style="${bg}">
-      <td style="text-align:left;padding:${padCell};border:1px solid #cbd5e1;">${n}</td>
-      <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;">${fmt(m.familias)}</td>
-      <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;">${fmt(m.ninos_saf)}</td>
-      <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;">${fmt(m.gestantes)}</td>
-      <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;">${fmtSol(m.ejec_saf)}</td>
-      <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;">${fmt(m.usuarios)}</td>
-      <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;">${fmt(m.ciai)}</td>
-      <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;">${fmtSol(m.ejec_scd)}</td>
+    const sel  = (n === seleccionado);
+    const zebra = (!sel && idx % 2 === 1) ? (forWord ? 'background:#f8fafc;' : 'background:#f8fafc;') : '';
+    const rowStyle = sel ? 'background:#fef08a;font-weight:700;' : zebra;
+    const tdBase = `padding:${padCell};border:${brd};font-size:${fz};`;
+    filas += `<tr style="${rowStyle}">
+      <td style="${tdBase}text-align:left;font-weight:${sel?'700':'600'};">${n}</td>
+      <td style="${tdBase}text-align:right;">${fmt(m.familias)}</td>
+      <td style="${tdBase}text-align:right;">${fmt(m.ninos_saf)}</td>
+      <td style="${tdBase}text-align:right;">${fmt(m.gestantes)}</td>
+      <td style="${tdBase}text-align:right;font-weight:600;">${fmtSol(m.ejec_saf)}</td>
+      <td style="${tdBase}text-align:right;">${fmt(m.usuarios)}</td>
+      <td style="${tdBase}text-align:right;">${fmt(m.ciai)}</td>
+      <td style="${tdBase}text-align:right;font-weight:600;">${fmtSol(m.ejec_scd)}</td>
     </tr>`;
   });
 
-  const totalRow = `<tr style="font-weight:700;">
-    <td style="text-align:left;padding:${padCell};border:1px solid #cbd5e1;background:#fce4ec;">Total general</td>
-    <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;background:#fce4ec;">${fmt(tot.familias)}</td>
-    <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;background:#fce4ec;">${fmt(tot.ninos_saf)}</td>
-    <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;background:#fce4ec;">${fmt(tot.gestantes)}</td>
-    <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;background:#fce4ec;">${fmtSol(tot.ejec_saf)}</td>
-    <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;background:#c8e6c9;">${fmt(tot.usuarios)}</td>
-    <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;background:#c8e6c9;">${fmt(tot.ciai)}</td>
-    <td style="text-align:right;padding:${padCell};border:1px solid #cbd5e1;background:#c8e6c9;">${fmtSol(tot.ejec_scd)}</td>
+  const tdTot = `padding:${padCell};font-size:${fz};font-weight:700;border:${brd};text-align:right;`;
+  const totalRow = `<tr>
+    <td style="${tdTot}text-align:left;background:${bgTotNom};">Total general</td>
+    <td style="${tdTot}background:${bgTotSAF};">${fmt(tot.familias)}</td>
+    <td style="${tdTot}background:${bgTotSAF};">${fmt(tot.ninos_saf)}</td>
+    <td style="${tdTot}background:${bgTotSAF};">${fmt(tot.gestantes)}</td>
+    <td style="${tdTot}background:${bgTotSAF};">${fmtSol(tot.ejec_saf)}</td>
+    <td style="${tdTot}background:${bgTotSCD};">${fmt(tot.usuarios)}</td>
+    <td style="${tdTot}background:${bgTotSCD};">${fmt(tot.ciai)}</td>
+    <td style="${tdTot}background:${bgTotSCD};">${fmtSol(tot.ejec_scd)}</td>
   </tr>`;
 
+  // Wrapper: para web usa card con sombra; para Word usa bloque simple sin overflow
+  const wrapStart = forWord
+    ? `<div style="margin-top:16px;margin-bottom:8px;width:100%;">`
+    : `<div class="cobertura-card" style="margin-top:24px;background:#fff;padding:18px;border-radius:12px;box-shadow:0 2px 16px rgba(0,0,0,.07);border:1px solid #e2e8f0;overflow-x:auto;grid-column:1 / -1;">`;
+
   return `
-    <div class="cobertura-card" style="margin-top:24px;background:#fff;padding:18px;border-radius:12px;box-shadow:0 2px 16px rgba(0,0,0,.07);border:1px solid #e2e8f0;overflow-x:auto;grid-column:1 / -1;">
-      <h3 style="font-size:${fzTitle};font-weight:700;color:#1e293b;margin-bottom:12px;text-align:left;">${titulo}</h3>
-      <table style="width:100%;border-collapse:collapse;font-size:${fz};border:1px solid #cbd5e1;">
+    ${wrapStart}
+      <h3 style="font-size:${fzTitle};font-weight:700;color:${forWord?'#1e3a8a':'#1e293b'};margin-bottom:10px;margin-top:0;text-transform:uppercase;letter-spacing:.03em;">${titulo}</h3>
+      <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;font-size:${fz};border:${brd};font-family:'Segoe UI',sans-serif;">
         <thead>
           <tr>
-            <th rowspan="2" style="background:#f1f5f9;border:1px solid #cbd5e1;padding:${padHead};text-align:center;font-size:${fzHead};">${tituloCol}</th>
-            <th colspan="4" style="background:#f8bbd0;border:1px solid #cbd5e1;padding:${padHead};text-align:center;font-size:${fzHead};">Servicio de Acompañamiento a Familias</th>
-            <th colspan="3" style="background:#a5d6a7;border:1px solid #cbd5e1;padding:${padHead};text-align:center;font-size:${fzHead};">Servicio de Cuidado Diurno</th>
+            <th rowspan="2" style="${thGray}border:${brd};padding:${padHead};text-align:center;vertical-align:middle;font-size:${fzHead};">${tituloCol}</th>
+            <th colspan="4" style="${thSAF}border:${brdSAF};padding:${padHead};text-align:center;font-size:${fzHead};">Servicio de Acompañamiento a Familias</th>
+            <th colspan="3" style="${thSCD}border:${brdSCD};padding:${padHead};text-align:center;font-size:${fzHead};">Servicio de Cuidado Diurno</th>
           </tr>
           <tr>
-            <th style="background:#f8bbd0;border:1px solid #cbd5e1;padding:${padHead};font-size:${fzHead};">FAMILIAS</th>
-            <th style="background:#f8bbd0;border:1px solid #cbd5e1;padding:${padHead};font-size:${fzHead};">NIÑAS/OS</th>
-            <th style="background:#f8bbd0;border:1px solid #cbd5e1;padding:${padHead};font-size:${fzHead};">GESTANTES</th>
-            <th style="background:#f8bbd0;border:1px solid #cbd5e1;padding:${padHead};font-size:${fzHead};">S/. EJECUCIÓN</th>
-            <th style="background:#a5d6a7;border:1px solid #cbd5e1;padding:${padHead};font-size:${fzHead};">USUARIOS</th>
-            <th style="background:#a5d6a7;border:1px solid #cbd5e1;padding:${padHead};font-size:${fzHead};">CIAI</th>
-            <th style="background:#a5d6a7;border:1px solid #cbd5e1;padding:${padHead};font-size:${fzHead};">S/. EJECUCIÓN</th>
+            <th style="${thSAF2}border:${brdSAF};padding:${padHead};text-align:center;font-size:${fzHead};">FAMILIAS</th>
+            <th style="${thSAF2}border:${brdSAF};padding:${padHead};text-align:center;font-size:${fzHead};">NIÑAS/OS</th>
+            <th style="${thSAF2}border:${brdSAF};padding:${padHead};text-align:center;font-size:${fzHead};">GESTANTES</th>
+            <th style="${thSAF2}border:${brdSAF};padding:${padHead};text-align:center;font-size:${fzHead};">S/. EJECUCIÓN</th>
+            <th style="${thSCD2}border:${brdSCD};padding:${padHead};text-align:center;font-size:${fzHead};">USUARIOS</th>
+            <th style="${thSCD2}border:${brdSCD};padding:${padHead};text-align:center;font-size:${fzHead};">CIAI</th>
+            <th style="${thSCD2}border:${brdSCD};padding:${padHead};text-align:center;font-size:${fzHead};">S/. EJECUCIÓN</th>
           </tr>
         </thead>
         <tbody>
@@ -1283,28 +1777,413 @@ function generarTablaCobertura(nivel, dep, prov, dist, opts) {
   `;
 }
 
-function generarNarrativa(nivel, nombre, d) {
-  const nivelTexto = nivel === 'distrito' ? 'el distrito de' : nivel === 'provincia' ? 'la provincia de' : 'el departamento de';
-  const crecimientoSAF = d.familias_2024 ? (((d.familias_2025 - d.familias_2024) / d.familias_2024) * 100).toFixed(1) : '0.0';
-  const crecimientoSCD = d.niños_2024 ? (((d.niños_2025 - d.niños_2024) / d.niños_2024) * 100).toFixed(1) : '0.0';
-  const mesAlto = (mesNombre || '').toUpperCase();
+// ── Genera el encabezado de sección + párrafo(s) de intro ──────────────────
+function generarIntroNarrativa(nivel, dep, prov, dist, d) {
+  const fmt = n => (n || 0).toLocaleString('es-PE', { maximumFractionDigits: 0 });
+  const fmtD = n => (n || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const mesMin = (mesNombre || '').toLowerCase();
+  const total = d.ejec_saf + d.ejec_scd;
+  const pctSAF = total > 0 ? ((d.ejec_saf / total) * 100).toFixed(1) : '0.0';
+  const pctSCD = total > 0 ? ((d.ejec_scd / total) * 100).toFixed(1) : '0.0';
+  const nombre = [dep, prov, dist].filter(Boolean).join(' / ');
 
-  // Frase de "Presencia" adaptada al nivel
-  let presenciaSAF, presenciaSCD;
-  if (nivel === 'distrito') {
-    presenciaSAF = `Presencia de <strong>${d.CG_SAF}</strong> Comités de Gestión y <strong>${d.FACILITADOR_SAF}</strong> facilitadoras.`;
-    presenciaSCD = `Presencia de <strong>${d.CG_SCD}</strong> Comités de Gestión y <strong>${d.MadresCuidadoras_SCD}</strong> Madres Cuidadoras.`;
+  let heading = `<h2>${nivel.toUpperCase()}: ${nombre.toUpperCase()}</h2>`;
+  let intro = '';
+
+  if (nivel === 'departamento') {
+    intro = `<p>Entre enero y ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó en <strong>${dep}</strong> un monto de <strong>S/ ${fmt(total)}</strong>, de los cuales <strong>S/ ${fmt(d.ejec_saf)} (${pctSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fmt(d.ejec_scd)} (${pctSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
+  } else if (nivel === 'provincia') {
+    intro = `<p>Entre enero y ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó en la provincia de <strong>${prov}</strong>, departamento de <strong>${dep}</strong>, un total de <strong>S/ ${fmt(total)}</strong>, de los cuales <strong>S/ ${fmt(d.ejec_saf)} (${pctSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fmt(d.ejec_scd)} (${pctSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
+    <p>Esta inversión permitió financiar la prestación de ambos servicios, contribuyendo al desarrollo infantil temprano y al fortalecimiento de la atención brindada a niñas, niños y gestantes de la provincia.</p>`;
   } else {
-    presenciaSAF = `Presencia en <strong>${d.dist_saf}</strong> distritos de <strong>${d.prov_saf}</strong> provincias.`;
-    presenciaSCD = `Presencia en <strong>${d.dist_scd}</strong> distritos de <strong>${d.prov_scd}</strong> provincias.`;
+    // distrito
+    const introd2 = d.ejec_scd > 0
+      ? ''
+      : `<p>Durante este período, el distrito no registró ejecución presupuestal en el <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
+    intro = `<p>Entre enero y ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó en el distrito de <strong>${dist}</strong>, provincia de <strong>${prov} (${dep})</strong>, un total de <strong>S/ ${fmtD(d.ejec_saf)}</strong> en el <strong>Servicio de Acompañamiento a Familias (SAF)</strong>.</p>${introd2}`;
   }
 
+  return heading + intro;
+}
+
+// ── Genera los párrafos narrativos del SAF ─────────────────────────────────
+function generarNarrativaSAF(nivel, d) {
+  const fmt = n => (n || 0).toLocaleString('es-PE', { maximumFractionDigits: 0 });
+  const mesMin = (mesNombre || '').toLowerCase();
+  let p1 = '', p2 = '';
+
+  if (nivel === 'departamento') {
+    p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fmt(d.familias_2025)} familias</strong>. Entre sus integrantes se encuentran <strong>${fmt(d.niños_saf)} niñas y niños</strong> y <strong>${fmt(d.gestantes_SAF)} gestantes</strong>, quienes reciben atención y acompañamiento a través de la intervención del programa.</p>`;
+    p2 = `<p>Esta cobertura se extiende a <strong>${d.dist_saf} distritos</strong>, distribuidos en <strong>${d.prov_saf} provincias</strong>, reflejando el alcance territorial del servicio y su contribución al desarrollo integral de la primera infancia y la atención de gestantes en los ámbitos de intervención.</p>`;
+  } else if (nivel === 'provincia') {
+    p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fmt(d.familias_2025)} familias</strong> en la provincia. Esta población está conformada por <strong>${fmt(d.niños_saf)} niñas y niños</strong> y <strong>${fmt(d.gestantes_SAF)} gestantes</strong>, quienes reciben atención y acompañamiento a través de la intervención del programa.</p>`;
+    p2 = `<p>La prestación del servicio tiene presencia en los <strong>${d.dist_saf} distritos de la provincia</strong>, contribuyendo al fortalecimiento del desarrollo infantil temprano y a la atención integral de las familias usuarias.</p>`;
+  } else {
+    // distrito
+    p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fmt(d.familias_2025)} familias</strong> en el distrito. Esta población está conformada por <strong>${fmt(d.niños_saf)} niñas y niños</strong> y <strong>${fmt(d.gestantes_SAF)} gestantes</strong>, quienes reciben atención y acompañamiento a través de la intervención del programa.</p>`;
+    p2 = `<p>La prestación del servicio se desarrolla con la participación de <strong>${d.CG_SAF} Comités de Gestión</strong> y <strong>${d.FACILITADOR_SAF} facilitadoras</strong>, actores clave que contribuyen a la implementación de las actividades y al acompañamiento de las familias usuarias en el territorio.</p>`;
+  }
+
+  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🔴 Servicio de Acompañamiento a Familias (SAF)</h3>${p1}${p2}`;
+}
+
+// ── Genera los párrafos narrativos del SCD ─────────────────────────────────
+function generarNarrativaSCD(nivel, d) {
+  const fmt = n => (n || 0).toLocaleString('es-PE', { maximumFractionDigits: 0 });
+  const mesMin = (mesNombre || '').toLowerCase();
+  let p1 = '', p2 = '';
+
+  const sinCobertura = d.niños_2025 === 0 && d.CIAI_SCD === 0;
+
+  if (nivel === 'departamento') {
+    p1 = `<p>Por su parte, al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> alcanza una cobertura de <strong>${fmt(d.niños_2025)} niñas y niños</strong>, quienes reciben atención integral en espacios especialmente acondicionados para promover su desarrollo y bienestar.</p>`;
+    p2 = `<p>Para la prestación de este servicio, se cuenta con <strong>${d.CIAI_SCD} Centros Infantiles de Atención Integral (CIAI)</strong>, con presencia en <strong>${d.dist_scd} distritos</strong> distribuidos en <strong>${d.prov_scd} provincias</strong>, lo que permite acercar la atención a las familias de los ámbitos de intervención del programa.</p>`;
+  } else if (nivel === 'provincia') {
+    p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> brinda atención a <strong>${fmt(d.niños_2025)} niñas y niños</strong> en la provincia, a través de espacios orientados a promover su cuidado, aprendizaje y desarrollo integral.</p>`;
+    p2 = `<p>Para la prestación de este servicio, se cuenta con <strong>${d.CIAI_SCD} Centros Infantiles de Atención Integral (CIAI)</strong>, con presencia en <strong>${d.dist_scd} distritos de la provincia</strong>, lo que permite acercar la atención a las familias de los ámbitos de intervención.</p>`;
+  } else {
+    // distrito
+    if (sinCobertura) {
+      const focSCD = d.CUMPLE_SCD === 'FOCALIZADO' || d.CUMPLE_SCD === true;
+      p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el distrito no registra atención ni cobertura a través del <strong>Servicio de Cuidado Diurno (SCD)</strong>. En consecuencia, no cuenta con niñas y niños usuarios, <strong>Centros Infantiles de Atención Integral (CIAI)</strong>, <strong>Comités de Gestión</strong> ni <strong>Madres Cuidadoras</strong> vinculados a este servicio.</p>`;
+      p2 = focSCD
+        ? `<p>Si bien el distrito se encuentra focalizado para la implementación del SCD, durante el período evaluado no se ha iniciado la prestación de este servicio, por lo que la intervención del <strong>Programa Nacional Cuna Más (PNCM)</strong> se desarrolla exclusivamente a través del <strong>Servicio de Acompañamiento a Familias (SAF)</strong>.</p>`
+        : '';
+    } else {
+      p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> brinda atención a <strong>${fmt(d.niños_2025)} niñas y niños</strong> en el distrito, a través de espacios orientados a promover su cuidado, aprendizaje y desarrollo integral.</p>`;
+      p2 = `<p>Para la prestación de este servicio, se cuenta con <strong>${d.CIAI_SCD} Centros Infantiles de Atención Integral (CIAI)</strong> y <strong>${d.CG_SCD} Comités de Gestión</strong>, con el apoyo de <strong>${d.MadresCuidadoras_SCD} Madres Cuidadoras</strong> que garantizan la atención cotidiana de los niñas y niños usuarios.</p>`;
+    }
+  }
+
+  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🟢 Servicio de Cuidado Diurno (SCD)</h3>${p1}${p2}`;
+}
+
+// ── Compatibilidad: mantiene la firma anterior (solo usada internamente) ────
+function generarNarrativa(nivel, nombre, d) {
+  // Ya no se usa; se reemplaza por generarIntroNarrativa + generarNarrativaSAF + generarNarrativaSCD
+  return generarIntroNarrativa(nivel,
+    nombre.split(' / ')[0],
+    nombre.split(' / ')[1] || null,
+    nombre.split(' / ')[2] || null,
+    d) + generarNarrativaSAF(nivel, d) + generarNarrativaSCD(nivel, d);
+}
+
+// ── Bloque cobertura territorial para un nivel (dep/prov) ─────────────────
+function generarBloqueTerritorioNivel(nivel, dep, prov, resumen) {
+  const ultimaFechaStr = ultimaFecha.toISOString().split('T')[0];
+  const datos = dataset.filter(d => d.fecha === ultimaFechaStr);
+  const fN = n => (n||0).toLocaleString('es-PE');
+
+  // Total distritos en el ámbito
+  let totalDistAmbito, labelAmbito;
+  if (nivel === 'departamento') {
+    const allDist = new Set(datos.filter(d => d.departamento === dep).map(d => d.departamento+'|'+d.provincia+'|'+d.distrito));
+    totalDistAmbito = allDist.size;
+    labelAmbito = dep;
+  } else {
+    const allDist = new Set(datos.filter(d => d.departamento === dep && d.provincia === prov).map(d => d.departamento+'|'+d.provincia+'|'+d.distrito));
+    totalDistAmbito = allDist.size;
+    labelAmbito = prov;
+  }
+  if (totalDistAmbito === 0) return '';
+
+  const pctSAF = ((resumen.dist_saf / totalDistAmbito) * 100).toFixed(1);
+  const pctSCD = ((resumen.dist_scd / totalDistAmbito) * 100).toFixed(1);
+  const distUnion = Math.min(resumen.dist_saf + resumen.dist_scd, totalDistAmbito);
+  const pctUnion  = ((distUnion / totalDistAmbito) * 100).toFixed(1);
+
   return `
-    <h2>${nivel.toUpperCase()}: ${nombre.toUpperCase()}</h2>
-    <p>De enero a ${mesAlto} de ${año}, el PNCM ha ejecutado en ${nivelTexto} <strong>${nombre}</strong> un total de <strong>S/. ${d.ejec_saf.toLocaleString('es-PE')}</strong> en el Servicio SAF y <strong>S/. ${d.ejec_scd.toLocaleString('es-PE')}</strong> en el Servicio SCD.</p>
-    <p>La cobertura del SAF se incrementó de <strong>${d.familias_2024.toLocaleString('es-PE')}</strong> familias en enero de 2024 a <strong>${d.familias_2025.toLocaleString('es-PE')}</strong> familias compuestas por ${d.niños_saf.toLocaleString('es-PE')} niños y ${d.gestantes_SAF} gestantes de enero a ${mesAlto} de ${año} (<strong>${crecimientoSAF}%</strong>). ${presenciaSAF}</p>
-    <p>En el SCD, se pasó de <strong>${d.niños_2024.toLocaleString('es-PE')}</strong> niños a <strong>${d.niños_2025.toLocaleString('es-PE')}</strong> (<strong>${crecimientoSCD}%</strong>), con <strong>${d.CIAI_SCD}</strong> CIAI. ${presenciaSCD}</p>
-  `;
+    <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:10px 0 14px 0;border:none;">
+      <tr>
+        <td style="width:38%;padding:0 12px 0 0;vertical-align:top;border:none;">
+          <div style="border-top:3px solid #374151;padding:11px 13px;background:#f9fafb;text-align:center;">
+            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Cobertura territorial</div>
+            <div style="font-size:26pt;font-weight:800;color:#111827;line-height:1;">${pctUnion}%</div>
+            <div style="font-size:7pt;color:#6b7280;margin-top:2px;line-height:1.2;">${fN(distUnion)} de ${fN(totalDistAmbito)} distritos<br><span style="font-size:6pt;color:#9ca3af;font-style:italic;">${labelAmbito}</span></div>
+          </div>
+        </td>
+        <td style="width:31%;padding:0 12px 0 0;vertical-align:top;border:none;">
+          <div style="border-top:3px solid #6b7280;padding:11px 12px;background:#f9fafb;text-align:center;">
+            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">SAF — Presencia</div>
+            <div style="font-size:20pt;font-weight:800;color:#374151;line-height:1;">${pctSAF}%</div>
+            <div style="font-size:7.5pt;color:#6b7280;margin-top:2px;"><strong style="color:#111827;">${fN(resumen.dist_saf)}</strong> distritos con SAF</div>
+          </div>
+        </td>
+        <td style="width:31%;padding:0;vertical-align:top;border:none;">
+          <div style="border-top:3px solid #9ca3af;padding:11px 12px;background:#f9fafb;text-align:center;">
+            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">SCD — Presencia</div>
+            <div style="font-size:20pt;font-weight:800;color:#374151;line-height:1;">${pctSCD}%</div>
+            <div style="font-size:7.5pt;color:#6b7280;margin-top:2px;"><strong style="color:#111827;">${fN(resumen.dist_scd)}</strong> distritos con SCD</div>
+          </div>
+        </td>
+      </tr>
+    </table>`;
+}
+
+// ── Tarjetas KPI (reemplaza generarTablaSAF/SCD en Word) ───────────────────
+function generarTarjetasKPI(d, nivel, servicio) {
+  const nivelDist  = nivel === 'distrito';
+  const nivelDep   = nivel === 'departamento';
+  const nivelProv  = nivel === 'provincia';
+  const fN = n => (n||0).toLocaleString('es-PE');
+  const fS = n => 'S/. '+Math.round(n||0).toLocaleString('es-PE');
+  const mesMin = (mesNombre||'').toLowerCase();
+
+  const W = 'padding:4px;vertical-align:top;';
+  const K = 'border-top:2px solid #d1d5db;padding:8px 10px 7px;text-align:center;background:#fafafa;';
+  const KL= 'font-size:6.5pt;color:#6b7280;text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;';
+  const KV= 'font-size:13pt;font-weight:700;color:#111827;line-height:1;';
+  const KS= 'font-size:6pt;color:#9ca3af;margin-top:2px;';
+  const KE= 'font-size:9pt;font-weight:700;color:#374151;line-height:1.2;';
+  const card = (lbl, val, sub='', exec=false) =>
+    `<td style="${W}"><div style="${K}"><div style="${KL}">${lbl}</div><div style="${exec?KE:KV}">${val}</div>${sub?`<div style="${KS}">${sub}</div>`:''}</div></td>`;
+
+  if (servicio === 'SAF') {
+    const cols = nivelDist
+      ? [card('Familias', fN(d.familias_2025), 'beneficiarias'),
+         card('Niñas/os', fN(d.niños_saf)),
+         card('Gestantes', fN(d.gestantes_SAF)),
+         card('Com. Gestión', String(d.CG_SAF)),
+         card('Facilitadoras', String(d.FACILITADOR_SAF)),
+         card('Ejecución', fS(d.ejec_saf), 'ene–'+mesMin+' '+año, true)]
+      : [card('Familias', fN(d.familias_2025), 'beneficiarias'),
+         card('Niñas/os', fN(d.niños_saf)),
+         card('Gestantes', fN(d.gestantes_SAF)),
+         card('Distritos', String(d.dist_saf), 'con atención'),
+         nivelDep ? card('Provincias', String(d.prov_saf)) : '',
+         card('Ejecución', fS(d.ejec_saf), 'ene–'+mesMin+' '+año, true)];
+    return `<table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;border:none;margin:6px 0 12px 0;"><tr>${cols.join('')}</tr></table>`;
+  } else {
+    const focRow = nivelDist && d.CUMPLE_SCD != null
+      ? card('Focalización', getEtiquetaFocalizacion(d.CUMPLE_SCD).emoji+' '+getEtiquetaFocalizacion(d.CUMPLE_SCD).texto)
+      : '';
+    const cols = nivelDist
+      ? [card('Niñas/os', fN(d.niños_2025), 'usuarios'),
+         card('CIAI', fN(d.CIAI_SCD)),
+         card('Com. Gestión', String(d.CG_SCD)),
+         card('Madres Cuid.', fN(d.MadresCuidadoras_SCD)),
+         card('Ejecución', fS(d.ejec_scd), 'ene–'+mesMin+' '+año, true),
+         focRow]
+      : [card('Niñas/os', fN(d.niños_2025), 'usuarios'),
+         card('CIAI', fN(d.CIAI_SCD)),
+         card('Distritos', String(d.dist_scd), 'con atención'),
+         nivelDep ? card('Provincias', String(d.prov_scd)) : '',
+         card('Ejecución', fS(d.ejec_scd), 'ene–'+mesMin+' '+año, true),
+         ''];
+    return `<table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;border:none;margin:6px 0 12px 0;"><tr>${cols.join('')}</tr></table>`;
+  }
+}
+
+// ── Narrativa SAF/SCD para ámbito especial ────────────────────────────────
+function generarNarrativaEspecialSAF(d, ambitoLabel) {
+  const fmt = n => (n||0).toLocaleString('es-PE', {maximumFractionDigits:0});
+  const mesMin = (mesNombre||'').toLowerCase();
+  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🔴 Servicio de Acompañamiento a Familias (SAF)</h3>
+    <p>Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> en el ámbito del <strong>${ambitoLabel}</strong> alcanza una cobertura de <strong>${fmt(d.familias_2025)} familias</strong>, conformadas por <strong>${fmt(d.niños_saf)} niñas y niños</strong> y <strong>${fmt(d.gestantes_SAF)} gestantes</strong>, quienes reciben atención y acompañamiento a través de la intervención del programa.</p>
+    <p>La prestación del servicio se extiende a <strong>${fmt(d.dist_saf)} distritos</strong> distribuidos en <strong>${d.prov_saf} provincias</strong> de <strong>${d.dep_saf} departamentos</strong> que conforman el ámbito, contribuyendo al desarrollo integral de la primera infancia.</p>`;
+}
+
+function generarNarrativaEspecialSCD(d, ambitoLabel) {
+  const fmt = n => (n||0).toLocaleString('es-PE', {maximumFractionDigits:0});
+  const mesMin = (mesNombre||'').toLowerCase();
+  if (d.niños_2025 === 0 && d.CIAI_SCD === 0) {
+    return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🟢 Servicio de Cuidado Diurno (SCD)</h3>
+      <p>Al mes de <strong>${mesMin} de ${año}</strong>, el ámbito del <strong>${ambitoLabel}</strong> no registra cobertura a través del <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
+  }
+  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🟢 Servicio de Cuidado Diurno (SCD)</h3>
+    <p>Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> en el ámbito del <strong>${ambitoLabel}</strong> brinda atención a <strong>${fmt(d.niños_2025)} niñas y niños</strong> a través de <strong>${fmt(d.CIAI_SCD)} Centros Infantiles de Atención Integral (CIAI)</strong>.</p>
+    <p>El servicio tiene presencia en <strong>${fmt(d.dist_scd)} distritos</strong> de <strong>${d.dep_scd} departamentos</strong> del ámbito, contribuyendo al cuidado integral de la primera infancia en zonas focalizadas.</p>`;
+}
+
+// ── Bloque territorial para ámbito especial ───────────────────────────────
+function generarBloqueTerritorioEspecial(d, ambito) {
+  const fN = n => (n||0).toLocaleString('es-PE');
+  const cfg = AMBITOS_ESPECIALES[ambito];
+  const totalUbigeos = cfg ? cfg.ubigeos.size : 0;
+  const pctSAF = totalUbigeos > 0 ? ((d.dist_saf/totalUbigeos)*100).toFixed(1) : '0.0';
+  const pctSCD = totalUbigeos > 0 ? ((d.dist_scd/totalUbigeos)*100).toFixed(1) : '0.0';
+  const distUnion = Math.min(d.dist_saf + d.dist_scd, totalUbigeos);
+  const pctUnion  = totalUbigeos > 0 ? ((distUnion/totalUbigeos)*100).toFixed(1) : '0.0';
+  return `
+    <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:10px 0 14px 0;border:none;">
+      <tr>
+        <td style="width:38%;padding:0 12px 0 0;vertical-align:top;border:none;">
+          <div style="border-top:3px solid #374151;padding:11px 13px;background:#f9fafb;text-align:center;">
+            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Cobertura territorial ${ambito}</div>
+            <div style="font-size:26pt;font-weight:800;color:#111827;line-height:1;">${pctUnion}%</div>
+            <div style="font-size:7.5pt;color:#6b7280;margin-top:2px;">${fN(distUnion)} de ${fN(totalUbigeos)} distritos del ámbito</div>
+          </div>
+        </td>
+        <td style="width:31%;padding:0 12px 0 0;vertical-align:top;border:none;">
+          <div style="border-top:3px solid #6b7280;padding:11px 12px;background:#f9fafb;text-align:center;">
+            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">SAF — Presencia</div>
+            <div style="font-size:20pt;font-weight:800;color:#374151;line-height:1;">${pctSAF}%</div>
+            <div style="font-size:7.5pt;color:#6b7280;margin-top:2px;"><strong style="color:#111827;">${fN(d.dist_saf)}</strong> distritos con SAF</div>
+          </div>
+        </td>
+        <td style="width:31%;padding:0;vertical-align:top;border:none;">
+          <div style="border-top:3px solid #9ca3af;padding:11px 12px;background:#f9fafb;text-align:center;">
+            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">SCD — Presencia</div>
+            <div style="font-size:20pt;font-weight:800;color:#374151;line-height:1;">${pctSCD}%</div>
+            <div style="font-size:7.5pt;color:#6b7280;margin-top:2px;"><strong style="color:#111827;">${fN(d.dist_scd)}</strong> distritos con SCD</div>
+          </div>
+        </td>
+      </tr>
+    </table>`;
+}
+
+// ── Tabla cobertura ámbito especial (Word) por departamento ───────────────
+function generarTablaCoberturaEspecialWord(datosAm, ambito) {
+  const mapa = {};
+  datosAm.forEach(r => {
+    const k = r.departamento;
+    if (!mapa[k]) mapa[k] = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
+    mapa[k].fam  += r.nfamilia_saf  ||0;
+    mapa[k].nSaf += r.nniños_saf    ||0;
+    mapa[k].gest += r.ngestantes_saf||0;
+    mapa[k].eSaf += r.ejecucion_saf ||0;
+    mapa[k].uScd += r.nniños_scd    ||0;
+    mapa[k].ciai += r.CIAI_SCD      ||0;
+    mapa[k].eScd += r.ejecucion_scd ||0;
+  });
+  const deps = Object.keys(mapa).sort((a,b)=>a.localeCompare(b,'es'));
+  const fmt  = n => Math.round(n).toLocaleString('es-PE');
+  const fmtS = n => n>0?'S/. '+Math.round(n).toLocaleString('es-PE'):'S/ 0';
+  let tot = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
+  let filas = '';
+  const brd = '1px solid #374151';
+  const brdL= '1px solid #d1d5db';
+  deps.forEach((dep,i) => {
+    const m = mapa[dep];
+    Object.keys(tot).forEach(k => tot[k]+=m[k]);
+    const bg = i%2===1?'background:#f9fafb;':'';
+    filas += `<tr style="${bg}">
+      <td style="text-align:left;padding:2px 5px;border:${brdL};font-size:7pt;font-weight:600;">${dep}</td>
+      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;">${fmt(m.fam)}</td>
+      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;">${fmt(m.nSaf)}</td>
+      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;">${fmt(m.gest)}</td>
+      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;font-weight:600;">${fmtS(m.eSaf)}</td>
+      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;">${fmt(m.uScd)}</td>
+      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;">${fmt(m.ciai)}</td>
+      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;font-weight:600;">${fmtS(m.eScd)}</td>
+    </tr>`;
+  });
+  const TH = `padding:3px 5px;border:${brd};font-size:7pt;font-weight:700;text-align:center;`;
+  return `
+    <h2>COBERTURA ${ambito} — POR DEPARTAMENTO</h2>
+    <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;font-family:'Segoe UI',sans-serif;">
+      <thead>
+        <tr>
+          <th rowspan="2" style="${TH}background:#4b5563;color:#fff;text-align:left;">DEPARTAMENTO</th>
+          <th colspan="4" style="${TH}background:#6b7280;color:#fff;">Servicio de Acompañamiento a Familias (SAF)</th>
+          <th colspan="3" style="${TH}background:#9ca3af;color:#fff;">Servicio de Cuidado Diurno (SCD)</th>
+        </tr>
+        <tr>
+          <th style="${TH}background:#e5e7eb;color:#374151;">FAMILIAS</th>
+          <th style="${TH}background:#e5e7eb;color:#374151;">NIÑAS/OS</th>
+          <th style="${TH}background:#e5e7eb;color:#374151;">GESTANTES</th>
+          <th style="${TH}background:#e5e7eb;color:#374151;">S/. EJEC.</th>
+          <th style="${TH}background:#f3f4f6;color:#374151;">USUARIOS</th>
+          <th style="${TH}background:#f3f4f6;color:#374151;">CIAI</th>
+          <th style="${TH}background:#f3f4f6;color:#374151;">S/. EJEC.</th>
+        </tr>
+      </thead>
+      <tbody>${filas}</tbody>
+      <tfoot>
+        <tr style="font-weight:700;">
+          <td style="text-align:left;padding:2px 5px;border:${brdL};font-size:7pt;background:#e5e7eb;">Total ${ambito}</td>
+          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#e5e7eb;">${fmt(tot.fam)}</td>
+          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#e5e7eb;">${fmt(tot.nSaf)}</td>
+          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#e5e7eb;">${fmt(tot.gest)}</td>
+          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#e5e7eb;font-weight:600;">${fmtS(tot.eSaf)}</td>
+          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#f3f4f6;">${fmt(tot.uScd)}</td>
+          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#f3f4f6;">${fmt(tot.ciai)}</td>
+          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#f3f4f6;font-weight:600;">${fmtS(tot.eScd)}</td>
+        </tr>
+      </tfoot>
+    </table>`;
+}
+
+// ── Tabla cobertura por DISTRITO para ámbito especial (Word) ─────────────
+function generarTablaDistritosEspecialWord(datosAm, ambito) {
+  const mapa = {};
+  datosAm.forEach(r => {
+    const k = r.departamento + '||' + r.provincia + '||' + r.distrito;
+    if (!mapa[k]) mapa[k] = {dep:r.departamento, prov:r.provincia, dist:r.distrito,
+      fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
+    mapa[k].fam  += r.nfamilia_saf  ||0;
+    mapa[k].nSaf += r.nniños_saf    ||0;
+    mapa[k].gest += r.ngestantes_saf||0;
+    mapa[k].eSaf += r.ejecucion_saf ||0;
+    mapa[k].uScd += r.nniños_scd    ||0;
+    mapa[k].ciai += r.CIAI_SCD      ||0;
+    mapa[k].eScd += r.ejecucion_scd ||0;
+  });
+  const rows = Object.values(mapa)
+    .sort((a,b) => a.dep.localeCompare(b.dep,'es') || a.prov.localeCompare(b.prov,'es') || a.dist.localeCompare(b.dist,'es'));
+  const fmt  = n => Math.round(n).toLocaleString('es-PE');
+  const fmtS = n => n>0 ? 'S/. '+Math.round(n).toLocaleString('es-PE') : 'S/ 0';
+  const brd  = '1px solid #374151';
+  const brdL = '1px solid #d1d5db';
+  const TH   = `padding:2px 4px;border:${brd};font-size:6.5pt;font-weight:700;text-align:center;`;
+
+  let tot = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
+  let filas = '';
+  let prevDep = '';
+  rows.forEach((r,i) => {
+    Object.keys(tot).forEach(k => tot[k]+=r[k]);
+    // Subtítulo de departamento cuando cambia
+    if (r.dep !== prevDep) {
+      filas += `<tr><td colspan="9" style="background:#374151;color:#fff;font-size:6.5pt;font-weight:700;padding:2px 5px;border:${brd};">${r.dep}</td></tr>`;
+      prevDep = r.dep;
+    }
+    const bg = i%2===1 ? 'background:#f9fafb;' : '';
+    filas += `<tr style="${bg}">
+      <td style="text-align:left;padding:1px 4px;border:${brdL};font-size:6.5pt;color:#6b7280;">${r.prov}</td>
+      <td style="text-align:left;padding:1px 4px;border:${brdL};font-size:6.5pt;font-weight:600;">${r.dist}</td>
+      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;">${fmt(r.fam)}</td>
+      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;">${fmt(r.nSaf)}</td>
+      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;">${fmt(r.gest)}</td>
+      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;font-weight:600;">${fmtS(r.eSaf)}</td>
+      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;">${fmt(r.uScd)}</td>
+      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;">${fmt(r.ciai)}</td>
+      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;font-weight:600;">${fmtS(r.eScd)}</td>
+    </tr>`;
+  });
+
+  return `
+    <h2>COBERTURA ${ambito} — POR DISTRITO</h2>
+    <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;font-family:'Segoe UI',sans-serif;">
+      <thead>
+        <tr>
+          <th colspan="2" rowspan="2" style="${TH}background:#4b5563;color:#fff;text-align:left;">PROVINCIA / DISTRITO</th>
+          <th colspan="4" style="${TH}background:#6b7280;color:#fff;">Serv. Acompañamiento a Familias (SAF)</th>
+          <th colspan="3" style="${TH}background:#9ca3af;color:#fff;">Serv. Cuidado Diurno (SCD)</th>
+        </tr>
+        <tr>
+          <th style="${TH}background:#e5e7eb;color:#374151;">FAM.</th>
+          <th style="${TH}background:#e5e7eb;color:#374151;">NIÑAS/OS</th>
+          <th style="${TH}background:#e5e7eb;color:#374151;">GEST.</th>
+          <th style="${TH}background:#e5e7eb;color:#374151;">S/. EJEC.</th>
+          <th style="${TH}background:#f3f4f6;color:#374151;">USUAR.</th>
+          <th style="${TH}background:#f3f4f6;color:#374151;">CIAI</th>
+          <th style="${TH}background:#f3f4f6;color:#374151;">S/. EJEC.</th>
+        </tr>
+      </thead>
+      <tbody>${filas}</tbody>
+      <tfoot>
+        <tr style="font-weight:700;">
+          <td colspan="2" style="text-align:left;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#e5e7eb;">Total ${ambito}</td>
+          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#e5e7eb;">${fmt(tot.fam)}</td>
+          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#e5e7eb;">${fmt(tot.nSaf)}</td>
+          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#e5e7eb;">${fmt(tot.gest)}</td>
+          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#e5e7eb;font-weight:600;">${fmtS(tot.eSaf)}</td>
+          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#f3f4f6;">${fmt(tot.uScd)}</td>
+          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#f3f4f6;">${fmt(tot.ciai)}</td>
+          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#f3f4f6;font-weight:600;">${fmtS(tot.eScd)}</td>
+        </tr>
+      </tfoot>
+    </table>`;
 }
 
 async function exportarWord() {
@@ -1334,92 +2213,223 @@ async function exportarWord() {
     <head>
       <meta charset="UTF-8">
       <style>
-        @page { size: 21.0cm 29.7cm; margin: 1.8cm 1.4cm 1.8cm 1.4cm; }
+        @page Section1 {
+          size: 21.0cm 29.7cm;
+          margin: 1.2cm 1.8cm 1.0cm 1.8cm;
+          mso-header: h1;
+          mso-footer: f1;
+          mso-header-margin: .15cm;
+          mso-footer-margin: .4cm;
+        }
+        div.Section1 { page: Section1; }
+        @page {
+          size: 21.0cm 29.7cm;
+          margin: 1.2cm 1.8cm 1.0cm 1.8cm;
+        }
         body {
           font-family: 'Segoe UI', sans-serif;
-          font-size: 13px;
-          color: #333;
-          margin: 4px;
+          font-size: 10pt;
+          color: #333333;
+          margin: 0;
           line-height: 1.55;
         }
         h1 {
-          color: #0056b3;
-          font-size: 20px;
-          margin-bottom: 6px;
-          border-bottom: 2px solid #0056b3;
-          padding-bottom: 4px;
+          font-size: 13pt;
+          font-weight: bold;
+          margin-top: 6px;
+          margin-bottom: 2px;
           text-align: center;
+          color: #1e293b;
+        }
+        .subtitulo-ubicacion {
+          text-align: center;
+          color: #6b7280;
+          font-size: 8.5pt;
+          margin-top: 0;
+          margin-bottom: 10px;
         }
         h2 {
-          color: #2c3e50;
-          font-size: 17px;
-          margin-top: 26px;
-          margin-bottom: 12px;
+          font-size: 10.5pt;
+          font-weight: bold;
+          color: #374151;
+          text-transform: uppercase;
+          margin-top: 16px;
+          margin-bottom: 8px;
+          padding-bottom: 2px;
+          border-bottom: 1px solid #9ca3af;
         }
         h3 {
-          color: #000;
-          font-size: 13px;
-          margin-top: 18px;
+          font-size: 9.5pt;
+          font-weight: bold;
+          color: #374151;
+          margin-top: 12px;
+          margin-bottom: 4px;
+        }
+        p {
+          margin-top: 0;
           margin-bottom: 6px;
+          text-align: justify;
+          font-size: 9.5pt;
         }
-        p { margin-bottom: 8px; text-align: justify; }
-        table { border-collapse: collapse; margin-top: 10px; width: 100%; }
-        th { border: 1px solid #ccc; text-align: center; background-color: #f0f2f5; }
-        td { border: 1px solid #ccc; text-align: center; padding: 3px; }
+        table { border-collapse: collapse; margin-top: 6px; margin-bottom: 8px; width: 100%; font-size: 8.5pt; }
+        th { border: 1px solid #d1d5db; text-align: center; background-color: #f3f4f6; padding: 3px 5px; font-size: 8.5pt; color: #374151; }
+        td { border: 1px solid #d1d5db; text-align: center; padding: 3px 5px; }
+        tr.fila-destacada td { background-color: #fef9c3; font-weight: bold; }
+        tr.fila-total td { background-color: #f3f4f6; font-weight: bold; }
         .footer {
-          font-size: 10.5px;
-          color: #6b7280;
+          font-size: 7.5pt;
+          color: #9ca3af;
           text-align: center;
-          margin-top: 30px;
-          border-top: 1px solid #ccc;
-          padding-top: 10px;
-          line-height: 1.55;
+          margin-top: 16px;
+          border-top: 1px solid #e5e7eb;
+          padding-top: 6px;
+          line-height: 1.4;
         }
-        .logo { width: 120px; margin-bottom: 2px; }
+        .logo { width: 380px; margin-bottom: 3px; }
         .page-break { page-break-before: always; }
       </style>
     </head>
     <body>
-      <div style="text-align:center;">
-        <img src="${logoBase64}" alt="MIDIS" class="logo">
+      <!--[if gte mso 9]><xml>
+       <w:WordDocument>
+        <w:View>Normal</w:View>
+        <w:Zoom>0</w:Zoom>
+        <w:DoNotOptimizeForBrowser/>
+       </w:WordDocument>
+      </xml><![endif]-->
+      <div style="mso-element:header" id="h1">
+        <div style="text-align:center;padding-bottom:5px;border-bottom:2px solid #1e3a8a;font-family:'Segoe UI',sans-serif;line-height:1.4;">
+          <div><img src="${logoBase64}" alt="MIDIS-PNCM" style="width:55px;height:auto;"></div>
+          <div style="font-size:12pt;font-weight:700;color:#1e3a8a;margin-top:3px;">AYUDA MEMORIA PNCM — ${mesNombre} ${año}</div>
+          <div style="font-size:8.5pt;color:#374151;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-top:1px;">${[dep, prov, dist].filter(Boolean).join(' / ')}</div>
+        </div>
       </div>
-      <h1>Reporte de Cobertura PNCM — ${mesNombre} ${año}</h1>
-      <p style="text-align:center;color:#64748b;font-size:11px;margin-top:-2px;">
-        ${[dep, prov, dist].filter(Boolean).join(' / ')}
-      </p>
+      <div class="Section1">
   `;
+
+  // ── ÁMBITO ESPECIAL (VRAEM u otro) ──────────────────────────────────────
+  if (d._esEspecial) {
+    const ambito     = d._ambito;
+    const ambitoLbl  = d._ambitoLabel;
+    const datosAm    = d._datos;
+    const fN = n => (n||0).toLocaleString('es-PE');
+    const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const mesMin = (mesNombre||'').toLowerCase();
+    const tot = d.ejec_saf + d.ejec_scd;
+    const pSAF = tot>0?((d.ejec_saf/tot)*100).toFixed(1):'0.0';
+    const pSCD = tot>0?((d.ejec_scd/tot)*100).toFixed(1):'0.0';
+
+    // Intro narrativa del ámbito
+    contenido += `
+      <h2>${ambito} — ÁMBITO ESPECIAL PNCM</h2>
+      <p><em style="color:#6b7280;font-size:8.5pt;">${ambitoLbl}</em></p>
+      <p>Entre enero y ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó en el ámbito del <strong>${ambito}</strong> un monto total de <strong>S/ ${fN(Math.round(tot))}</strong>, de los cuales <strong>S/ ${fN(Math.round(d.ejec_saf))} (${pSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fN(Math.round(d.ejec_scd))} (${pSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
+      <p>Al mes de <strong>${mesMin} de ${año}</strong>, la intervención abarca <strong>${fN(d.dist_saf + d.dist_scd)} distritos</strong> en <strong>${d.dep_saf || d.dep_scd} departamentos</strong> del ámbito focalizado.</p>`;
+
+    // Bloque territorial
+    contenido += generarBloqueTerritorioEspecial(d, ambito);
+
+    // SAF
+    contenido += generarNarrativaEspecialSAF(d, ambito);
+    contenido += generarTarjetasKPI(d, 'departamento', 'SAF');
+
+    // SCD
+    contenido += generarNarrativaEspecialSCD(d, ambito);
+    contenido += generarTarjetasKPI(d, 'departamento', 'SCD');
+
+    // Tabla por departamento
+    contenido += generarTablaCoberturaEspecialWord(datosAm, ambito);
+    // Tabla por distrito (página nueva dentro del mismo documento)
+    contenido += generarTablaDistritosEspecialWord(datosAm, ambito);
+
+    // Footer
+    contenido += `
+        </div>
+        <div style="mso-element:footer" id="f1">
+          <hr style="border:none;border-top:1px solid #d1d5db;margin:0 0 4px 0;">
+          <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#f8f9fa;border-radius:3px;border:none;">
+            <tr>
+              <td style="padding:6px 12px;font-size:7pt;color:#6b7280;line-height:1.7;width:76%;vertical-align:middle;border:none;text-align:left;">
+                ${buildFooterLine(_fmtFechaHora())}
+              </td>
+              <td style="width:4%;border:none;"></td>
+              <td style="padding:6px 14px 6px 0;font-size:9pt;font-weight:700;color:#374151;text-align:right;white-space:nowrap;vertical-align:middle;width:20%;border:none;letter-spacing:.01em;">
+                Página <span style="mso-field-code:'PAGE \* MERGEFORMAT'">1</span>
+                de <span style="mso-field-code:'NUMPAGES \* MERGEFORMAT'">1</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </body>
+      </html>`;
+
+    const nomArchivo = `AM_${ambito}_${mesNombre}_${año}.doc`;
+    const blob = new Blob([contenido], { type: 'application/msword' });
+    saveAs(blob, nomArchivo);
+    return;
+  }
+
+  // ── RESUMEN NACIONAL ──
+  const resumenNac = calcularResumenNacional();
+  contenido += generarPrologo();
+  contenido += generarResumenNacional(resumenNac);
+  contenido += `<div class="page-break"></div>`;
 
   // ── DEPARTAMENTO ──
   const resumenDep = calcularResumen(dep);
-  contenido += generarNarrativa('departamento', dep, resumenDep);
-  contenido += generarTablaSAF(resumenDep, dep, null, null);
-  contenido += generarTablaSCD(resumenDep, dep, null, null);
+  // Tabla cobertura nacional → aquí, después de tarjetas nacionales (punto 4)
   contenido += generarTablaCobertura('departamento', dep, prov, dist, {forWord:true});
+  contenido += `<div class="page-break"></div>`;
+  contenido += generarIntroNarrativa('departamento', dep, null, null, resumenDep);
+  contenido += generarBloqueTerritorioNivel('departamento', dep, null, resumenDep);
+  contenido += generarNarrativaSAF('departamento', resumenDep);
+  contenido += generarTarjetasKPI(resumenDep, 'departamento', 'SAF');
+  contenido += generarNarrativaSCD('departamento', resumenDep);
+  contenido += generarTarjetasKPI(resumenDep, 'departamento', 'SCD');
+  // Tabla cobertura provincial → después de tarjetas departamento (punto 5)
+  if (prov) contenido += generarTablaCobertura('provincia', dep, prov, dist, {forWord:true});
 
   // ── PROVINCIA ──
   if (prov) {
     contenido += `<div class="page-break"></div>`;
     const resumenProv = calcularResumen(dep, prov);
-    contenido += generarNarrativa('provincia', `${dep} / ${prov}`, resumenProv);
-    contenido += generarTablaSAF(resumenProv, `${dep} / ${prov}`, null, prov);
-    contenido += generarTablaSCD(resumenProv, `${dep} / ${prov}`, null, prov);
-    contenido += generarTablaCobertura('provincia', dep, prov, dist, {forWord:true});
+    contenido += generarIntroNarrativa('provincia', dep, prov, null, resumenProv);
+    contenido += generarBloqueTerritorioNivel('provincia', dep, prov, resumenProv);
+    contenido += generarNarrativaSAF('provincia', resumenProv);
+    contenido += generarTarjetasKPI(resumenProv, 'provincia', 'SAF');
+    contenido += generarNarrativaSCD('provincia', resumenProv);
+    contenido += generarTarjetasKPI(resumenProv, 'provincia', 'SCD');
+    // Tabla cobertura distrital → después de tarjetas provincia (punto 6)
+    if (dist) contenido += generarTablaCobertura('distrito', dep, prov, dist, {forWord:true});
   }
 
   // ── DISTRITO ──
   if (dist) {
     contenido += `<div class="page-break"></div>`;
     const resumenDist = calcularResumen(dep, prov, dist);
-    contenido += generarNarrativa('distrito', `${dep} / ${prov} / ${dist}`, resumenDist);
-    contenido += generarTablaSAF(resumenDist, `${dep} / ${prov} / ${dist}`, dist, prov);
-    contenido += generarTablaSCD(resumenDist, `${dep} / ${prov} / ${dist}`, dist, prov);
-    contenido += generarTablaCobertura('distrito', dep, prov, dist, {forWord:true});
+    contenido += generarIntroNarrativa('distrito', dep, prov, dist, resumenDist);
+    contenido += generarNarrativaSAF('distrito', resumenDist);
+    contenido += generarTarjetasKPI(resumenDist, 'distrito', 'SAF');
+    contenido += generarNarrativaSCD('distrito', resumenDist);
+    contenido += generarTarjetasKPI(resumenDist, 'distrito', 'SCD');
   }
 
-  // Footer al final (inline, sin header/footer nativo de Word)
+    // Footer: línea + tabla 3 columnas (texto | vacío | paginado)
   contenido += `
-      <div class="footer">
-        ${buildFooterLine(_fmtFechaHora())}
+      </div>
+      <div style="mso-element:footer" id="f1">
+        <hr style="border:none;border-top:1px solid #d1d5db;margin:0 0 4px 0;">
+        <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#f8f9fa;border-radius:3px;border:none;">
+          <tr>
+            <td style="padding:6px 12px;font-size:7pt;color:#6b7280;line-height:1.7;width:76%;vertical-align:middle;border:none;text-align:left;">
+              ${buildFooterLine(_fmtFechaHora())}
+            </td>
+            <td style="width:4%;border:none;"></td>
+            <td style="padding:6px 14px 6px 0;font-size:9pt;font-weight:700;color:#374151;text-align:right;white-space:nowrap;vertical-align:middle;width:20%;border:none;letter-spacing:.01em;">
+              Página&nbsp;<span style="mso-field-code:'PAGE \* MERGEFORMAT'">1</span>&nbsp;de&nbsp;<span style="mso-field-code:'NUMPAGES \* MERGEFORMAT'">1</span>
+            </td>
+          </tr>
+        </table>
       </div>
     </body>
     </html>
@@ -1551,47 +2561,79 @@ async function exportarPDF() {
 
   // Dibuja resumen de un nivel en la página vertical actual
   function renderResumenNivel(nivel, nombre, resumen) {
-    const yTitle = addSectionTitle(`Nivel ${nivel.toUpperCase()} — ${nombre}`, COL.primary);
+    const pw   = doc.internal.pageSize.getWidth();
+    const cw   = pw - MARGIN.left - MARGIN.right;          // ancho útil
+    const half = (cw - 6) / 2;                             // mitad con gap
+
+    // ── Título de sección ──────────────────────────────────────────────────
+    const yBase = (doc.lastAutoTable?.finalY ?? MARGIN.top) + 4;
+    doc.setFillColor(...COL.primary2);
+    doc.roundedRect(MARGIN.left, yBase, cw, 8, 1.5, 1.5, 'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(10);
+    doc.setTextColor(255,255,255);
+    doc.text(`${nivel.toUpperCase()}: ${nombre.toUpperCase()}`, MARGIN.left + 3, yBase + 5.5);
+    const yAfterTitle = yBase + 11;
+
+    // ── Narrativa ──────────────────────────────────────────────────────────
+    const tot  = resumen.ejec_saf + resumen.ejec_scd;
+    const pSAF = tot > 0 ? ((resumen.ejec_saf/tot)*100).toFixed(1) : '0.0';
+    const pSCD = tot > 0 ? ((resumen.ejec_scd/tot)*100).toFixed(1) : '0.0';
+    const fN = n => (n||0).toLocaleString('es-PE');
+    const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const mesMin = (mesNombre||'').toLowerCase();
     const narrativaTxt =
-      `En ${mesNombre} de ${año}, el PNCM ejecutó S/. ${resumen.ejec_saf.toLocaleString('es-PE',{maximumFractionDigits:0})} en SAF y ` +
-      `S/. ${resumen.ejec_scd.toLocaleString('es-PE',{maximumFractionDigits:0})} en SCD. ` +
-      `Cobertura SAF: ${resumen.familias_2025.toLocaleString('es-PE')} familias, ${resumen.niños_saf.toLocaleString('es-PE')} niños y ${resumen.gestantes_SAF} gestantes; ` +
-      `SCD: ${resumen.niños_2025.toLocaleString('es-PE')} niños usuarios en ${resumen.CIAI_SCD} CIAI.`;
-    const yAfterNarr = addNarrativa(narrativaTxt, yTitle);
+      `Entre enero y ${mesMin} de ${año}, el Programa Nacional Cuna Más (PNCM) ejecutó un monto total de ` +
+      `S/. ${fN(Math.round(tot))}, de los cuales S/. ${fN(Math.round(resumen.ejec_saf))} (${pSAF}%) corresponden al SAF y ` +
+      `S/. ${fN(Math.round(resumen.ejec_scd))} (${pSCD}%) al SCD. ` +
+      `Cobertura SAF: ${fN(resumen.familias_2025)} familias — ${fN(resumen.niños_saf)} niñas/os y ${fN(resumen.gestantes_SAF)} gestantes. ` +
+      `SCD: ${fN(resumen.niños_2025)} niñas/os en ${resumen.CIAI_SCD} CIAI.`;
+    const yAfterNarr = addNarrativa(narrativaTxt, yAfterTitle);
 
     const { saf, scd } = tablasKV(resumen, nivel);
-    const pw = doc.internal.pageSize.getWidth();
-    const half = (pw - MARGIN.left - MARGIN.right - 4) / 2;
+    const yTablas = yAfterNarr + 3;
 
-    // Tabla SAF (izquierda)
+    // Estilos compartidos
+    const sharedStyles = {
+      font:'helvetica', fontSize:8.5, cellPadding:2,
+      textColor: COL.ink, lineColor:[226,232,240], lineWidth:0.15
+    };
+    const colStyles = {
+      0:{ cellWidth: half*0.62, fontStyle:'normal' },
+      1:{ halign:'right', cellWidth: half*0.38, fontStyle:'bold', textColor: COL.primary }
+    };
+
+    // Tabla SAF izquierda
     doc.autoTable({
-      startY: yAfterNarr + 2,
-      head: [[{ content:'Servicio de Acompañamiento a Familias (SAF)', colSpan:2 }]],
+      startY: yTablas,
+      head: [[{ content:'🔴  Servicio de Acompañamiento a Familias (SAF)', colSpan:2 }]],
       body: saf,
-      theme: 'grid',
-      margin: { left: MARGIN.left, right: pw - MARGIN.left - half },
+      theme: 'striped',
+      margin: { left: MARGIN.left, right: pw - MARGIN.left - half, bottom: MARGIN.bottom },
       tableWidth: half,
-      styles: { font:'helvetica', fontSize:8.5, cellPadding:1.6, textColor:COL.ink, lineColor:[226,232,240], lineWidth:0.1 },
-      headStyles: { fillColor: COL.saf, textColor:[255,255,255], halign:'left', fontStyle:'bold', fontSize:9 },
-      columnStyles: { 0:{cellWidth: half*0.55}, 1:{halign:'right', cellWidth: half*0.45, fontStyle:'bold'} },
+      styles: sharedStyles,
+      headStyles: { fillColor:[153,27,27], textColor:[255,255,255], fontStyle:'bold', fontSize:9, cellPadding:3 },
+      alternateRowStyles: { fillColor:[255,245,245] },
+      columnStyles: colStyles,
       didDrawPage: drawHeaderFooter
     });
     const ySafEnd = doc.lastAutoTable.finalY;
 
-    // Tabla SCD (derecha)
+    // Tabla SCD derecha
     doc.autoTable({
-      startY: yAfterNarr + 2,
-      head: [[{ content:'Servicio de Cuidado Diurno (SCD)', colSpan:2 }]],
+      startY: yTablas,
+      head: [[{ content:'🟢  Servicio de Cuidado Diurno (SCD)', colSpan:2 }]],
       body: scd,
-      theme: 'grid',
-      margin: { left: MARGIN.left + half + 4, right: MARGIN.right },
+      theme: 'striped',
+      margin: { left: MARGIN.left + half + 6, right: MARGIN.right, bottom: MARGIN.bottom },
       tableWidth: half,
-      styles: { font:'helvetica', fontSize:8.5, cellPadding:1.6, textColor:COL.ink, lineColor:[226,232,240], lineWidth:0.1 },
-      headStyles: { fillColor: COL.scd, textColor:[255,255,255], halign:'left', fontStyle:'bold', fontSize:9 },
-      columnStyles: { 0:{cellWidth: half*0.55}, 1:{halign:'right', cellWidth: half*0.45, fontStyle:'bold'} },
+      styles: sharedStyles,
+      headStyles: { fillColor:[22,101,52], textColor:[255,255,255], fontStyle:'bold', fontSize:9, cellPadding:3 },
+      alternateRowStyles: { fillColor:[240,253,244] },
+      columnStyles: colStyles,
       didDrawPage: drawHeaderFooter
     });
-    // Asegurar que lastAutoTable.finalY refleja la más baja para próximas inserciones
+
     doc.lastAutoTable.finalY = Math.max(ySafEnd, doc.lastAutoTable.finalY);
   }
 
@@ -1651,191 +2693,116 @@ async function exportarPDF() {
     });
   }
 
-  // ── CONSTRUCCIÓN DEL DOCUMENTO ──
-  // Página 1 (portrait) — resumen DEPARTAMENTO
+  // ── RESUMEN NACIONAL EN PDF (portrait, primera hoja) ────────────────────
+  function renderResumenNacionalPDF() {
+    const pw2 = doc.internal.pageSize.getWidth();
+    const cw2 = pw2 - MARGIN.left - MARGIN.right;
+    const rN  = calcularResumenNacional();
+    const tot = rN.ejec_saf + rN.ejec_scd;
+    const pSAF = tot > 0 ? ((rN.ejec_saf / tot) * 100).toFixed(1) : '0.0';
+    const pSCD = tot > 0 ? ((rN.ejec_scd / tot) * 100).toFixed(1) : '0.0';
+    const fN  = n => (n || 0).toLocaleString('es-PE');
+    const mesMin = (mesNombre || '').toLowerCase();
+
+    doc.setFillColor(55, 65, 81);
+    doc.roundedRect(MARGIN.left, MARGIN.top, cw2, 8, 1.5, 1.5, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(255, 255, 255);
+    doc.text('COBERTURA NACIONAL — PNCM', MARGIN.left + 3, MARGIN.top + 5.5);
+    const yH = MARGIN.top + 12;
+
+    const txt =
+      `Entre enero y ${mesMin} de ${año}, el PNCM ejecutó a nivel nacional ` +
+      `S/. ${fN(Math.round(tot))} — SAF: S/. ${fN(Math.round(rN.ejec_saf))} (${pSAF}%), ` +
+      `SCD: S/. ${fN(Math.round(rN.ejec_scd))} (${pSCD}%). ` +
+      `SAF: ${fN(rN.familias_2025)} familias, ${fN(rN.niños_saf)} niñas/os y ${fN(rN.gestantes_SAF)} gestantes ` +
+      `en ${rN.dist_saf} distritos de ${rN.dep_saf} departamentos. ` +
+      `SCD: ${fN(rN.niños_2025)} niñas/os en ${rN.CIAI_SCD} CIAI (${rN.dep_scd} departamentos).`;
+    const yN = addNarrativa(txt, yH);
+
+    const half2 = (cw2 - 6) / 2;
+    const shSt = { font: 'helvetica', fontSize: 8.5, cellPadding: 2, textColor: [30,41,59], lineColor: [209,213,219], lineWidth: 0.15 };
+    const cSt  = { 0: { cellWidth: half2 * 0.65 }, 1: { halign: 'right', cellWidth: half2 * 0.35, fontStyle: 'bold' } };
+    const safRows = [
+      ['Familias', fN(rN.familias_2025)], ['Niñas y niños SAF', fN(rN.niños_saf)],
+      ['Gestantes', fN(rN.gestantes_SAF)], ['Departamentos con SAF', String(rN.dep_saf)],
+      ['Distritos con atención', String(rN.dist_saf)],
+      ['Ejecución SAF', 'S/. ' + Math.round(rN.ejec_saf).toLocaleString('es-PE')]
+    ];
+    const scdRows = [
+      ['Niñas y niños SCD', fN(rN.niños_2025)], ['CIAI', String(rN.CIAI_SCD)],
+      ['Departamentos con SCD', String(rN.dep_scd)],
+      ['Distritos con atención', String(rN.dist_scd)],
+      ['Ejecución SCD', 'S/. ' + Math.round(rN.ejec_scd).toLocaleString('es-PE')]
+    ];
+    doc.autoTable({
+      startY: yN + 2,
+      head: [[{ content: '🔴  SAF — Nacional', colSpan: 2 }]],
+      body: safRows, theme: 'striped',
+      margin: { left: MARGIN.left, right: pw2 - MARGIN.left - half2, bottom: MARGIN.bottom },
+      tableWidth: half2, styles: shSt,
+      headStyles: { fillColor: [55,65,81], textColor: [255,255,255], fontStyle: 'bold', fontSize: 9, cellPadding: 3 },
+      alternateRowStyles: { fillColor: [249,250,251] }, columnStyles: cSt,
+      didDrawPage: drawHeaderFooter
+    });
+    const ySAFend = doc.lastAutoTable.finalY;
+    doc.autoTable({
+      startY: yN + 2,
+      head: [[{ content: '🟢  SCD — Nacional', colSpan: 2 }]],
+      body: scdRows, theme: 'striped',
+      margin: { left: MARGIN.left + half2 + 6, right: MARGIN.right, bottom: MARGIN.bottom },
+      tableWidth: half2, styles: shSt,
+      headStyles: { fillColor: [75,85,99], textColor: [255,255,255], fontStyle: 'bold', fontSize: 9, cellPadding: 3 },
+      alternateRowStyles: { fillColor: [249,250,251] }, columnStyles: cSt,
+      didDrawPage: drawHeaderFooter
+    });
+    doc.lastAutoTable.finalY = Math.max(ySAFend, doc.lastAutoTable.finalY);
+  }
+
+  // ── CONSTRUCCIÓN DEL DOCUMENTO ───────────────────────────────────────────
   doc.setPage(1);
-  drawHeaderFooter(); // primera página
-  const resumenDep = calcularResumen(dep);
-  renderResumenNivel('departamento', dep, resumenDep);
-  // Cobertura departamental (landscape, nueva hoja)
+  drawHeaderFooter();
+  doc.lastAutoTable = { finalY: MARGIN.top };
+  renderResumenNacionalPDF();
   renderCobertura('departamento', `Cobertura a nivel Departamental — ${dep}`, dep);
 
-  // Nivel PROVINCIA (portrait, nueva hoja)
+  doc.addPage('a4', 'p');
+  drawHeaderFooter();
+  doc.lastAutoTable = { finalY: MARGIN.top };
+  renderResumenNivel('departamento', dep, calcularResumen(dep));
+  renderCobertura('departamento', `Cobertura — ${dep}`, dep);
+
   if (prov) {
-    doc.addPage('a4','p');
-    const resumenProv = calcularResumen(dep, prov);
-    renderResumenNivel('provincia', `${dep} / ${prov}`, resumenProv);
-    renderCobertura('provincia', `Cobertura a nivel Provincia — ${prov}`, prov);
+    doc.addPage('a4', 'p');
+    drawHeaderFooter();
+    doc.lastAutoTable = { finalY: MARGIN.top };
+    renderResumenNivel('provincia', `${dep} / ${prov}`, calcularResumen(dep, prov));
+    renderCobertura('provincia', `Cobertura — ${prov}`, prov);
   }
 
-  // Nivel DISTRITO (portrait, nueva hoja)
   if (dist) {
-    doc.addPage('a4','p');
-    const resumenDist = calcularResumen(dep, prov, dist);
-    renderResumenNivel('distrito', `${dep} / ${prov} / ${dist}`, resumenDist);
-    renderCobertura('distrito', `Cobertura a nivel Distrito — ${dist}`, dist);
+    doc.addPage('a4', 'p');
+    drawHeaderFooter();
+    doc.lastAutoTable = { finalY: MARGIN.top };
+    renderResumenNivel('distrito', `${dep} / ${prov} / ${dist}`, calcularResumen(dep, prov, dist));
+    renderCobertura('distrito', `Cobertura — ${dist}`, dist);
   }
 
-  // Actualizar "Página X" con total real (segundo pase)
-  const total = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= total; i++) {
+  // Numeración final
+  const totalPgs = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPgs; i++) {
     doc.setPage(i);
-    const pw = doc.internal.pageSize.getWidth();
-    const ph = doc.internal.pageSize.getHeight();
-    // Borrar el "Página N" anterior cubriendo con un rectángulo blanco, luego reescribir
-    doc.setFillColor(255,255,255);
-    doc.rect(pw - MARGIN.right - 35, ph - 11.5, 35, 4.5, 'F');
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...COL.muted);
-    doc.text(`Página ${i} de ${total}`, pw - MARGIN.right, ph - 8, { align:'right' });
+    const pw3 = doc.internal.pageSize.getWidth();
+    const ph3 = doc.internal.pageSize.getHeight();
+    doc.setFillColor(255, 255, 255);
+    doc.rect(pw3 - MARGIN.right - 38, ph3 - 12, 38, 5, 'F');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...COL.muted);
+    doc.text(`Página ${i} de ${totalPgs}`, pw3 - MARGIN.right, ph3 - 8, { align: 'right' });
   }
 
-  const fechaArchivo = `${mesNombre}_${año}`;
-  const nombre = `Cobertura_${dep.replace(/\s+/g,'_')}${prov?'_'+prov.replace(/\s+/g,'_'):''}${dist?'_'+dist.replace(/\s+/g,'_'):''}_${fechaArchivo}.pdf`;
-  doc.save(nombre);
+  const fechaA = `${mesNombre}_${año}`;
+  const nomPDF = `AM_${dep.replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}_${fechaA}.pdf`;
+  doc.save(nomPDF);
 }
-
 </script>
-
-<!-- CDN libs -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-
-<script>
-(function(){
-  const N = '__ZAZA_AUTOSORT_V3__';
-  if (window[N]) return;
-  window[N] = true;
-
-  function isPlaceholderText(t) {
-    if (!t) return true;
-    t = t.trim().toLowerCase();
-    return t === '' || t.startsWith('--') || t.includes('elegir') || t.includes('todas') || t.includes('departamento') || t.includes('provincia') || t.includes('distrito');
-  }
-
-  function getOptionTexts(sel) {
-    const opts = Array.from(sel.options || []);
-    // find placeholder index
-    let placeholderIndex = opts.findIndex(o => isPlaceholderText(o.textContent || o.value));
-    if (placeholderIndex === -1) placeholderIndex = 0;
-    const placeholder = opts[placeholderIndex];
-    // rest excluding placeholder
-    const rest = opts.slice(0, placeholderIndex).concat(opts.slice(placeholderIndex+1));
-    return { placeholder, rest };
-  }
-
-  function isSortedArray(arr) {
-    for (let i = 0; i < arr.length - 1; i++) {
-      if ((arr[i].trim().localeCompare(arr[i+1].trim(), 'es', {sensitivity:'base'})) > 0) return false;
-    }
-    return true;
-  }
-
-  function sortSelectIfNeeded(sel) {
-    try {
-      if (!sel || sel.tagName !== 'SELECT') return;
-      if (sel.getAttribute('data-zaza-busy') === '1') return;
-      const { placeholder, rest } = getOptionTexts(sel);
-      if (rest.length <= 1) {
-        if (placeholder) sel.setAttribute('data-zaza-sorted', '1');
-        return;
-      }
-      const texts = rest.map(o => (o.textContent||'').trim());
-      if (isSortedArray(texts)) {
-        sel.setAttribute('data-zaza-sorted', '1');
-        return;
-      }
-      sel.setAttribute('data-zaza-busy', '1');
-      // create sorted unique options by text, keeping original values where possible
-      const map = new Map();
-      rest.forEach(o => {
-        const key = (o.textContent || '').trim();
-        if (!map.has(key)) map.set(key, o);
-      });
-      const unique = Array.from(map.values());
-      unique.sort((a,b) => (a.textContent||'').trim().localeCompare((b.textContent||'').trim(), 'es', {sensitivity:'base'}));
-      // Rebuild options without triggering observer recursion: temporarily disconnect by flag
-      const frag = document.createDocumentFragment();
-      if (placeholder) frag.appendChild(placeholder.cloneNode(true));
-      unique.forEach(o => frag.appendChild(o.cloneNode(true)));
-      // Replace options atomically
-      while (sel.firstChild) sel.removeChild(sel.firstChild);
-      sel.appendChild(frag);
-      sel.setAttribute('data-zaza-sorted', '1');
-    } catch (e) {
-      console.error('ZAZA autosort v3 error', e);
-    } finally {
-      sel.removeAttribute('data-zaza-busy');
-    }
-  }
-
-  function scheduleSort(sel) {
-    if (!sel) return;
-    if (sel.__zaza_timeout) clearTimeout(sel.__zaza_timeout);
-    sel.__zaza_timeout = setTimeout(() => {
-      try { sortSelectIfNeeded(sel); } finally { sel.__zaza_timeout = null; }
-    }, 25);
-  }
-
-  function setupObserversForSelect(sel) {
-    if (!sel || sel.__zaza_observed) return;
-    sel.__zaza_observed = true;
-    const mo = new MutationObserver(muts => {
-      // schedule one sort for this select (mutations may be many)
-      scheduleSort(sel);
-    });
-    mo.observe(sel, { childList: true, subtree: true });
-    // also schedule sorting on focus/blur/change just in case
-    ['change','input','focus'].forEach(e => sel.addEventListener(e, () => scheduleSort(sel)));
-    // initial schedule
-    scheduleSort(sel);
-  }
-
-  function scanAndAttach() {
-    document.querySelectorAll('select').forEach(sel => {
-      // Only consider selects that look like department/province/district OR those with many options
-      const id = (sel.id||'').toLowerCase();
-      const name = (sel.name||'').toLowerCase();
-      const first = ((sel.options[0] && sel.options[0].textContent) || '').toLowerCase();
-      if (!id.includes('corte') && (id.includes('depart') || id.includes('prov') || id.includes('dist') || name.includes('depart') || name.includes('prov') || name.includes('dist') || first.includes('departamento') || first.includes('provincia') || first.includes('distrito') || sel.options.length > 20)) {
-        setupObserversForSelect(sel);
-      }
-    });
-  }
-
-  // Observe document for new selects and attach observer
-  const bodyMo = new MutationObserver(mutations => {
-    for (const m of mutations) {
-      if (m.addedNodes && m.addedNodes.length) {
-        m.addedNodes.forEach(node => {
-          if (node.nodeType !== 1) return;
-          if (node.tagName === 'SELECT') setupObserversForSelect(node);
-          else node.querySelectorAll && node.querySelectorAll('select').forEach(s => setupObserversForSelect(s));
-        });
-      }
-    }
-  });
-  bodyMo.observe(document.body, { childList: true, subtree: true });
-
-  document.addEventListener('DOMContentLoaded', function() {
-    scanAndAttach();
-    // as fallback, try a few times in first 6 seconds
-    let tries = 0;
-    const iv = setInterval(() => {
-      scanAndAttach();
-      tries++;
-      if (tries > 12) clearInterval(iv);
-    }, 500);
-  });
-
-  // Expose for debugging
-  window.__zaza_autosort_v3 = { scheduleSort, sortSelectIfNeeded, scanAndAttach };
-})();
-</script>
-
 </body>
 </html>
