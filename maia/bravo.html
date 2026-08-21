@@ -1,0 +1,2433 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAIA · Producto 0.2 — Simulación del Evento</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+:root{
+  --mg:#FF0A6C; --mg4:#FF4D94; --mg6:#D9005A; --mg7:#A8004A; --mg9:#3D0020;
+  --ink:#120C15; --ink2:#3A2F40; --ink3:#6E6175; --ink4:#9A8F95; --ink5:#C6BEC9;
+  --bg:#FAF7F9; --card:#FFF; --paper:#FDF7FA;
+  --line:rgba(18,12,21,.07); --lineMg:rgba(255,10,108,.13);
+  --n1:#FFEDF4; --n2:#FFCFE1;
+  --saf:#00897B; --scd:#7B1FA2;
+  --e:cubic-bezier(.16,1,.3,1); --t1:200ms; --r:18px; --r2:13px;
+  --s1:0 1px 2px rgba(16,8,20,.05),0 2px 10px -6px rgba(16,8,20,.1);
+  --s2:0 2px 6px rgba(16,8,20,.04),0 22px 44px -26px rgba(255,10,108,.34);
+  --s3:0 18px 50px -18px rgba(16,8,20,.32);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.55 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Archivo Black',Manrope,sans-serif;font-weight:400;letter-spacing:-.015em;line-height:1.05;margin:0}
+button{font:inherit;border:0;background:none;cursor:pointer;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+.sp{flex:1}
+
+/* ══ PORTADA ══ */
+.top{background:#fff;border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:16px;height:60px}
+.brand{display:flex;align-items:center;gap:11px}
+.brand .lg{width:32px;height:32px;border-radius:10px;background:linear-gradient(140deg,var(--mg),var(--mg7));display:grid;place-items:center;color:#fff;font-family:'Archivo Black';font-size:13px}
+.brand b{font-family:'Archivo Black';font-size:16px;color:var(--mg);line-height:1;display:block}
+.brand span{font-size:9.5px;font-weight:700;letter-spacing:.09em;color:var(--ink4);text-transform:uppercase}
+.pill{font-size:9.5px;font-weight:800;letter-spacing:.07em;padding:6px 11px;border-radius:99px;background:var(--n1);color:var(--mg7)}
+.pill.w{background:#FFF4E5;color:#8A4B00}
+.hero{padding:38px 0 22px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--mg7);text-transform:uppercase;margin-bottom:12px}
+.eyebrow::before{content:'';width:22px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--mg),transparent)}
+.hero h1{font-size:clamp(26px,3.4vw,38px);margin-bottom:10px}
+.hero h1 em{font-style:normal;background:linear-gradient(105deg,var(--mg),var(--mg7) 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{font-size:14px;color:var(--ink3);max-width:74ch;margin:0}
+.cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start;padding-bottom:44px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--s1);overflow:hidden}
+.card.hi{box-shadow:var(--s2)}
+.card .hd{padding:17px 21px;border-bottom:1px solid var(--line)}
+.card .hd h2{font-size:15px}
+.card .hd p{font-size:10.5px;color:var(--ink4);margin:3px 0 0}
+.card .bd{padding:19px 21px}
+.evseg{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:17px}
+.evseg button{flex:1 1 116px;display:flex;align-items:center;gap:9px;padding:11px 13px;border-radius:12px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);transition:all var(--t1) var(--e)}
+.evseg button:hover{transform:translateY(-1.5px);box-shadow:inset 0 0 0 1px var(--lineMg)}
+.evseg button.on{background:#fff;box-shadow:inset 0 0 0 1.8px var(--mg),0 9px 22px -11px rgba(255,10,108,.6)}
+.evseg .ic{font-size:16px;line-height:1}
+.evseg .lb{font-size:10.5px;font-weight:800;letter-spacing:.05em;color:var(--ink2);text-align:left}
+.evseg .lb small{display:block;font-size:9px;font-weight:600;letter-spacing:0;color:var(--ink4);margin-top:2px}
+.evseg button.on .lb{color:var(--mg7)}
+.fld{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:11px}
+.fld label{flex:1 1 100px;min-width:0}
+.fld span{display:block;font-size:9px;font-weight:800;letter-spacing:.06em;color:var(--ink4);margin-bottom:4px;text-transform:uppercase}
+input[type=text],input[type=number],input[type=datetime-local],select,textarea{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:#fff;font:600 12px Manrope,sans-serif;color:var(--ink);outline:none;transition:border var(--t1)}
+input:focus,select:focus,textarea:focus{border-color:var(--mg)}
+textarea{resize:vertical;min-height:104px;font-weight:400;line-height:1.5;font-size:11px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 15px;border-radius:10px;font-size:10.5px;font-weight:800;letter-spacing:.05em;transition:all var(--t1) var(--e)}
+.btn.pri{background:linear-gradient(135deg,var(--mg),var(--mg6));color:#fff;box-shadow:0 8px 22px -8px rgba(255,10,108,.75)}
+.btn.pri:hover{transform:translateY(-1.5px)}
+.btn.gho{box-shadow:inset 0 0 0 1px var(--line);color:var(--ink3);background:#fff}
+.btn.gho:hover{background:var(--n1);color:var(--mg7)}
+.btn.blk{width:100%;padding:13px}
+.btn.sm{padding:7px 11px;font-size:9.5px}
+.note{font-size:10px;color:var(--ink4);line-height:1.55;margin:10px 0 0}
+.note b{color:var(--ink2)}
+.warn{background:#FFF4E5;border-radius:9px;padding:10px 12px;font-size:10px;color:#7A4100;line-height:1.55;margin-top:11px}
+.warn b{color:#5A3000}
+.sup{display:inline-flex;font-size:8px;font-weight:800;letter-spacing:.06em;padding:2px 7px;border-radius:99px;background:#EDE7F6;color:#4527A0;vertical-align:1px}
+.pega{background:var(--paper);border-radius:var(--r2);box-shadow:inset 0 0 0 1px var(--line);padding:13px 14px;margin-bottom:15px}
+.pegaH{display:flex;align-items:baseline;gap:8px;margin-bottom:9px;flex-wrap:wrap}
+.pegaH b{font-size:11px}.pegaH span{font-size:9.5px;color:var(--ink4)}
+.pega textarea{min-height:112px;font-family:ui-monospace,'Cascadia Code',monospace;font-size:10px}
+.btnRow{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}.btnRow .btn{flex:1 1 auto}
+.modoH{display:flex;align-items:baseline;gap:10px;margin-bottom:13px;flex-wrap:wrap}
+.modoH b{font-size:11.5px}
+.lnkv{font-size:10px;font-weight:800;color:var(--ink3);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--ink5);margin-left:auto}
+.lnkv:hover{color:var(--mg7);text-decoration-color:var(--mg)}
+.ev{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.ev:last-child{border:0}
+.ev .ei{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:0 0 36px;font-size:16px;background:var(--n1)}
+.ev .et{flex:1;min-width:0}
+.ev .et b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev .et span{font-size:9.5px;color:var(--ink4)}
+.ev .ea{display:flex;gap:5px}
+.ev .ea button{padding:6px 9px;border-radius:8px;font-size:9px;font-weight:800;box-shadow:inset 0 0 0 1px var(--line);color:var(--ink3)}
+.ev .ea button:hover{background:var(--n1);color:var(--mg7)}
+.ev .ea button.del:hover{background:#FFEBEE;color:#C62828}
+.vacio{padding:30px 6px;text-align:center;color:var(--ink4);font-size:11.5px;line-height:1.7}
+.vacio .ic{font-size:26px;opacity:.5;display:block;margin-bottom:8px}
+.foot{padding:26px 0 44px;font-size:10px;color:var(--ink4);line-height:1.7}
+.foot b{color:var(--ink3)}
+
+/* ══ CONSOLA (modal a pantalla completa) ══ */
+.ovl{position:fixed;inset:0;background:rgba(12,6,14,.5);backdrop-filter:blur(3px);z-index:3000;display:none}
+.ovl.on{display:block}
+.mdl{position:absolute;inset:10px;background:var(--bg);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 40px 90px -30px rgba(0,0,0,.5)}
+.momBar{display:flex;align-items:center;gap:16px;padding:9px 16px;background:#fff;border-bottom:1px solid var(--line);flex:0 0 auto;flex-wrap:wrap}
+.momMarca{display:flex;align-items:center;gap:9px}
+.momLg{width:28px;height:28px;border-radius:50%;background:linear-gradient(140deg,var(--mg),var(--mg7));color:#fff;display:grid;place-items:center;font-size:14px}
+.momMarca b{display:block;font-family:'Archivo Black';font-size:14px;color:var(--mg);line-height:1}
+.momMarca span{font-size:8px;color:var(--ink4);font-weight:600}
+.momNav{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.momT{font-size:8px;font-weight:800;letter-spacing:.1em;color:var(--ink4);margin-right:4px}
+.mom{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;font-size:9px;font-weight:800;letter-spacing:.05em;color:var(--ink4);cursor:pointer;transition:all var(--t1)}
+.mom i{font-style:normal;width:15px;height:15px;border-radius:50%;background:var(--n1);color:var(--ink3);display:grid;place-items:center;font-size:8px}
+.mom:hover{background:var(--paper);color:var(--ink2)}
+.mom.on{background:linear-gradient(135deg,var(--mg),var(--mg6));color:#fff;box-shadow:0 6px 16px -6px rgba(255,10,108,.7)}
+.mom.on i{background:rgba(255,255,255,.28);color:#fff}
+.momSep{color:var(--ink5);font-size:11px}
+.mom.fut{opacity:.45}
+.mom.fut:hover{opacity:.7}
+.momBar2{display:flex;gap:4px;margin-left:12px;padding-left:12px;border-left:1px solid var(--line)}
+.prod{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:8px;font-size:9px;font-weight:700;color:var(--ink4);cursor:pointer;transition:all var(--t1)}
+.prod b{font-family:'Archivo Black';font-size:9.5px}
+.prod:hover{background:var(--paper);color:var(--ink2)}
+.prod.on{background:var(--n1);color:var(--mg7)}
+.prod.on b{color:var(--mg)}
+.vig{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:11px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+.vigP{width:7px;height:7px;border-radius:50%;background:#43A047;box-shadow:0 0 0 3px rgba(67,160,71,.18)}
+.vig b{display:block;font-size:8px;font-weight:800;letter-spacing:.08em;color:var(--ink3)}
+.vig span{font-size:9px;color:var(--ink4)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.st{background:var(--paper);border-radius:11px;padding:10px 11px;box-shadow:inset 0 0 0 1px var(--line)}
+.stI{font-size:12px;display:block;margin-bottom:3px}
+.st b{display:block;font-family:'Archivo Black';font-size:17px;line-height:1}
+.st>span{display:block;font-size:7.5px;font-weight:800;letter-spacing:.05em;color:var(--ink3);margin-top:4px;line-height:1.25}
+.st em{display:block;font-size:8px;color:var(--ink4);font-style:normal;margin-top:2px}
+.accL{margin:0 0 11px;padding-left:0;list-style:none;counter-reset:a}
+.accL li{counter-increment:a;position:relative;padding-left:24px;font-size:10.5px;color:var(--ink2);line-height:1.5;margin-bottom:6px}
+.accL li::before{content:counter(a);position:absolute;left:0;top:1px;width:16px;height:16px;border-radius:50%;background:var(--mg);color:#fff;font-size:8.5px;font-weight:800;display:grid;place-items:center}
+.mHd{background:#fff;border-bottom:1px solid var(--line);padding:11px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex:0 0 auto}
+.mHd h2{font-size:14px;line-height:1.2}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.chip{font-size:8.5px;font-weight:800;letter-spacing:.04em;padding:3px 8px;border-radius:99px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink3)}
+.src{display:inline-flex;font-size:8.5px;font-weight:800;padding:3px 8px;border-radius:99px;background:#E3F2FD;color:#0D47A1;text-decoration:none}
+.src:hover{background:#0D47A1;color:#fff}
+
+.body{flex:1;display:flex;min-height:0}
+/* barra de herramientas */
+.tool b{display:block;font-size:7.5px;font-weight:800;letter-spacing:.03em;margin-top:2px;line-height:1}
+.tool{flex-direction:column;gap:0}
+.tools{flex:0 0 74px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:5px;z-index:1300;position:relative}
+.tool{width:60px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink3);position:relative;transition:all var(--t1) var(--e)}
+.tool:hover{background:var(--n1);color:var(--mg7)}
+.tool.on{background:linear-gradient(140deg,var(--mg),var(--mg7));color:#fff;box-shadow:0 7px 18px -6px rgba(255,10,108,.8)}
+.tool .tt{position:absolute;left:52px;top:50%;transform:translateY(-50%);background:#1a1520;color:#fff;font-size:9.5px;font-weight:700;padding:5px 9px;border-radius:7px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity var(--t1);z-index:1400}
+.tool:hover .tt{opacity:1}
+.tool .bg{position:absolute;top:5px;right:5px;min-width:15px;height:15px;border-radius:99px;background:var(--mg);color:#fff;font-size:8px;font-weight:800;display:grid;place-items:center;padding:0 3px}
+.tool.on .bg{background:#fff;color:var(--mg7)}
+.toolSep{width:26px;height:1px;background:var(--line);margin:4px 0}
+
+/* lienzo del mapa */
+.canvasWrap{flex:1;position:relative;min-width:0}
+#map{position:absolute;inset:0;background:#EEE9EC}
+.leaflet-container{font:400 12px Manrope,sans-serif}
+/* Jerarquía: una sola capa protagonista.
+   fondo = cartografía · contexto = percepción · protagonista = impacto */
+.leaflet-tile-pane{opacity:.52;filter:saturate(.55)}
+body[data-base="satelite"] .leaflet-tile-pane{opacity:.72;filter:none}
+.leaflet-popup-content-wrapper{border-radius:11px}
+.leaflet-popup-content{margin:11px 13px;font-size:11px;line-height:1.5}
+body.sinTipPol .leaflet-tooltip{display:none!important}
+.cvTip{position:absolute;z-index:1050;pointer-events:none;background:#1a1520;color:#fff;
+  border-radius:10px;padding:9px 11px;box-shadow:0 8px 26px rgba(0,0,0,.42);font-size:10.5px;
+  line-height:1.45;max-width:250px}
+.cvTip .tHd{display:flex;align-items:baseline;gap:7px}
+.cvTip .tHd b{font-family:'Archivo Black';font-size:12px}
+.cvTip .tHd span{font-size:7.5px;font-weight:800;letter-spacing:.09em;color:rgba(255,255,255,.5)}
+.cvTip .tGeo{font-size:9px;color:rgba(255,255,255,.6);margin-top:1px}
+.cvTip .tTot{font-family:'Archivo Black';font-size:15px;margin-top:5px}
+.cvTip .tTot span{font-family:Manrope;font-size:9px;font-weight:700;color:rgba(255,255,255,.65)}
+.cvTip .tSvc{font-size:9.5px;font-weight:800;margin-top:2px}
+.cvTip .tHz{display:flex;flex-direction:column;gap:2px;font-size:9px;margin-top:5px;color:rgba(255,255,255,.8)}
+.cvTip .tHz i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px}
+.cvTip .tPie{font-size:8.5px;color:rgba(255,255,255,.5);margin-top:5px;border-top:1px solid rgba(255,255,255,.14);padding-top:4px}
+.capG{margin-bottom:14px}
+.capGT{font-size:8px;font-weight:800;letter-spacing:.1em;color:var(--ink4);text-transform:uppercase;margin-bottom:6px}
+.capR{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;cursor:pointer;transition:background var(--t1)}
+.capR:hover{background:var(--paper)}
+.capR input{width:auto;flex:0 0 auto;accent-color:var(--mg)}
+.capIc{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:0 0 26px;font-size:12px;background:var(--n1)}
+.capT{flex:1;min-width:0}
+.capT b{display:block;font-size:10.5px}
+.capT span{font-size:9px;color:var(--ink4)}
+.expB{display:flex;align-items:center;gap:9px;width:100%;padding:9px 8px;border-radius:9px;
+  text-align:left;transition:all var(--t1);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:5px;background:#fff}
+.expB:hover{box-shadow:inset 0 0 0 1.5px var(--mg);transform:translateX(2px)}
+.epiLb{display:inline-block;background:#D32F2F;color:#fff;font-size:8px;font-weight:800;
+  letter-spacing:.07em;padding:3px 7px;border-radius:5px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.cvBox{position:absolute;z-index:1040;border:1.6px dashed var(--mg);background:rgba(255,10,108,.1);
+  pointer-events:none;border-radius:3px}
+.mapCtl{position:absolute;right:12px;top:12px;z-index:1100;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.ctlBloque{background:rgba(255,255,255,.96);border-radius:11px;box-shadow:var(--s1),0 0 0 1px var(--line);padding:7px 9px}
+.ctlT{font-size:7.5px;font-weight:800;letter-spacing:.11em;color:var(--ink4);text-transform:uppercase;margin-bottom:5px;text-align:right}
+.ctlG{display:flex;gap:3px}
+.ctlG button{padding:6px 10px;border-radius:7px;font-size:9px;font-weight:800;letter-spacing:.04em;color:var(--ink3)}
+.ctlG button.on{background:linear-gradient(135deg,var(--mg),var(--mg6));color:#fff}
+.ctlL{font-size:7.5px;font-weight:800;letter-spacing:.1em;color:var(--ink4);text-transform:uppercase;margin-right:4px;align-self:center}
+.leg .r{cursor:pointer;border-radius:5px;padding:1px 3px;margin:0 -3px}
+.leg .r:hover{background:var(--n1)}
+.leg .r.off{opacity:.32}
+.tipD{background:#1a1520;border:0;color:#fff;border-radius:9px;padding:8px 10px;box-shadow:0 6px 20px rgba(0,0,0,.35);font-size:10.5px;line-height:1.45}
+.tipD::before{border-top-color:#1a1520!important;border-bottom-color:#1a1520!important}
+.tipD .tHd{display:flex;align-items:baseline;gap:7px}
+.tipD .tHd b{font-family:'Archivo Black';font-size:12px;letter-spacing:-.01em}
+.tipD .tHd span{font-size:7.5px;font-weight:800;letter-spacing:.09em;color:rgba(255,255,255,.5)}
+.tipD .tGeo{font-size:9px;color:rgba(255,255,255,.6);margin-top:1px}
+.tipD .tTot{font-family:'Archivo Black';font-size:15px;margin-top:5px}
+.tipD .tTot span{font-family:Manrope;font-size:9px;font-weight:700;color:rgba(255,255,255,.65)}
+.tipD .tSvc{display:flex;gap:9px;font-size:9.5px;font-weight:800;margin-top:3px}
+.tipD .tPie{font-size:9px;color:rgba(255,255,255,.55);margin-top:4px;border-top:1px solid rgba(255,255,255,.14);padding-top:4px}
+
+/* panel flotante de herramienta */
+/* Leaflet pinta sus panes entre z-index 200 y 800: cualquier cosa nuestra
+   que deba verse sobre el mapa tiene que ir por encima de ese rango.     */
+.pnl{position:absolute;left:12px;top:12px;width:330px;max-height:calc(100% - 24px);overflow:auto;background:#fff;border-radius:15px;box-shadow:var(--s3);z-index:1200;display:none}
+.pnl.on{display:block}
+.pnlH{display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:2}
+.pnlH h3{font-size:12.5px}
+.pnlH .x{margin-left:auto;color:var(--ink4);font-size:17px;line-height:1}
+.pnlH .x:hover{color:var(--mg)}
+.pnlB{padding:14px 15px}
+
+/* leyenda flotante */
+.leg{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.96);border-radius:12px;box-shadow:var(--s1),0 0 0 1px var(--line);padding:10px 13px;z-index:1100;font-size:9px;font-weight:700;color:var(--ink3);display:flex;flex-direction:column;gap:5px;max-width:230px}
+.leg .tt2{font-size:8px;font-weight:800;letter-spacing:.08em;color:var(--ink4);text-transform:uppercase;margin-bottom:1px}
+.leg .sep{height:1px;background:var(--line);margin:4px 0}
+.leg .ojo{font-size:8px;font-weight:600;color:var(--ink4);line-height:1.4;margin:2px 0 1px;font-style:italic}
+.leg .ojo b{color:var(--ink3);font-style:normal}
+.leg .r{display:flex;align-items:center;gap:6px}
+.leg i{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+.leg i.dot{border-radius:50%}
+.leg .zn{color:var(--ink4);font-weight:600;font-style:italic;margin-top:2px}
+
+/* panel derecho */
+.side{flex:0 0 396px;background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;border-bottom:1px solid var(--line);flex:0 0 auto}
+.tabs button{flex:1;padding:12px 6px;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:var(--ink4);position:relative}
+.tabs button.on{color:var(--mg7)}
+.tabs button.on::after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:2.5px;background:var(--mg);border-radius:2px}
+.tabBd{flex:1;overflow:auto;padding:14px}
+
+/* resumen por servicio */
+.svc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.svcC{border-radius:var(--r2);padding:12px 13px;color:#fff}
+.svcC.saf{background:linear-gradient(145deg,#00897B,#004D40)}
+.svcC.scd{background:linear-gradient(145deg,#7B1FA2,#4A148C)}
+.svcC .t{font-size:9px;font-weight:800;letter-spacing:.08em;opacity:.85}
+.svcC .v{font-family:'Archivo Black';font-size:24px;line-height:1.1;margin:4px 0 1px}
+.svcC .s{font-size:9px;opacity:.8;line-height:1.45}
+.svcC dl{margin:9px 0 0;font-size:9.5px}
+.svcC dl div{display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid rgba(255,255,255,.18)}
+.svcC dt{opacity:.8}.svcC dd{margin:0;font-weight:800}
+.preg{font-size:9px;font-weight:800;letter-spacing:.1em;color:var(--mg7);text-transform:uppercase;margin:16px 0 7px}
+.preg:first-child{margin-top:0}
+.prio{display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:var(--r2);padding:10px 13px;margin-bottom:12px;flex-wrap:wrap}
+.prioL{display:block;font-size:8px;font-weight:800;letter-spacing:.08em;opacity:.8;text-transform:uppercase}
+.prio b{font-family:'Archivo Black';font-size:15px;line-height:1.1}
+.prioQ{font-size:9px;opacity:.85;text-align:right;flex:1 1 120px;font-weight:600}
+.m2{background:linear-gradient(150deg,#EEF6FF,#E3EEFB);border-radius:var(--r2);padding:14px 15px;margin-bottom:14px}
+.m2T{font-family:'Archivo Black';font-size:12px;color:#0D3C6E;margin-bottom:7px}
+.m2 p{font-size:10.5px;color:#1B4C7E;line-height:1.55;margin:0 0 8px}
+.m2 p:last-child{margin:0}
+.m2L{padding:8px 0;border-bottom:1px solid var(--line);font-size:10.5px}
+.m2L:last-child{border:0}
+.m2L b{display:block;font-size:10.5px}
+.m2L span{font-size:9px;color:var(--ink4)}
+.hall{background:#EEF6FF;border-left:3px solid #1565C0;border-radius:0 10px 10px 0;padding:10px 12px;font-size:10px;color:#0D3C6E;line-height:1.55;margin-bottom:12px}
+.hall b{color:#062B52}.hall span{color:#4A7CA8;font-style:italic}
+.chipsD{display:flex;gap:5px;flex-wrap:wrap;margin-top:11px}
+.chipD{padding:5px 9px;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:9.5px;font-weight:800;color:var(--ink2);transition:all var(--t1)}
+.chipD span{color:var(--ink4);font-weight:600;margin-left:5px}
+.chipD:hover{box-shadow:inset 0 0 0 1.5px var(--mg);color:var(--mg7)}
+.chipMas{font-size:9px;color:var(--ink4);font-weight:700;align-self:center}
+.acc{background:linear-gradient(150deg,#FFF0F6,#FFE3EE);border-radius:var(--r2);padding:13px 14px;margin-bottom:10px}
+.accN{font-size:8.5px;font-weight:800;letter-spacing:.08em;color:var(--mg7);text-transform:uppercase;margin-bottom:5px}
+.acc p{font-size:11px;color:var(--ink2);margin:0 0 11px;line-height:1.5}
+.accB{width:100%;padding:10px;border-radius:9px;background:linear-gradient(135deg,var(--mg),var(--mg6));color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.06em;box-shadow:0 8px 20px -8px rgba(255,10,108,.7)}
+.accB:hover{transform:translateY(-1.5px)}
+.sig{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border-radius:var(--r2);background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);text-align:left;transition:all var(--t1)}
+.sig:hover{box-shadow:inset 0 0 0 1.5px var(--mg);transform:translateX(2px)}
+.sigT{display:block;font-size:11.5px;font-weight:800;color:var(--ink)}
+.sigD{display:block;font-size:9px;color:var(--ink4);margin-top:2px}
+.sig>span:first-child{flex:1}
+.sigF{font-size:15px;color:var(--mg);font-weight:800}
+.zonaT{padding:5px 10px;border-radius:9px;font-size:9px;font-weight:800;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink3)}
+.zonaT.on{background:linear-gradient(135deg,var(--mg),var(--mg6));color:#fff}
+.zc{background:linear-gradient(150deg,#3D0020,#12060E);border-radius:var(--r2);padding:14px 15px;margin-bottom:12px;color:#fff;box-shadow:0 14px 30px -16px rgba(61,0,32,.8)}
+.zcH{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.zcT{font-family:'Archivo Black';font-size:11.5px;letter-spacing:.02em}
+.zcN{font-size:8px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:99px;background:rgba(255,10,108,.28);color:#FF9CC6}
+.zcV{font-family:'Archivo Black';font-size:27px;line-height:1.05}
+.zcV span{display:block;font-family:Manrope;font-size:9.5px;font-weight:700;color:rgba(255,255,255,.62);margin-top:2px}
+.zcS{display:flex;gap:12px;font-size:9.5px;font-weight:800;margin-top:7px}
+.zcB{width:100%;margin-top:10px;padding:9px;border-radius:9px;background:var(--mg);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.06em;transition:all var(--t1)}
+.zcB:hover{background:#fff;color:var(--mg7)}
+.zcP{font-size:8.5px;color:rgba(255,255,255,.5);margin-top:8px;line-height:1.4}
+.zcV span{display:block;font-family:Manrope;font-size:9.5px;font-weight:700;color:rgba(255,255,255,.62);margin-top:3px;line-height:1.4}
+.tot{background:var(--paper);border-radius:var(--r2);padding:11px 13px;box-shadow:inset 0 0 0 1px var(--line);margin-bottom:12px;display:flex;align-items:baseline;gap:9px}
+.tot b{font-family:'Archivo Black';font-size:23px;line-height:1}
+.tot span{font-size:9.5px;color:var(--ink3);font-weight:700}
+.mini2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.mini2 div{background:var(--paper);border-radius:10px;padding:9px 11px;box-shadow:inset 0 0 0 1px var(--line)}
+.mini2 b{display:block;font-family:'Archivo Black';font-size:15px;line-height:1}
+.mini2 span{font-size:8.5px;color:var(--ink4);font-weight:700}
+.blk{background:var(--paper);border-radius:var(--r2);box-shadow:inset 0 0 0 1px var(--line);padding:13px 14px;margin-bottom:12px}
+.blk h4{font-size:11px;margin-bottom:3px}
+.blk .sub{font-size:9px;color:var(--ink4);margin:0 0 10px;line-height:1.45}
+.big{font-family:'Archivo Black';font-size:26px;line-height:1}
+.bar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--n1);margin:8px 0 5px}
+.bar i{display:block;height:100%}
+.mini{display:flex;justify-content:space-between;font-size:9.5px;font-weight:700;color:var(--ink3)}
+dl.kv{margin:0;font-size:10.5px}
+dl.kv div{display:flex;justify-content:space-between;gap:9px;padding:5px 0;border-bottom:1px solid var(--line)}
+dl.kv div:last-child{border:0}
+dl.kv dt{color:var(--ink3);font-weight:600}dl.kv dd{margin:0;font-weight:800}
+.recL{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--line);font-size:10.5px}
+.recL:last-child{border:0}
+.recL .ic{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex:0 0 24px;font-size:12px}
+.recL .tx{flex:1;min-width:0}.recL .tx b{display:block;font-size:10.5px}
+.recL .tx span{font-size:9px;color:var(--ink4)}
+.recL .km{font-family:'Archivo Black';font-size:12px;white-space:nowrap}
+
+/* filtros y lista de distritos */
+.filt{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+.seg button{padding:5px 9px;border-radius:7px;font-size:9px;font-weight:800;color:var(--ink3)}
+.seg button.on{background:#fff;color:var(--mg7);box-shadow:0 1px 4px rgba(16,8,20,.12)}
+.seg button.on[data-s="SAF"]{color:var(--saf)}
+.seg button.on[data-s="SCD"]{color:var(--scd)}
+.filt select{width:auto;flex:1 1 120px;padding:6px 8px;font-size:10px}
+.dl{display:flex;flex-direction:column;gap:5px}
+.cenHd{display:flex;align-items:baseline;justify-content:space-between;gap:9px;padding:9px 11px;
+  border-radius:11px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:10px;font-size:10.5px;flex-wrap:wrap}
+.cenHd b{font-family:'Archivo Black';font-size:13px}
+.cenS{display:flex;gap:9px;font-size:9.5px;font-weight:800}
+.cRow{display:flex;align-items:stretch;gap:9px;padding:8px 9px;border-radius:10px;background:var(--paper);
+  box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;transition:all var(--t1);margin-bottom:5px}
+.cRow:hover{box-shadow:inset 0 0 0 1px var(--lineMg);transform:translateX(2px)}
+.cRow.sel{background:var(--n1);box-shadow:inset 0 0 0 1.6px var(--mg)}
+.cBar{width:4px;border-radius:3px;flex:0 0 4px}
+.cRow .nm{flex:1;min-width:0}
+.cRow .nm b{display:block;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cRow .nm>span{display:block;font-size:8.5px;color:var(--ink4)}
+.cHz{margin-top:3px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.cHz i{width:7px;height:7px;border-radius:2px;display:inline-block}
+.cHz em{font-style:normal;color:var(--ink5);font-size:8px}
+.cRow .vv{text-align:right;flex:0 0 auto}
+.cRow .vv b{display:block;font-family:'Archivo Black';font-size:12px;line-height:1.1}
+.cRow .vv span{display:block;font-size:8px;font-weight:800}
+.cSub{color:var(--ink4)!important;font-weight:600!important;margin-top:1px}
+.cenMas{font-size:9.5px;color:var(--ink4);text-align:center;padding:11px 8px;line-height:1.5}
+.dRow{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:10px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;transition:all var(--t1)}
+.dRow:hover{box-shadow:inset 0 0 0 1px var(--lineMg);transform:translateX(2px)}
+.dRow.sel{background:var(--n1);box-shadow:inset 0 0 0 1.6px var(--mg)}
+.dRow .lv{width:5px;align-self:stretch;border-radius:3px;flex:0 0 5px}
+.dRow .nm{flex:1;min-width:0}
+.dRow .nm b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dRow .nm span{font-size:8.5px;color:var(--ink4)}
+.dRow .vv{text-align:right;flex:0 0 auto}
+.dRow .vv b{display:block;font-family:'Archivo Black';font-size:12px;line-height:1.1}
+.dRow .vv span{font-size:8px;font-weight:700}
+.dRow .x{color:var(--ink5);font-size:14px;line-height:1;padding:0 2px}
+.dRow .x:hover{color:var(--mg)}
+.sv{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:3px;vertical-align:0}
+.empty{padding:34px 16px;text-align:center;color:var(--ink4)}
+.empty .ic{font-size:26px;margin-bottom:8px;opacity:.55}
+.empty p{font-size:11px;margin:0;line-height:1.6}
+.amb{border-radius:11px;background:#FFF4E5;padding:11px 12px;margin-top:10px}
+.amb h4{font-size:10px;color:#7A4100;margin-bottom:5px}
+.ambR{display:flex;align-items:center;gap:7px;padding:6px 0;border-top:1px solid rgba(122,65,0,.12);flex-wrap:wrap}
+.ambR .nm{font-size:10px;font-weight:800;flex:1 1 120px;color:#5A3000}
+.ambR button{padding:4px 8px;border-radius:6px;font-size:8.5px;font-weight:800;background:#fff;box-shadow:inset 0 0 0 1px rgba(122,65,0,.22);color:#7A4100}
+.ambR button:hover{background:#7A4100;color:#fff}
+.bitR{display:flex;gap:9px;padding:7px 0;font-size:10px;border-bottom:1px solid var(--line)}
+.bitR:last-child{border:0}
+.bitR time{font-size:9px;color:var(--ink4);font-weight:700;flex:0 0 92px}
+.rings{display:flex;gap:5px;margin-top:6px}
+.ring{flex:1;text-align:center;padding:7px 3px;border-radius:8px;font-size:8px;font-weight:800;color:#fff}
+.ring b{display:block;font-family:'Archivo Black';font-size:13px;line-height:1.15}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(18px);background:#1a1520;color:#fff;padding:11px 17px;border-radius:11px;font-size:11.5px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:5000;opacity:0;pointer-events:none;transition:all .25s var(--e)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:1180px){.cols{grid-template-columns:1fr}.side{flex:0 0 320px}}
+@media(max-width:900px){.body{flex-direction:column}.side{flex:1 1 auto;border-left:0;border-top:1px solid var(--line)}.canvasWrap{flex:0 0 300px}.mdl{inset:0;border-radius:0}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <div class="brand"><span class="lg">M</span><div><b>MAIA</b><span>Producto 0.2</span></div></div>
+  <div class="sp"></div>
+  <span class="pill" id="pMeta">padrón junio 2026</span>
+  <span class="pill w">CENEPRED vigente a agosto 2026</span>
+</div></div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Momento 0 · Preparación · Producto 0.2</div>
+    <h1>Registra el evento y mira <em>qué tenemos</em></h1>
+    <p>Este producto <b>simula</b> un evento antes de que ocurra, para saber qué parte de la operación quedaría comprometida. Un evento se registra una vez y se trabaja por partes: lo que se sabe al inicio, el comunicado del COEN cuando llega, y los distritos que solo conoce quien está en territorio.</p>
+    <p class="note" style="max-width:74ch">El seguimiento en el tiempo real de un evento —qué pasa a las 3, 6 y 12 horas— es el <b>Momento 3</b>, que queda como visión documentada y no se construye en esta entrega.</p>
+  </div>
+  <div class="cols">
+    <div class="card hi">
+      <div class="hd"><h2>Registrar evento</h2><p>Lo mínimo para empezar. Todo lo demás se agrega después.</p></div>
+      <div class="bd"><div class="evseg" id="evseg"></div><div id="formEv"></div></div>
+    </div>
+    <div class="card">
+      <div class="hd"><h2>Eventos guardados</h2><p>Se guardan en este navegador. Exporta si vas a otro equipo.</p></div>
+      <div class="bd">
+        <div id="listaEv"></div>
+        <div style="margin-top:14px"><button class="btn gho" id="btnImp">IMPORTAR JSON</button>
+        <input type="file" id="fImp" accept=".json" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <b>Padrón Cuna Más a corte de junio 2026</b> · exposición CENEPRED vigente a agosto 2026 · geometría INEI censo 2025.<br>
+    Coordenadas del SAF resueltas contra el padrón INEI — 99.1 % de los 26,647 puntos.<br>
+    <b>Todo lo económico vive en el Producto 0.3</b>, no aquí.<br>
+    Diseñado y desarrollado por <b>Phillyps · BRAV[O]</b>
+  </div>
+</div>
+
+<!-- ══ CONSOLA ══ -->
+<div class="ovl" id="ovl"><div class="mdl">
+  <div class="momBar">
+    <div class="momMarca"><span class="momLg">◎</span><div><b>MAIA</b><span>Gemelo Digital para la Decisión Pública</span></div></div>
+    <div class="momNav" id="momNav"></div>
+    <div class="sp"></div>
+    <div class="vig"><span class="vigP"></span><div><b>DATOS VIGENTES</b>
+      <span id="vigTxt">Padrón jun 2026 · CENEPRED ago 2026</span></div></div>
+  </div>
+  <div class="mHd">
+    <div style="min-width:0"><h2 id="mTit">—</h2><div class="chips" id="mChips"></div></div>
+    <div class="sp"></div>
+    <button class="btn gho sm" id="btnCsv">CSV</button>
+    <button class="btn gho sm" id="btnExp">EXPORTAR</button>
+    <button class="btn pri sm" id="btnSave">GUARDAR</button>
+    <button class="btn gho sm" id="btnClose">CERRAR</button>
+  </div>
+
+  <div class="body">
+    <div class="tools" id="tools"></div>
+
+    <div class="canvasWrap">
+      <div id="map"></div>
+      <div class="mapCtl">
+        <div class="ctlBloque"><div class="ctlT">Capa principal</div>
+          <div class="ctlG" id="ctlCapa"></div></div>
+        <div class="ctlBloque"><div class="ctlT">Vista</div>
+          <div class="ctlG" id="ctlVista"></div></div>
+        <div class="ctlBloque"><div class="ctlT">Base</div>
+          <div class="ctlG" id="ctlBase"></div></div>
+      </div>
+      <div class="pnl" id="pnl"><div class="pnlH"><h3 id="pnlT">—</h3><button class="x" id="pnlX">×</button></div><div class="pnlB" id="pnlB"></div></div>
+      <div class="leg" id="leg"></div>
+    </div>
+
+    <div class="side">
+      <div class="tabs" id="tabs"></div>
+      <div class="tabBd" id="tabBd"></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="data/_geo02.js"></script>
+<script src="data/_cm02.js"></script>
+<script src="data/_sup02.js"></script>
+<script>
+const $=(s,c)=>(c||document).querySelector(s), $$=(s,c)=>[...(c||document).querySelectorAll(s)];
+const nf=n=>(n||0).toLocaleString('es-PE');
+const P=CM.ptsCols, PI={}; P.forEach((c,i)=>PI[c]=i);
+const RAMP=['#43A047','#9CCC65','#FBC02D','#F57C00','#D32F2F','#B71C1C'];
+const NIVN=['sin dato','muy bajo','bajo','medio','alto','muy alto'];
+const C_SAF='#00897B', C_SCD='#7B1FA2';
+let tT; function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),3400)}
+
+/* ═══ ESTADO ═══
+   Anillos por defecto CALIBRADOS con el evento del 20-ago-2026 (M7.2, foco
+   108 km): son los alcances máximos que el COEN reportó por nivel —fuerte
+   hasta 77 km, moderada hasta 283 (Pisco), leve hasta 390 (Ichuña)—.
+   No son una regla física: son la referencia que nos dejó el único evento
+   con reporte completo que tenemos. Se cambian cuando haya más casos.   */
+const S={
+  id:null, nombre:'', evento:'sismo',
+  sismo:{lat:-14.70,lon:-73.78,prof:108,mag:7.2,ref:'',fecha:'',
+         cod:'',inten:'',url:'',rings:[80,285,390]},
+  ambito:{dep:'',prov:''}, umbral:4,
+  modo:'pegar', nombre_tocado:false,
+  sel:new Map(), amb:[], noCM:[], bitacora:[],
+  tab:'resumen', foco:null,
+  filtro:{srv:'TODOS', niv:'', orden:'usu', soloZona:0},
+  fCen:{srv:'TODOS', exp:0, peligro:'max', soloZona:0, q:'', orden:'usu'},
+};
+
+const R_TIERRA=6371;
+function hav(a,b){const t=x=>x*Math.PI/180;
+  const d1=t(b[0]-a[0]),d2=t(b[1]-a[1]);
+  const h=Math.sin(d1/2)**2+Math.cos(t(a[0]))*Math.cos(t(b[0]))*Math.sin(d2/2)**2;
+  return 2*R_TIERRA*Math.asin(Math.sqrt(h))}
+const alFoco=(rSup,prof)=>Math.sqrt(rSup*rSup+prof*prof);
+
+const norm=t=>t.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/\s+/g,' ').trim();
+const IX_DIST={}, IX_PROV={}, IX_DEP={};
+for(const [u,d] of Object.entries(CM.dist)){
+  (IX_DIST[norm(d.n)]=IX_DIST[norm(d.n)]||[]).push(u);
+  (IX_PROV[norm(d.d)+'|'+norm(d.p)]=IX_PROV[norm(d.d)+'|'+norm(d.p)]||[]).push(u);
+  (IX_PROV[norm(d.p)]=IX_PROV[norm(d.p)]||[]).push(u);
+  (IX_DEP[norm(d.d)]=IX_DEP[norm(d.d)]||[]).push(u);
+}
+
+/* ═══ MODO 1a · ANILLOS REFERENCIALES ═══
+   La distancia se mide al FOCO, no al epicentro: con foco profundo todo lo
+   cercano en superficie queda casi equidistante del origen del sismo.     */
+function aplicaAnillos(silencio){
+  const {lat,lon,rings}=S.sismo;
+  const nivs=['fuerte','moderada','leve'];
+  let n=0;
+  for(const [u,d] of Object.entries(CM.dist)){
+    const dh=hav([lat,lon],d.c);          // distancia en superficie
+    for(let i=0;i<rings.length;i++){
+      if(dh<=rings[i]){
+        if(!S.sel.has(u)){S.sel.set(u,{nivel:nivs[i],origen:'radio'});n++}
+        break;
+      }
+    }
+  }
+  anota('Anillos aplicados',`${n} distritos dentro de ${rings.join(' / ')} km del epicentro`);
+  if(!silencio){render(); verZonaCritica(); toast(n?`${n} distritos añadidos`:'Ningún distrito nuevo en esos anillos')}
+}
+
+/* ═══ MODO 1b · ÁMBITO POR EXPOSICIÓN ═══ */
+function aplicaAmbito(silencio){
+  const dep=S.ambito.dep, pr=S.ambito.prov;
+  if(!dep){toast('Elige un departamento');return}
+  const campo=S.evento==='inundacion'?'nivI':'nivM';
+  let n=0;
+  for(const [u,d] of Object.entries(CM.dist)){
+    if(d.d!==dep) continue;
+    if(pr && d.p!==pr) continue;
+    const pts=CM.pts[u]||[];
+    if(pts.some(p=>p[PI[campo]]>=S.umbral) && !S.sel.has(u)){
+      S.sel.set(u,{nivel:'exp',origen:'ambito'});n++}
+  }
+  anota('Ámbito aplicado',`${n} distritos en ${dep}${pr?' / '+pr:''} con exposición ≥ ${S.umbral}`);
+  if(!silencio){render(); toast(n?`${n} distritos con exposición ≥${S.umbral}`:'Ninguno alcanza ese umbral')}
+}
+
+/* ═══ MODO 2 · PARSER COEN ═══ */
+const DEMO=`Un sismo de magnitud 7.2, con epicentro situado en el distrito de Coracora, provincia de Parinacochas, departamento de Ayacucho, y con una profundidad de 108 km, se registró a las 13:00 horas del jueves 20 de agosto, según informó el Instituto Geofísico del Perú (IGP). El evento alcanzó una intensidad de III-IV en Coracora.
+
+Al respecto, el Centro de Operaciones de Emergencia Nacional (COEN) coordinó con las autoridades competentes, quienes informaron que el movimiento sísmico fue percibido fuerte en los distritos de Coracora, Chumpi, Coronel Castañeda, Pacapausa, Pullo, Puyusca, San Francisco de Ravavayco y Upahuacho de la provincia de Parinacochas (Ayacucho); así como, en el distrito de Nazca (Ica). Además; se sintió moderado en las jurisdicciones de Ica y Pisco. Mientras tanto, el movimiento telúrico fue percibido leve en los distritos de Aymaraes, Cotabamba y Andahuaylas en el departamento de Apurímac; así también, en los distritos de Omate, Chojata, Coalaque, Ichuña, La Capilla, Lloque, Matalaque, Puquina, Quinistaquillas, Ubinas y Yunga en el departamento de Moquegua.`;
+
+const STOP=new Set(['DISTRITO','DISTRITOS','PROVINCIA','PROVINCIAS','DEPARTAMENTO','JURISDICCIONES',
+ 'JURISDICCION','LOS','LAS','EL','LA','DE','DEL','EN','Y','ASI','COMO','ADEMAS','TAMBIEN','MIENTRAS',
+ 'TANTO','SE','SINTIO','FUE','PERCIBIDO','MOVIMIENTO','SISMICO','TELURICO','AL','RESPECTO','QUE']);
+
+function segmenta(t){
+  const T=' '+t.replace(/\s+/g,' ')+' ';
+  const marc=[{k:'fuerte',re:/percibid[oa]\s+fuerte|sinti[oó]\s+fuerte/i},
+              {k:'moderada',re:/percibid[oa]\s+moderad[oa]|sinti[oó]\s+moderad[oa]/i},
+              {k:'leve',re:/percibid[oa]\s+leve|sinti[oó]\s+leve/i}];
+  const pos=marc.map(m=>({k:m.k,i:T.search(m.re)})).filter(x=>x.i>=0).sort((a,b)=>a.i-b.i);
+  const out=[];
+  pos.forEach((p,i)=>out.push({nivel:p.k,txt:T.slice(p.i,i+1<pos.length?pos[i+1].i:T.length)}));
+  return out;
+}
+/* ── Lector del comunicado COEN ──────────────────────────────────────────
+   El texto se escribe a mano y mezcla granularidades: "los distritos de
+   Aymaraes, Cotabamba y Andahuaylas" (que son PROVINCIAS), "las
+   jurisdicciones de Ica y Pisco" (provincias), y erratas como "Ravavayco"
+   por Ravacayco o "Nazca" por Nasca.
+
+   No se recortan conectores a ciegas: eso rompe nombres compuestos
+   ("San Francisco DE Ravacayco") y pega nombres distintos
+   ("Upahuacho ... Parinacochas"). En vez de eso se busca, dentro de cada
+   fragmento, el NOMBRE CONOCIDO MÁS LARGO, y luego el siguiente que no se
+   solape. Lo que no cruza se declara; nunca se descarta en silencio.      */
+
+const CAT=/\b(DISTRITOS?|PROVINCIAS?|DEPARTAMENTOS?|JURISDICCIONES?|REGIONES?|REGION)\b/g;
+const RUIDO=new Set(['MOVIMIENTO','TELURICO','SISMICO','PERCIBIDO','PERCIBIDA','SINTIO',
+  'FUERTE','MODERADO','MODERADA','LEVE','ASI','COMO','ADEMAS','TAMBIEN','MIENTRAS','TANTO',
+  'EN','DE','DEL','LOS','LAS','EL','LA','SE','FUE','QUE','AL','RESPECTO','SU','Y','E']);
+
+function lev(a,b){
+  if(Math.abs(a.length-b.length)>2) return 9;
+  const m=a.length,n=b.length,d=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]);
+  for(let j=1;j<=n;j++) d[0][j]=j;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[m][n];
+}
+let CLAVES=null;
+function claves(){
+  if(!CLAVES) CLAVES=[...new Set([...Object.keys(IX_DIST),...Object.keys(IX_PROV),
+                                  ...Object.keys(IX_DEP)])];
+  return CLAVES;
+}
+/* Departamentos a los que pertenece una clave — para desempatar erratas. */
+function depsDe(k){
+  const S2=new Set();
+  if(IX_DEP[k]) S2.add(k);
+  (IX_DIST[k]||[]).concat(IX_PROV[k]||[]).forEach(u=>S2.add(norm(CM.dist[u].d)));
+  return S2;
+}
+/* Exacto primero. Si falla, tolerancia a erratas proporcional al largo, y
+   desempate por el departamento nombrado en el mismo segmento: "Cotabamba"
+   está a distancia 1 tanto de COCABAMBA (Amazonas) como de COTABAMBAS
+   (Apurímac); el texto dice Apurímac, así que gana COTABAMBAS.            */
+function resolver(nm,depCtx){
+  if(IX_DIST[nm]||IX_PROV[nm]||IX_DEP[nm]) return {k:nm,exacto:true,alts:[]};
+  if(nm.length<5) return null;
+  const tol=nm.length>=8?2:1;
+  let cands=[];
+  for(const k of claves()){
+    const d=lev(nm,k);
+    if(d<=tol) cands.push({k,d:d-(depCtx&&depsDe(k).has(depCtx)?0.5:0)});
+  }
+  if(!cands.length) return null;
+  cands.sort((a,b)=>a.d-b.d);
+  return {k:cands[0].k,exacto:false,alts:cands.slice(0,4).map(c=>c.k)};
+}
+/* dentro de un fragmento, todos los nombres conocidos que no se solapen */
+function nombresEn(frag,depCtx){
+  const tk=frag.split(' ').filter(Boolean);
+  const usado=Array(tk.length).fill(false), out=[];
+  for(let len=Math.min(5,tk.length);len>=1;len--){
+    for(let i=0;i+len<=tk.length;i++){
+      if(usado.slice(i,i+len).some(Boolean)) continue;
+      const span=tk.slice(i,i+len);
+      if(span.every(w=>RUIDO.has(w))) continue;
+      const r=resolver(span.join(' '),depCtx);
+      if(r){ out.push(r); for(let j=i;j<i+len;j++) usado[j]=true }
+    }
+  }
+  const sobra=tk.filter((w,i)=>!usado[i] && !RUIDO.has(w) && w.length>3);
+  return {hits:out, sobra};
+}
+function candidatos(txt){
+  return norm(txt).replace(CAT,' ')
+    .split(/[;,.:]|\bY\b|\bE\b|\(|\)/)
+    .map(x=>x.replace(/\s+/g,' ').trim())
+    .filter(Boolean);
+}
+function leeCoen(txt){
+  if(!txt||txt.trim().length<40){toast('Pega el texto del comunicado');return}
+  S.amb=[]; let add=0, noCM=[];
+  const vistos=new Set();
+  segmenta(txt).forEach(seg=>{
+    /* el departamento nombrado en el segmento sirve de contexto para desempatar */
+    const nseg=norm(seg.txt);
+    const depSeg=Object.keys(IX_DEP).find(d=>new RegExp('\\b'+d+'\\b').test(nseg))||null;
+    candidatos(seg.txt).forEach(nm=>{
+
+      const {hits,sobra}=nombresEn(nm,depSeg);
+      sobra.forEach(w=>{if(!noCM.includes(w)) noCM.push(w)});
+      hits.forEach(h=>{
+        if(vistos.has(seg.nivel+'|'+h.k)) return;
+        vistos.add(seg.nivel+'|'+h.k);
+        const dU=IX_DIST[h.k]||[], pU=IX_PROV[h.k]||[], eU=IX_DEP[h.k]||[];
+        /* "Ayacucho" y "Moquegua" son departamento, provincia Y distrito a la vez.
+           Seleccionar el distrito porque el texto nombró al departamento sería un
+           falso positivo silencioso: se pregunta siempre.                        */
+        if(h.exacto && dU.length===1 && !pU.length && !eU.length){
+          if(!S.sel.has(dU[0])){S.sel.set(dU[0],{nivel:seg.nivel,origen:'coen'});add++}
+        }else if(dU.length||pU.length||eU.length){
+          S.amb.push({nm:h.k,crudo:nm,alts:h.exacto?[]:h.alts,
+                      clave:h.k,nivel:seg.nivel,dist:dU,prov:pU,dep:eU,exacto:h.exacto});
+        }
+      });
+    });
+  });
+  S.noCM=noCM;
+  render(); verZonaCritica();
+  anota('Comunicado leído',`${add} distritos de cruce exacto · ${S.amb.length} por confirmar · ${noCM.length} sin correspondencia`);
+  toast(`${add} directos · ${S.amb.length} por confirmar · ${noCM.length} sin cruce`);
+}
+/* ═══ MODO 3 · MANUAL ═══ */
+function agregaManual(){
+  const v=$('#iBusca').value.trim(); if(!v){toast('Escribe un distrito');return}
+  const nm=norm(v.split('—')[0]);
+  const cand=Object.entries(CM.dist).filter(([u,d])=>norm(d.n)===nm);
+  if(!cand.length){toast('No encontré ese distrito');return}
+  let u=cand[0][0];
+  if(cand.length>1 && v.includes('—')){
+    const prov=norm(v.split('—')[1].split(',')[0]);
+    const m=cand.find(([x,d])=>norm(d.p)===prov); if(m) u=m[0];
+  }
+  S.sel.set(u,{nivel:$('#selNiv').value,origen:'manual'});
+  $('#iBusca').value=''; anota('Distrito agregado a mano',`${CM.dist[u].n} · ${CM.dist[u].d} · nivel ${$('#selNiv').value}`);
+  render(); toast(`${CM.dist[u].n} agregado`);
+}
+
+/* ═══ AGREGACIÓN ═══ */
+function agrega(){
+  const campo=S.evento==='inundacion'?'nivI':(S.evento==='movimiento'?'nivM':null);
+  let a={dist:0,usu:0,sf:0,ge:0,sc:0,fa:0,lo:0,mc:0,cg:0,fc:0,pts:0,exp45:0,
+       ccpp:0,ccppSAF:0,ccppSCD:0,exp45SAF:0,exp45SCD:0};
+  const filas=[];
+  for(const [u,meta] of S.sel){
+    const d=CM.dist[u]; if(!d) continue;
+    const pts=CM.pts[u]||[];
+    let e45=0, nivmax=0, nSAF=0, nSCD=0, e45S=0, e45C=0;
+    pts.forEach(p=>{
+      const nv=campo?p[PI[campo]]:Math.max(p[PI.nivM],p[PI.nivI]);
+      const scd=p[PI.scd]===1;
+      if(scd) nSCD++; else nSAF++;
+      if(nv>=4){ e45+=p[PI.usu]; if(scd) e45C+=p[PI.usu]; else e45S+=p[PI.usu] }
+      if(nv>nivmax) nivmax=nv;
+    });
+    a.dist++; a.usu+=d.u; a.sf+=d.sf; a.ge+=d.ge; a.sc+=d.sc; a.fa+=d.fa;
+    a.lo+=d.lo; a.mc+=d.mc; a.cg+=(d.cg||0); a.fc+=(d.fc||0); a.ej+=d.ej;
+    a.pts+=pts.length; a.exp45+=e45; a.ccpp+=d.np;
+    a.ccppSAF+=nSAF; a.ccppSCD+=nSCD; a.exp45SAF+=e45S; a.exp45SCD+=e45C;
+    filas.push({u,d,meta,e45,nivmax,pts:pts.length,nSAF,nSCD,e45SAF:e45S,e45SCD:e45C});
+  }
+  filas.sort((x,y)=>y.d.u-x.d.u);
+  return {a,filas};
+}
+
+/* ── Inventario de recursos ────────────────────────────────────────────
+   TODO lo que sale de SUP es SUPUESTO para la demo: ver 02b_DATOS_SUPUESTOS.
+   La interfaz lo marca siempre; un número inventado sin etiqueta destruye
+   la credibilidad del resto, que sí es real.                            */
+const REC=[
+ {k:'carpas',        ic:'⛺', n:'Carpas',                col:'#D32F2F'},
+ {k:'emplazamientos',ic:'🏟️', n:'Dónde armarlas',        col:'#1565C0'},
+ {k:'servicios_alimentarios',ic:'🍲',n:'Servicios alimentarios',col:'#2E7D32'},
+ {k:'almacenes',     ic:'📦', n:'Almacenes',             col:'#6A1B9A'},
+];
+/* centro del escenario = promedio de los centroides seleccionados */
+function centroEscenario(filas){
+  if(!filas.length) return null;
+  let la=0,lo=0; filas.forEach(f=>{la+=f.d.c[0];lo+=f.d.c[1]});
+  return [la/filas.length,lo/filas.length];
+}
+/* Andamiaje del Momento 2, como dibujaRecursos: calcula qué recursos hay
+   dentro del escenario y a qué distancia. Hoy nadie la llama — el 0.2 ya
+   no responde esa pregunta— pero queda lista y probada.             */
+function recursosCerca(filas){
+  const c=centroEscenario(filas); if(!c) return [];
+  const enEsc=new Set(filas.map(f=>f.u));
+  return REC.map(r=>{
+    const capa=SUP.capas[r.k]; const ci={}; capa.cols.forEach((x,i)=>ci[x]=i);
+    let dentro=0, mejor=null, md=Infinity, tot=0;
+    capa.d.forEach(row=>{
+      const p=[row[ci.lat],row[ci.lon]];
+      const d=hav(c,p);
+      const en=enEsc.has(row[ci.ubigeo]);
+      if(en) dentro++;
+      tot++;
+      if(d<md){md=d;mejor={row,ci,d,en}}
+    });
+    return {...r,dentro,tot,mejor,md};
+  });
+}
+
+/* ═══ BITÁCORA ═══ */
+function anota(accion,detalle){S.bitacora.push({t:new Date().toISOString(),accion,detalle});}
+
+/* ═══ PERSISTENCIA ═══ */
+const LS='maia.eventos.02';
+function leerTodos(){try{return JSON.parse(localStorage.getItem(LS)||'{}')}catch(e){return {}}}
+function guardarTodos(o){try{localStorage.setItem(LS,JSON.stringify(o));return true}catch(e){return false}}
+function serializa(){return {id:S.id,nombre:S.nombre,evento:S.evento,sismo:S.sismo,ambito:S.ambito,
+  umbral:S.umbral,sel:[...S.sel.entries()],bitacora:S.bitacora,actualizado:new Date().toISOString()}}
+function guardaEvento(sil){
+  const t=leerTodos(),o=serializa();
+  o.creado=(t[S.id]&&t[S.id].creado)||o.actualizado; t[S.id]=o;
+  if(guardarTodos(t)){if(!sil)toast('Evento guardado');pintaLista()}
+  else toast('El navegador bloqueó el guardado — usa EXPORTAR');
+}
+function cargaEvento(id){
+  const o=leerTodos()[id]; if(!o) return;
+  Object.assign(S,{id:o.id,nombre:o.nombre,evento:o.evento,umbral:o.umbral||4,
+    sel:new Map(o.sel||[]),amb:[],noCM:[],bitacora:o.bitacora||[],foco:null});
+  S.sismo=Object.assign({},S.sismo,o.sismo||{}); S.ambito=o.ambito||{dep:'',prov:''};
+  abreModal();
+}
+function pintaLista(){
+  const arr=Object.values(leerTodos()).sort((a,b)=>(b.actualizado||'').localeCompare(a.actualizado||''));
+  const ic={sismo:'📍',inundacion:'🌊',movimiento:'⛰️'};
+  $('#listaEv').innerHTML=arr.length?arr.map(o=>{
+    const f=new Date(o.actualizado);
+    return `<div class="ev"><span class="ei">${ic[o.evento]||'📍'}</span>
+      <span class="et"><b>${o.nombre||'(sin nombre)'}</b><span>${(o.sel||[]).length} distritos · ${(o.bitacora||[]).length} movimientos · ${f.toLocaleString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span></span>
+      <span class="ea"><button data-a="abrir" data-id="${o.id}">ABRIR</button>
+      <button data-a="exp" data-id="${o.id}">JSON</button>
+      <button class="del" data-a="del" data-id="${o.id}">✕</button></span></div>`}).join('')
+    : `<div class="vacio"><span class="ic">🗂️</span>Todavía no hay eventos guardados.</div>`;
+  $$('#listaEv button').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.id;
+    if(b.dataset.a==='abrir') cargaEvento(id);
+    else if(b.dataset.a==='exp') exporta(leerTodos()[id]);
+    else{const t=leerTodos();delete t[id];guardarTodos(t);pintaLista();toast('Evento eliminado')}
+  });
+}
+function exporta(o){const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,1)],{type:'application/json'}));
+  a.download=`MAIA_evento_${(o.nombre||'x').replace(/[^\w]+/g,'_')}.json`;a.click();toast('Evento exportado')}
+$('#btnImp').onclick=()=>$('#fImp').click();
+$('#fImp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const o=JSON.parse(r.result);if(!o.id)o.id='ev'+Date.now();
+    const t=leerTodos();t[o.id]=o;guardarTodos(t);pintaLista();toast('Evento importado')}
+    catch(x){toast('El archivo no es un evento válido')}};
+  r.readAsText(f);e.target.value=''};
+
+/* ═══ PORTADA ═══ */
+const EVS=[{k:'sismo',ic:'📍',n:'SISMO',d:'IGP · epicentro'},
+           {k:'inundacion',ic:'🌊',n:'LLUVIAS',d:'CENEPRED'},
+           {k:'movimiento',ic:'⛰️',n:'MOV. EN MASA',d:'CENEPRED'}];
+$('#evseg').innerHTML=EVS.map(e=>`<button data-k="${e.k}"><span class="ic">${e.ic}</span><span class="lb">${e.n}<small>${e.d}</small></span></button>`).join('');
+$$('#evseg button').forEach(b=>b.onclick=()=>{S.evento=b.dataset.k;S.modo=S.evento==='sismo'?'pegar':'manual';S.nombre_tocado=false;pintaForm()});
+/* ── Lector del reporte sísmico del IGP ──────────────────────────────────
+   Formato de censis.igp.gob.pe: una etiqueta por línea. Se acepta pegado
+   completo o parcial; lo que no aparezca se deja como estaba, no se borra. */
+const IGP_DEMO=`REPORTE SÍSMICO
+IGP/CENSIS/RS 2026-0568
+Fecha y Hora Local: 20/08/2026 13:00:16
+Magnitud: 7.2
+Profundidad: 108km
+Latitud: -14.70
+Longitud: -73.78
+Intensidad: III-IV Coracora
+Referencia: 35 km al N de Coracora, Parinacochas - Ayacucho
+https://censis.igp.gob.pe/evento/2026-0568`;
+
+function leeIgp(txt,yGenera){
+  if(!txt||txt.trim().length<20){toast('Pega el reporte del IGP');return}
+  const T=txt.replace(/\r/g,'');
+  const cap=re=>{const m=T.match(re);return m?m[1].trim():null};
+  const num=v=>{if(v==null)return null;const n=parseFloat(String(v).replace(',','.').replace(/[^\d.\-]/g,''));return isNaN(n)?null:n};
+  const g={
+    mag  : num(cap(/Magnitud\s*:?\s*([\d.,]+)/i)),
+    prof : num(cap(/Profundidad\s*:?\s*([\d.,]+)\s*km/i)),
+    lat  : num(cap(/Latitud\s*:?\s*(-?[\d.,]+)/i)),
+    lon  : num(cap(/Longitud\s*:?\s*(-?[\d.,]+)/i)),
+    inten: cap(/Intensidad\s*:?\s*(.+)/i),
+    ref  : cap(/Referencia\s*:?\s*(.+)/i),
+    cod  : cap(/((?:IGP|CENSIS)[\/\w.\- ]*\d{4}-\d{3,5})/i),
+    url  : cap(/(https?:\/\/\S+)/i),
+    fh   : cap(/Fecha\s*y\s*Hora[^:]*:?\s*([\d]{1,2}\/[\d]{1,2}\/[\d]{4}[^\n]*)/i),
+  };
+  const ok=[];
+  const dentro=(v,a,b)=>v!=null&&v>=a&&v<=b;
+  if(dentro(g.lat,-18.4,-0.03)){S.sismo.lat=g.lat;ok.push('latitud')}
+  if(dentro(g.lon,-81.4,-68.6)){S.sismo.lon=g.lon;ok.push('longitud')}
+  if(dentro(g.prof,0,800)){S.sismo.prof=g.prof;ok.push('profundidad')}
+  if(dentro(g.mag,0,10)){S.sismo.mag=g.mag;ok.push('magnitud')}
+  if(g.inten){S.sismo.inten=g.inten;ok.push('intensidad')}
+  if(g.ref){S.sismo.ref=g.ref;ok.push('referencia')}
+  if(g.cod){S.sismo.cod=g.cod;ok.push('código')}
+  if(g.url){S.sismo.url=g.url;ok.push('enlace')}
+  if(g.fh){
+    const m=g.fh.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\D+(\d{1,2}):(\d{2})/);
+    if(m){S.sismo.fecha=`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}T${m[4].padStart(2,'0')}:${m[5]}`;ok.push('fecha')}
+  }
+  const falta=['latitud','longitud','profundidad','magnitud'].filter(x=>!ok.includes(x));
+  if(falta.length){
+    /* sin los cuatro esenciales no se genera nada: se pasa a manual con lo leído */
+    S.modo='manual'; leeForm(); pintaForm();
+    $('#notaEv').innerHTML=`<b style="color:#B26A00">El reporte no traía ${falta.join(', ')}.</b> Completa esos campos y genera.`;
+    toast(`Faltan ${falta.length} campos esenciales`);
+    return;
+  }
+  S.nombre_tocado=false; leeForm();
+  toast(`${ok.length} campos leídos del reporte IGP`);
+  if(yGenera) generar();
+}
+
+
+function ahoraLocal(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+
+function pintaForm(){
+  $$('#evseg button').forEach(b=>b.classList.toggle('on',b.dataset.k===S.evento));
+  const sismo=S.evento==='sismo', pegar=sismo&&S.modo==='pegar';
+  const campos=sismo?`
+    <div class="fld">
+      <label><span>Latitud</span><input type="number" step="0.01" id="iLat" value="${S.sismo.lat}"></label>
+      <label><span>Longitud</span><input type="number" step="0.01" id="iLon" value="${S.sismo.lon}"></label></div>
+    <div class="fld">
+      <label><span>Profundidad km</span><input type="number" id="iProf" value="${S.sismo.prof}"></label>
+      <label><span>Magnitud</span><input type="number" step="0.1" id="iMag" value="${S.sismo.mag}"></label></div>
+    <div class="fld"><label><span>Fecha y hora de origen</span><input type="datetime-local" id="iFecha" value="${S.sismo.fecha||ahoraLocal()}"></label></div>
+    <div class="fld"><label><span>Referencia IGP</span><input type="text" id="iRef" value="${S.sismo.ref}" placeholder="35 km al N de Coracora…"></label></div>
+    <div class="fld">
+      <label><span>Código</span><input type="text" id="iCod" value="${S.sismo.cod}" placeholder="IGP/CENSIS/RS 2026-0568"></label>
+      <label><span>Intensidad MM</span><input type="text" id="iInten" value="${S.sismo.inten}" placeholder="III-IV Coracora"></label></div>
+    <div class="fld"><label><span>Fuente · enlace IGP</span><input type="text" id="iUrl" value="${S.sismo.url}" placeholder="https://censis.igp.gob.pe/evento/…"></label></div>`
+  :`<div class="fld"><label><span>Departamento</span><select id="selDep"></select></label></div>
+    <div class="fld"><label><span>Provincia</span><select id="selProv"></select></label></div>
+    <div class="fld"><label><span>Exposición mínima</span><select id="selUmb">
+      ${[3,4,5].map(v=>`<option value="${v}" ${v===S.umbral?'selected':''}>nivel ${v} o más</option>`).join('')}</select></label></div>`;
+  const cierre=`<div class="fld"><label><span>Nombre del evento</span><input type="text" id="iNombre" placeholder="se completa solo"></label></div>
+    <button class="btn pri blk" id="btnGen">GENERAR SIMULACIÓN</button>`;
+
+  $('#formEv').innerHTML = pegar ? `
+    <div class="pega">
+      <div class="pegaH"><b>Pegar reporte del IGP</b><span>tal como llega de censis.igp.gob.pe</span></div>
+      <textarea id="txtIgp" placeholder="REPORTE SÍSMICO&#10;IGP/CENSIS/RS 2026-0568&#10;Fecha y Hora Local: 20/08/2026 13:00:16&#10;Magnitud: 7.2&#10;Profundidad: 108km&#10;Latitud: -14.70&#10;Longitud: -73.78&#10;Intensidad: III-IV Coracora&#10;Referencia: 35 km al N de Coracora, Parinacochas - Ayacucho&#10;https://censis.igp.gob.pe/evento/2026-0568"></textarea>
+      <div class="btnRow">
+        <button class="btn pri" id="btnIgp">LEER REPORTE Y GENERAR</button>
+        <button class="btn gho" id="btnIgpDemo">EJEMPLO 20/08</button>
+        <button class="btn gho" id="btnManual">REGISTRO MANUAL</button></div>
+      <p class="note" id="igpMsg"></p></div>`
+  : `${sismo?`<div class="modoH"><b>Registro manual</b><button class="lnkv" id="btnPegar">← volver a pegar el reporte</button></div>`:''}${campos}${cierre}<p class="note" id="notaEv"></p>`;
+
+  if(pegar){
+    $('#btnIgp').onclick=()=>leeIgp($('#txtIgp').value,1);
+    $('#btnIgpDemo').onclick=()=>{$('#txtIgp').value=IGP_DEMO;toast('Reporte de ejemplo pegado — dale LEER REPORTE')};
+    $('#btnManual').onclick=()=>{S.modo='manual';pintaForm()};
+    return;
+  }
+  if(sismo){['iLat','iLon','iProf','iMag','iRef','iFecha','iCod','iInten','iUrl']
+      .forEach(id=>{const e=$('#'+id);if(e)e.oninput=leeForm});
+    $('#btnPegar').onclick=()=>{S.modo='pegar';pintaForm()};
+  } else llenaDeps();
+  $('#iNombre').oninput=()=>{S.nombre_tocado=true};
+  $('#btnGen').onclick=generar; leeForm();
+  $('#notaEv').innerHTML=sismo
+    ?`Se dibujan <b>anillos referenciales</b> calibrados con el evento del 20-ago. El comunicado del COEN se agrega después.`
+    :`El escenario se arma sumando distritos con exposición al peligro elegido.`;
+}
+function leeForm(){
+  const g=id=>{const e=$('#'+id);return e?e.value:null};
+  if(S.evento==='sismo'){
+    if(g('iLat')!==null){
+      S.sismo.lat=+g('iLat');S.sismo.lon=+g('iLon');S.sismo.prof=+g('iProf');S.sismo.mag=+g('iMag');
+      S.sismo.ref=g('iRef')||'';S.sismo.fecha=g('iFecha')||'';
+      S.sismo.cod=g('iCod')||'';S.sismo.inten=g('iInten')||'';S.sismo.url=g('iUrl')||'';
+    }
+    if(!S.nombre_tocado) S.nombre=`Sismo M${S.sismo.mag} · ${S.sismo.ref||S.sismo.lat+', '+S.sismo.lon}`;
+  }else{
+    S.ambito.dep=g('selDep')||'';S.ambito.prov=g('selProv')||'';S.umbral=+(g('selUmb')||4);
+    if(!S.nombre_tocado) S.nombre=`${S.evento==='inundacion'?'Lluvias':'Movimientos en masa'} · ${S.ambito.dep||'—'}${S.ambito.prov?' / '+S.ambito.prov:''}`;
+  }
+  const e=$('#iNombre');
+  if(e){ if(S.nombre_tocado) S.nombre=e.value; else e.value=S.nombre }
+}
+function llenaDeps(){
+  const deps=[...new Set(Object.values(CM.dist).filter(d=>d.u>0).map(d=>d.d))].sort();
+  $('#selDep').innerHTML='<option value="">— elegir —</option>'+deps.map(d=>`<option>${d}</option>`).join('');
+  $('#selDep').onchange=()=>{const dep=$('#selDep').value;
+    const pr=[...new Set(Object.values(CM.dist).filter(d=>d.d===dep&&d.u>0).map(d=>d.p))].sort();
+    $('#selProv').innerHTML='<option value="">todas las provincias</option>'+pr.map(p=>`<option>${p}</option>`).join('');
+    leeForm()};
+  $('#selProv').onchange=leeForm; $('#selUmb').onchange=leeForm; $('#selDep').onchange();
+}
+function generar(){
+  leeForm();
+  if(S.evento!=='sismo'&&!S.ambito.dep){toast('Elige un departamento');return}
+  S.id='ev'+Date.now(); S.nombre=(S.nombre||'').trim()||'Evento sin nombre';
+  S.sel=new Map();S.amb=[];S.noCM=[];S.bitacora=[];S.foco=null;
+  anota('Evento registrado',S.evento==='sismo'
+    ?`M ${S.sismo.mag} · ${S.sismo.lat}, ${S.sismo.lon} · prof. ${S.sismo.prof} km${S.sismo.cod?' · '+S.sismo.cod:''}`
+    :`${S.ambito.dep}${S.ambito.prov?' / '+S.ambito.prov:''} · exposición ≥ ${S.umbral}`);
+  if(S.evento==='sismo') aplicaAnillos(1); else aplicaAmbito(1);
+  guardaEvento(1); abreModal();
+}
+
+/* ═══ MAPA — render acotado ═══════════════════════════════════════════════
+   El cuello de botella no es el cálculo, son los marcadores: 26,647 puntos
+   no caben en un canvas útil. Se dibujan solo los del área visible y solo a
+   partir de cierto zoom. Si el evento es en Tacna, Tumbes ni se toca.      */
+let mapa,rend,capaPol,capaPerc,capaAnillos,capaEpi,capaRec;
+const BASES={};
+let POL={};                 // ubigeo -> [capas] para poder resaltar sin redibujar
+const COLNIV={fuerte:RAMP[5],moderada:RAMP[3],leve:RAMP[1],exp:RAMP[4],manual:RAMP[4]};
+
+function initMapa(){
+  rend=L.canvas({padding:.3});
+  mapa=L.map('map',{zoomControl:true,preferCanvas:true,renderer:rend,zoomSnap:.5})
+        .setView([-12.5,-75],5);
+  /* Positron rotula las áreas administrativas con `name:en` — de ahí los
+     "DEPARTMENT OF PASCO". Voyager usa el nombre local. Y "sin rótulos"
+     es la garantía: ahí los únicos nombres son los nuestros.          */
+  BASES.claro=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    {attribution:'© OpenStreetMap · © CARTO',subdomains:'abcd',maxZoom:18,crossOrigin:true});
+  BASES.limpio=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+    {attribution:'© OpenStreetMap · © CARTO',subdomains:'abcd',maxZoom:18,crossOrigin:true});
+  /* El satélite importa para movimientos en masa: el relieve se ve. */
+  BASES.satelite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {attribution:'© Esri · Maxar · Earthstar Geographics',maxZoom:18,crossOrigin:true});
+  BASES[MAPX.base].addTo(mapa);
+  mapa.attributionControl.setPrefix('Mapa base');
+  capaPol=L.layerGroup().addTo(mapa);
+  capaAnillos=L.layerGroup().addTo(mapa); capaEpi=L.layerGroup().addTo(mapa);
+  capaRec=L.layerGroup().addTo(mapa);
+  capaPerc=L.layerGroup().addTo(mapa);
+  capaCv=new CvLayer().addTo(mapa);
+  L.control.scale({imperial:false,maxWidth:140,position:'bottomright'}).addTo(mapa);
+  cableaInteraccion();
+}
+/* La percepción, cuando no es la capa principal, se dibuja como halo
+   translúcido: contexto, no protagonista. */
+function dibujaPercepcion(filas){
+  capaPerc.clearLayers();
+  if(MAPX.capa!=='ambas') return;
+  const COLP={fuerte:'#D32F2F',moderada:'#F57C00',leve:'#FBC02D',exp:'#F57C00',manual:'#F57C00'};
+  filas.forEach(f=>{
+    const g=GEO2[f.u]; if(!g) return;
+    g.forEach(ring=>L.polygon(ring.map(p=>[p[1],p[0]]),
+      {color:COLP[f.meta.nivel]||'#F57C00',weight:1.6,fill:false,opacity:.55,
+       dashArray:'4 4',interactive:false,renderer:rend}).addTo(capaPerc));
+  });
+}
+function dibujaAnillos(){
+  capaAnillos.clearLayers(); capaEpi.clearLayers();
+  if(S.evento!=='sismo') return;
+  const {lat,lon,rings,mag,prof}=S.sismo, cols=[RAMP[5],RAMP[3],RAMP[0]];
+  if(S.capas.anillos) [...rings].reverse().forEach((r,i)=>{ if(!r) return;
+    L.circle([lat,lon],{radius:r*1000,color:cols[rings.length-1-i],weight:1.6,dashArray:'8 6',
+      fillOpacity:0,interactive:false}).addTo(capaAnillos)});
+  if(!S.capas.epicentro) return;
+  L.circleMarker([lat,lon],{radius:16,color:RAMP[5],weight:1.4,opacity:.5,
+    fillColor:RAMP[5],fillOpacity:.12,interactive:false}).addTo(capaEpi);
+  L.marker([lat,lon],{interactive:false,icon:L.divIcon({className:'',iconSize:[74,16],
+    iconAnchor:[-12,8],html:`<span class="epiLb">EPICENTRO M ${mag}</span>`})}).addTo(capaEpi);
+  L.circleMarker([lat,lon],{radius:7,color:'#fff',weight:2.5,fillColor:RAMP[5],fillOpacity:1})
+    .addTo(capaEpi)
+    .bindTooltip(`<div class="tHd"><b>Epicentro</b><span>IGP</span></div>
+      <div class="tTot">M ${mag} <span>· foco a ${prof} km</span></div>
+      ${S.sismo.ref?`<div class="tPie">${S.sismo.ref}</div>`:''}`,{direction:'top',className:'tipD'})
+    .bindPopup(`<b>Epicentro M ${mag}</b><br>Profundidad ${prof} km<br>${S.sismo.ref||''}<br>
+      ${S.sismo.inten?'Intensidad '+S.sismo.inten+'<br>':''}${S.sismo.fecha||''}`);
+}
+let ZONA_UBI=new Set();
+function dibujaPoligonos(filas){
+  capaPol.clearLayers(); POL={};
+  const zc=zonaImpacto(filas);
+  ZONA_UBI=new Set(zc?zc.filas.map(f=>f.u):[]);
+  if(!S.capas.distritos) return;
+  filas.forEach(f=>{
+    if(MAPX.filtroNivel && f.meta.nivel!==MAPX.filtroNivel) return;
+    const g=GEO2[f.u]; if(!g) return;
+    const col=COLNIV[f.meta.nivel]||RAMP[4];
+    POL[f.u]=g.map(ring=>{
+      const ll=ring.map(p=>[p[1],p[0]]);
+      const saf=f.d.sf+f.d.ge, scd=f.d.sc;
+      const enZona=ZONA_UBI.has(f.u);
+      /* Una sola capa protagonista. En 'impacto' el distrito se pinta por
+         el cruce percepción × usuarios —que es la pregunta del producto—;
+         en 'percepcion' por lo que reportó el COEN.                   */
+      const esImp=MAPX.capa!=='percepcion';
+      const col2=esImp?COL_IMP[nivelImpacto(f)]:col;
+      const pol=L.polygon(ll,{color:col2,weight:enZona?2:.8,fillColor:col2,
+        fillOpacity:MAPX.capa==='ambas'?.30:(enZona?.55:.38),
+        opacity:enZona?1:.55,renderer:rend})
+        .addTo(capaPol)
+        .bindTooltip(tipDistrito(f,saf,scd),{sticky:true,className:'tipD',opacity:1})
+        .setStyle({className:'polD'})
+        .bindPopup(popDistrito(f,saf,scd))
+        .on('click',()=>focoDistrito(f.u,0));
+      return pol;
+    });
+  });
+}
+/* El tooltip tiene que decir SIEMPRE de qué nivel territorial habla y a
+   quién representa: sin eso, un número en el mapa no significa nada.    */
+function tipDistrito(f,saf,scd){
+  const ni=nivelImpacto(f);
+  return `<div class="tHd"><b>${f.d.n}</b><span style="color:${COL_IMP[ni]}">${NIV_IMP[ni].toUpperCase()}</span></div>
+    <div class="tGeo">${f.d.p} · ${f.d.d}</div>
+    <div class="tTot">${nf(f.d.u)} <span>usuarios Cuna Más</span></div>
+    <div class="tSvc">
+      <span style="color:${C_SAF}">● SAF ${nf(saf)}</span>
+      <span style="color:${C_SCD}">● SCD ${nf(scd)}</span></div>
+    <div class="tPie">percepción <b>${f.meta.nivel}</b> · ${nf(f.pts)} centros · clic para ver detalle</div>`;
+}
+function popDistrito(f,saf,scd){
+  const ex=f.e45||0;
+  return `<div style="min-width:210px">
+    <div style="font-family:'Archivo Black';font-size:13px">${f.d.n}</div>
+    <div style="font-size:9px;font-weight:800;letter-spacing:.06em;color:#9A8F95;text-transform:uppercase;margin:2px 0 7px">
+      Distrito · Prov. ${f.d.p} · Dpto. ${f.d.d}</div>
+    <table style="width:100%;font-size:11px;border-collapse:collapse">
+      <tr><td style="padding:2px 0;color:#6E6175">Usuarios Cuna Más</td><td style="text-align:right;font-weight:800">${nf(f.d.u)}</td></tr>
+      <tr><td style="padding:2px 0;color:${C_SAF}">SAF · niñas y niños</td><td style="text-align:right;font-weight:800">${nf(f.d.sf)}</td></tr>
+      <tr><td style="padding:2px 0;color:${C_SAF}">SAF · gestantes</td><td style="text-align:right;font-weight:800">${nf(f.d.ge)}</td></tr>
+      <tr><td style="padding:2px 0;color:${C_SAF}">SAF · familias</td><td style="text-align:right;font-weight:800">${nf(f.d.fa)}</td></tr>
+      <tr><td style="padding:2px 0;color:${C_SCD}">SCD · niñas y niños</td><td style="text-align:right;font-weight:800">${nf(f.d.sc)}</td></tr>
+      <tr><td style="padding:2px 0;color:${C_SCD}">SCD · locales · cuidadoras</td><td style="text-align:right;font-weight:800">${nf(f.d.lo)} · ${nf(f.d.mc)}</td></tr>
+      <tr><td style="padding:4px 0 2px;color:#6E6175;border-top:1px solid #eee">Puntos de atención</td><td style="text-align:right;font-weight:800;border-top:1px solid #eee">${nf(f.pts)}</td></tr>
+      <tr><td style="padding:2px 0;color:#6E6175">En exposición 4–5</td><td style="text-align:right;font-weight:800">${nf(ex)}</td></tr>
+      <tr><td style="padding:2px 0;color:#6E6175">Población del distrito</td><td style="text-align:right;font-weight:800">${nf(f.d.pob)}</td></tr>
+    </table>
+    <div style="margin-top:7px;font-size:10px;color:#6E6175">Percepción declarada: <b>${f.meta.nivel}</b> · origen ${f.meta.origen}</div></div>`;
+}
+/* ── Capa de puntos en canvas ───────────────────────────────────────────
+   Leaflet dibuja un nodo por marcador; con 26,647 puntos eso no escala y
+   además no permite partir un punto en dos mitades. Se pinta todo en un
+   solo canvas: agrupa lo que se solapa, parte el marcador por peligro y
+   dibuja solo lo que entra en pantalla.
+   Portado de la lógica del mapa del 0.1 (mMark / mClu), sobre Leaflet.  */
+const MAPX={capa:'impacto',      // impacto | percepcion | ambas
+            vista:'distritos',   // distritos | centros
+            color:'servicio', base:'claro', filtroNivel:null, box:false};
+/* Divulgación progresiva. A vista nacional el distrito ES la unidad de
+   decisión: 115 donas encima del mapa son ruido, no información. Los
+   puntos aparecen cuando acercarse ya tiene sentido.                   */
+const Z_GRUPOS=7, Z_PUNTOS=10;
+const celdaPara=z=>z<9?64:(z<11?52:44);
+let capaCv=null, OBJS=[], hoverObj=null;
+
+/* El centroide de un distrito no es donde vive la gente. Coracora tiene su
+   centroide a 22 km de sus 12 puntos de atención, porque el pueblo está en
+   un extremo del distrito. Para encuadrar y para descartar por vista hay
+   que usar la caja de los PUNTOS, no el centroide.                      */
+const _bbox={};
+function bboxPuntos(u){
+  if(_bbox[u]!==undefined) return _bbox[u];
+  const pts=(CM.pts[u]||[]).filter(p=>p[PI.usu]);
+  if(!pts.length) return (_bbox[u]=null);
+  let a0=90,a1=-90,o0=180,o1=-180;
+  pts.forEach(p=>{const la=p[PI.lat],lo=p[PI.lon];
+    if(la<a0)a0=la; if(la>a1)a1=la; if(lo<o0)o0=lo; if(lo>o1)o1=lo});
+  return (_bbox[u]=L.latLngBounds([a0,o0],[a1,o1]));
+}
+/* Dónde mirar para ver de verdad un distrito. */
+function focoDe(u){
+  const bb=bboxPuntos(u);
+  return bb || L.latLngBounds(CM.dist[u].c,CM.dist[u].c);
+}
+
+const nivI=p=>p[PI.nivI], nivM=p=>p[PI.nivM];
+const nivMax=p=>Math.max(p[PI.nivI],p[PI.nivM]);
+/* Índice 0-5 con el que se segmenta el anillo del cluster y se pinta el
+   punto, según el modo de coloreado elegido.                           */
+function idxColor(p){
+  if(MAPX.color==='inundacion') return nivI(p);
+  if(MAPX.color==='movimiento') return nivM(p);
+  if(MAPX.color==='ambos')      return nivMax(p);
+  return p[PI.scd]===1?1:0;               // servicio
+}
+function colorPunto(p){
+  if(MAPX.color==='servicio') return p[PI.scd]===1?C_SCD:C_SAF;
+  if(MAPX.color==='inundacion') return NIVC[nivI(p)];
+  if(MAPX.color==='movimiento') return NIVC[nivM(p)];
+  return null;                            // 'ambos' → se parte
+}
+const NIVC=['#C4BEC6','#43A047','#9CCC65','#FBC02D','#F57C00','#D32F2F'];
+const radioPunto=u=>Math.max(3.2,Math.min(11,Math.sqrt(u||1)/1.9));
+/* 1,240 -> "1.2k": en un círculo de 26 px no cabe otra cosa */
+const nfc=n=>n>=10000?Math.round(n/1000)+'k':(n>=1000?(n/1000).toFixed(1).replace('.0','')+'k':String(n));
+
+/* icono de casa: local CIAI (SCD) — el servicio ocurre en un local */
+function icCasa(g,x,y,s){g.beginPath();g.moveTo(x,y-s*.66);g.lineTo(x+s*.72,y-s*.04);
+  g.lineTo(x+s*.46,y-s*.04);g.lineTo(x+s*.46,y+s*.6);g.lineTo(x-s*.46,y+s*.6);
+  g.lineTo(x-s*.46,y-s*.04);g.lineTo(x-s*.72,y-s*.04);g.closePath();g.fill()}
+/* icono de persona: centro poblado SAF — el servicio ocurre en la casa */
+function icPersona(g,x,y,s){g.beginPath();g.arc(x,y-s*.42,s*.3,0,7);g.fill();
+  g.beginPath();g.moveTo(x-s*.5,y+s*.62);g.quadraticCurveTo(x,y-s*.16,x+s*.5,y+s*.62);
+  g.closePath();g.fill()}
+
+const CvLayer=L.Layer.extend({
+  onAdd(map){
+    this._map=map;
+    const c=this._cv=L.DomUtil.create('canvas','maia-cv');
+    c.style.position='absolute'; c.style.pointerEvents='none';
+    map.getPanes().overlayPane.appendChild(c);
+    map.on('moveend zoomend resize',this._reset,this);
+    this._reset();
+  },
+  onRemove(map){ L.DomUtil.remove(this._cv); map.off('moveend zoomend resize',this._reset,this) },
+  _reset(){
+    const m=this._map, sz=m.getSize(), tl=m.containerPointToLayerPoint([0,0]);
+    L.DomUtil.setPosition(this._cv,tl);
+    const dpr=Math.min(devicePixelRatio||1,2);
+    this._cv.width=sz.x*dpr; this._cv.height=sz.y*dpr;
+    this._cv.style.width=sz.x+'px'; this._cv.style.height=sz.y+'px';
+    this._cv.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+    this.dibuja();
+  },
+  dibuja(){
+    const m=this._map; if(!m) return;
+    const g=this._cv.getContext('2d'), sz=m.getSize();
+    g.clearRect(0,0,sz.x,sz.y);
+    OBJS=[];
+    const z=m.getZoom();
+    if(!S.capas.puntos || MAPX.vista==='distritos'){
+      if(S.capas.rotulos) this._rotulos(g,m.getBounds(),z);
+      const leg=$('#legZoom');
+      if(leg) leg.textContent='puntos de atención apagados · enciéndelos en Capas 🗂';
+      return;
+    }
+    if(z<Z_GRUPOS){                       // solo el coropleto distrital
+      if(S.capas.rotulos) this._rotulos(g,m.getBounds(),z);
+      const leg=$('#legZoom');
+      if(leg) leg.textContent='vista distrital · acerca para ver los puntos de atención';
+      return;
+    }
+    const CELDA=celdaPara(z);
+    const b=m.getBounds(), celdas=new Map();
+    /* 1 · recolectar y agrupar en espacio de PANTALLA */
+    for(const [u,meta] of S.sel){
+      if(MAPX.filtroNivel && meta.nivel!==MAPX.filtroNivel) continue;
+      const d=CM.dist[u]; if(!d) continue;
+      const bb=bboxPuntos(u);
+      if(bb ? !b.pad(.3).intersects(bb) : !b.pad(.3).contains(L.latLng(d.c))) continue;
+      for(const p of (CM.pts[u]||[])){
+        if(!p[PI.usu]) continue;
+        const ll=L.latLng(p[PI.lat],p[PI.lon]);
+        if(!b.contains(ll)) continue;
+        const pt=m.latLngToContainerPoint(ll);
+        const k=((pt.x/CELDA)|0)+'_'+((pt.y/CELDA)|0);
+        let c=celdas.get(k);
+        if(!c){c={x:0,y:0,n:0,usu:0,scd:0,usuSAF:0,usuSCD:0,lv:[0,0,0,0,0,0],pts:[],d:d};celdas.set(k,c)}
+        c.x+=pt.x; c.y+=pt.y; c.n++; c.usu+=p[PI.usu];
+        if(p[PI.scd]===1){c.scd++; c.usuSCD=(c.usuSCD||0)+p[PI.usu]}
+        else c.usuSAF=(c.usuSAF||0)+p[PI.usu];
+        c.lv[idxColor(p)]++; if(c.pts.length<400) c.pts.push(p);
+        (c.dist||(c.dist=new Set())).add(u);
+      }
+    }
+    /* 2 · pintar */
+    let nPts=0, nClu=0;
+    celdas.forEach(c=>{
+      const x=c.x/c.n, y=c.y/c.n;
+      const suelto = c.n===1 || (m.getZoom()>=Z_PUNTOS && c.n<=2);
+      if(suelto){ c.pts.forEach((p,i)=>{
+          const dx=c.n>1?(i?5:-5):0;
+          this._marca(g,x+dx,y,p,c.d); nPts++;
+          OBJS.push({x:x+dx,y,r:radioPunto(p[PI.usu])+3,tipo:'pt',p,d:c.d}) }) }
+      else { this._cluster(g,x,y,c); nClu++;
+        OBJS.push({x,y,r:this._rClu(c),tipo:'clu',c}) }
+    });
+    if(S.capas.rotulos) this._rotulos(g,b,z);
+    const leg=$('#legZoom');
+    if(leg) leg.textContent = m.getZoom()<Z_PUNTOS
+      ? `${nf(nClu)} grupos · acerca para separarlos`
+      : `${nf(nPts)} puntos · ${nf(nClu)} grupos en vista`;
+  },
+  /* Etiquetas de distrito dibujadas por nosotros: siempre en español y
+     con el nombre del padrón INEI, que es el que usa el programa.     */
+  _rotulos(g,b,z){
+    if(z<7) return;
+    const m=this._map, puestos=[];
+    const orden=[...S.sel.keys()].map(u=>CM.dist[u]).filter(Boolean)
+      .sort((a,c)=>c.u-a.u).slice(0,60);
+    g.save(); g.font='800 10px Manrope'; g.textAlign='center'; g.textBaseline='middle';
+    for(const d of orden){
+      if(!b.contains(L.latLng(d.c))) continue;
+      const p=m.latLngToContainerPoint(L.latLng(d.c));
+      const w=g.measureText(d.n).width+10;
+      if(puestos.some(q=>Math.abs(q.x-p.x)<(q.w+w)/2 && Math.abs(q.y-p.y)<15)) continue;
+      puestos.push({x:p.x,y:p.y,w});
+      g.fillStyle='rgba(255,255,255,.88)';
+      g.beginPath();
+      g.roundRect?g.roundRect(p.x-w/2,p.y-8,w,16,4):g.rect(p.x-w/2,p.y-8,w,16);
+      g.fill();
+      g.fillStyle='#3A2F40'; g.fillText(d.n,p.x,p.y+.5);
+      if(puestos.length>=34) break;
+    }
+    g.restore();
+  },
+  _rClu(c){ const z=this._map.getZoom();
+    const k=z<9?.82:1;
+    return Math.max(12,Math.min(30,(11+Math.sqrt(c.usu)*.62)*k)) },
+  /* Un punto. En modo AMBOS se parte: izquierda inundación, derecha
+     movimiento en masa — que es el hallazgo central del producto.     */
+  _marca(g,x,y,p,d){
+    const scd=p[PI.scd]===1, r=radioPunto(p[PI.usu]);
+    const forma=()=>{g.beginPath();
+      if(scd){const t=r; g.roundRect?g.roundRect(x-t,y-t,t*2,t*2,4):g.rect(x-t,y-t,t*2,t*2)}
+      else g.arc(x,y,r,0,7)};
+    g.save(); g.shadowColor='rgba(20,8,16,.3)'; g.shadowBlur=5; g.shadowOffsetY=1.5;
+    g.fillStyle='#fff'; g.beginPath();
+    if(scd){const t=r+2; g.roundRect?g.roundRect(x-t,y-t,t*2,t*2,5):g.rect(x-t,y-t,t*2,t*2)}
+    else g.arc(x,y,r+2,0,7);
+    g.fill(); g.restore();
+    if(MAPX.color==='ambos'){
+      g.save(); forma(); g.clip();
+      g.fillStyle=NIVC[nivI(p)]; g.fillRect(x-r-1,y-r-1,r+1,r*2+2);
+      g.fillStyle=NIVC[nivM(p)]; g.fillRect(x,y-r-1,r+1,r*2+2);
+      g.restore();
+      g.strokeStyle='rgba(255,255,255,.85)'; g.lineWidth=1.1;
+      g.beginPath(); g.moveTo(x,y-r); g.lineTo(x,y+r); g.stroke();
+    } else { g.fillStyle=colorPunto(p); forma(); g.fill() }
+    if(r>=7.5){ const osc=MAPX.color==='servicio'||nivMax(p)>=4;
+      g.save(); g.fillStyle=osc?'rgba(255,255,255,.92)':'rgba(35,12,24,.6)';
+      scd?icCasa(g,x,y,r*.72):icPersona(g,x,y,r*.72); g.restore() }
+    g.strokeStyle=scd?'rgba(74,20,140,.85)':'rgba(0,77,64,.7)';
+    g.lineWidth=scd?1.6:1; forma(); g.stroke();
+  },
+  /* Un grupo. El anillo dice de qué está hecho: sin eso un cluster
+     esconde justo lo que hay que ver.                                */
+  _cluster(g,x,y,c){
+    const r=this._rClu(c);
+    g.save(); g.shadowColor='rgba(20,8,16,.3)'; g.shadowBlur=7; g.shadowOffsetY=2;
+    g.fillStyle='rgba(255,255,255,.93)'; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); g.restore();
+    let a=-Math.PI/2;
+    const pal=MAPX.color==='servicio'?[C_SAF,C_SCD]:NIVC;
+    for(let i=pal.length-1;i>=0;i--){
+      if(!c.lv[i]) continue;
+      const a2=a+c.lv[i]/c.n*Math.PI*2;
+      g.beginPath(); g.lineCap='butt'; g.lineWidth=4.6; g.strokeStyle=pal[i];
+      g.arc(x,y,r-2.5,a,a2); g.stroke(); a=a2;
+    }
+    g.strokeStyle='rgba(30,10,20,.18)'; g.lineWidth=1;
+    g.beginPath(); g.arc(x,y,r,0,7); g.stroke();
+    /* Lo que importa no es cuántos puntos hay, sino cuánta gente. A
+       zoom cercano, además, se separa por servicio.                  */
+    const z2=this._map.getZoom();
+    if(z2>=Z_GRUPOS+2 && c.scd && c.n-c.scd){
+      g.textAlign='center'; g.textBaseline='middle';
+      g.font='800 '+Math.round(r*.5)+'px Manrope';
+      g.fillStyle=C_SAF; g.fillText('SAF '+nfc(c.usuSAF),x,y-r*.24);
+      g.fillStyle=C_SCD; g.fillText('SCD '+nfc(c.usuSCD),x,y+r*.3);
+    }else{
+      g.font='800 '+Math.round(r*.68)+'px Manrope'; g.textAlign='center'; g.textBaseline='middle';
+      g.fillStyle='#2A1020'; g.fillText(nfc(c.usu),x,y+.5);
+    }
+    if(c.scd){ const bx=x+r*.72, by=y-r*.72;
+      g.save(); g.fillStyle=C_SCD; g.beginPath(); g.arc(bx,by,5.8,0,7); g.fill();
+      g.strokeStyle='#fff'; g.lineWidth=1.5; g.stroke();
+      g.fillStyle='#fff'; icCasa(g,bx,by,4.4); g.restore() }
+  },
+});
+
+function dibujaPuntos(){ if(capaCv) capaCv.dibuja() }
+
+/* El canvas no tiene nodos, así que el hit-test es nuestro: se busca el
+   objeto dibujado más cercano al cursor.                                */
+function bajoCursor(px,py){
+  let mejor=null,md=1e9;
+  for(const o of OBJS){
+    const d=Math.hypot(o.x-px,o.y-py);
+    if(d<=o.r+4 && d<md){md=d;mejor=o}
+  }
+  return mejor;
+}
+function cableaInteraccion(){
+  const cont=mapa.getContainer();
+  const tip=document.createElement('div'); tip.className='cvTip'; tip.style.display='none';
+  cont.appendChild(tip);
+  const caja=document.createElement('div'); caja.className='cvBox'; caja.style.display='none';
+  cont.appendChild(caja);
+  let bA=null;
+
+  cont.addEventListener('mousemove',e=>{
+    const r=cont.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
+    if(bA){ caja.style.left=Math.min(bA.x,px)+'px'; caja.style.top=Math.min(bA.y,py)+'px';
+      caja.style.width=Math.abs(px-bA.x)+'px'; caja.style.height=Math.abs(py-bA.y)+'px'; return }
+    const o=bajoCursor(px,py);
+    const cambio = (o?o:null)!==hoverObj;
+    hoverObj=o;
+    /* Si el cursor está sobre un punto o un grupo, el tooltip del distrito
+       estorba: se apaga. Cuando sale, se vuelve a permitir.            */
+    if(cambio) capaPol.eachLayer(l=>{ if(l.getTooltip){ o?l.closeTooltip():0; l.options.interactive=!o } });
+    document.body.classList.toggle('sinTipPol',!!o);
+    if(!o){tip.style.display='none';cont.style.cursor=MAPX.box?'crosshair':'';return}
+    cont.style.cursor='pointer';
+    tip.innerHTML = o.tipo==='pt' ? tipPunto(o.p,o.d) : tipCluster(o.c);
+    tip.style.display='block';
+    const w=tip.offsetWidth,h=tip.offsetHeight;
+    tip.style.left=Math.max(6,Math.min(px+14,r.width-w-6))+'px';
+    tip.style.top=Math.max(6,Math.min(py-h-12,r.height-h-6))+'px';
+  });
+  cont.addEventListener('mouseleave',()=>{tip.style.display='none';hoverObj=null});
+
+  /* clic: en un grupo, acerca; en un punto, abre la ficha del distrito */
+  cont.addEventListener('click',e=>{
+    if(MAPX.box) return;
+    const r=cont.getBoundingClientRect();
+    const o=bajoCursor(e.clientX-r.left,e.clientY-r.top);
+    if(!o) return;
+    if(o.tipo==='clu'){
+      const la=o.c.pts.map(p=>p[PI.lat]), lo=o.c.pts.map(p=>p[PI.lon]);
+      mapa.fitBounds(L.latLngBounds([[Math.min(...la),Math.min(...lo)],
+                                     [Math.max(...la),Math.max(...lo)]]).pad(.4),
+                     {maxZoom:15});
+    } else {
+      const u=Object.keys(CM.dist).find(k=>CM.dist[k]===o.d);
+      if(u) focoDistrito(u,0);
+    }
+  });
+
+  /* selección por caja: se activa desde la herramienta ▭ */
+  cont.addEventListener('mousedown',e=>{
+    if(!MAPX.box||e.button!==0) return;
+    const r=cont.getBoundingClientRect();
+    bA={x:e.clientX-r.left,y:e.clientY-r.top};
+    caja.style.left=bA.x+'px'; caja.style.top=bA.y+'px';
+    caja.style.width='0px'; caja.style.height='0px'; caja.style.display='block';
+    mapa.dragging.disable(); e.preventDefault();
+  });
+  window.addEventListener('mouseup',e=>{
+    if(!bA) return;
+    const r=cont.getBoundingClientRect();
+    const x=e.clientX-r.left, y=e.clientY-r.top;
+    const x0=Math.min(bA.x,x),x1=Math.max(bA.x,x),y0=Math.min(bA.y,y),y1=Math.max(bA.y,y);
+    bA=null; caja.style.display='none'; mapa.dragging.enable();
+    if(x1-x0<8||y1-y0<8) return;
+    const b=L.latLngBounds(mapa.containerPointToLatLng([x0,y0]),
+                           mapa.containerPointToLatLng([x1,y1]));
+    let n=0;
+    for(const [u,d] of Object.entries(CM.dist)){
+      if(!d.u||S.sel.has(u)) continue;
+      if(b.contains(L.latLng(d.c))){S.sel.set(u,{nivel:'manual',origen:'caja'});n++}
+    }
+    if(n){anota('Selección por caja',`${n} distritos añadidos desde el mapa`);render();
+      toast(`${n} distritos añadidos`)}
+    else toast('Ningún distrito nuevo en esa caja');
+  });
+}
+
+function tipPunto(p,d){
+  const scd=p[PI.scd]===1;
+  return `<div class="tHd"><b>${p[PI.n]||'(sin nombre)'}</b><span>${scd?'LOCAL CIAI · SCD':'CENTRO POBLADO · SAF'}</span></div>
+    <div class="tGeo">${d.n} · ${d.p} · ${d.d}</div>
+    <div class="tTot">${nf(p[PI.usu])} <span>${scd?'niñas y niños':'usuarios SAF'}</span></div>
+    ${scd?`<div class="tSvc"><span style="color:#CE93D8">${nf(p[PI.mc])} madres cuidadoras</span></div>`
+         :`<div class="tSvc"><span style="color:#80CBC4">${nf(p[PI.fam])} familias</span></div>`}
+    <div class="tHz"><span><i style="background:${NIVC[nivI(p)]}"></i>inundación ${NIVN[nivI(p)]}</span>
+      <span><i style="background:${NIVC[nivM(p)]}"></i>mov. en masa ${NIVN[nivM(p)]}</span></div>
+    <div class="tPie">coordenada: ${CM.srcNom[p[PI.src]]}</div>`;
+}
+function tipCluster(c){
+  const pal=MAPX.color==='servicio'?[C_SAF,C_SCD]:NIVC;
+  const nom=MAPX.color==='servicio'?['SAF','SCD']:NIVN;
+  const filas=c.lv.map((v,i)=>v?`<span><i style="background:${pal[i]}"></i>${nom[i]} ${nf(v)}</span>`:'').join('');
+  const nd=c.dist?c.dist.size:1;
+  return `<div class="tHd"><b>${nf(c.usu)} usuarios</b><span>${nf(c.n)} PUNTOS</span></div>
+    <div class="tGeo">${nd>1?`${nd} distritos · ${c.d.d}`:`${c.d.n} · ${c.d.p} · ${c.d.d}`}</div>
+    <div class="tTot">${nf(c.usu)} <span>usuarios</span></div>
+    <div class="tHz">${filas}</div>
+    <div class="tPie">clic para acercar</div>`;
+}
+
+/* Andamiaje del Momento 2: las capas de recursos ya no se encienden desde
+   este producto, pero el dibujante y el inventario quedan listos para
+   cuando ese momento se construya. Hoy no pinta nada, por diseño.    */
+function dibujaRecursos(filas){
+  capaRec.clearLayers();
+  const en=new Set(filas.map(f=>f.u));
+  REC.forEach(r=>{
+    if(!S.capas||!S.capas[r.k]) return;
+    const capa=SUP.capas[r.k], ci={}; capa.cols.forEach((x,i)=>ci[x]=i);
+    capa.d.forEach(row=>{
+      if(!en.has(row[ci.ubigeo])) return;
+      L.marker([row[ci.lat],row[ci.lon]],{icon:L.divIcon({className:'',iconSize:[19,19],iconAnchor:[9,9],
+        html:`<div style="width:19px;height:19px;border-radius:6px;background:${r.col};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);display:grid;place-items:center;font-size:9px">${r.ic}</div>`})})
+        .addTo(capaRec)
+        .bindTooltip(`${r.n} · <b>SUPUESTO</b>`,{direction:'top'})
+        .bindPopup(`<b>${row[0]}</b><br><span style="color:#4527A0;font-weight:800;font-size:10px">DATO SUPUESTO</span><br>${r.n}`);
+    });
+  });
+}
+/* ── La zona crítica ───────────────────────────────────────────────────
+   Un escenario de 763 distritos no se mira: se mira dónde pegó. La zona
+   crítica es el subconjunto del nivel más severo presente y, si ese nivel
+   todavía es grande, los distritos que concentran el 70 % de sus usuarios.
+   Es lo primero que se ve; lo demás se agrega después.                 */
+/* Percepción del sismo ≠ impacto operativo. Un distrito de percepción
+   moderada con 3,000 usuarios pesa más que uno de percepción fuerte con
+   40. Ordenar solo por percepción hacía justo lo contrario de lo que este
+   producto existe para hacer: CRUZAR las dos dimensiones.             */
+const PESO_PERC={fuerte:3, moderada:2, exp:2, manual:2, leve:1};
+const puntajeImpacto=f=>(PESO_PERC[f.meta.nivel]??2)*f.d.u;
+
+/* ── Impacto operativo por distrito ────────────────────────────────────
+   Misma fórmula del 0.1, con otras entradas: allá era exposición ×
+   impacto; aquí es percepción del evento × magnitud de nuestra operación.
+   Bandas de usuarios idénticas a las del 0.1 (50/120/300/600) para que
+   los dos productos se lean con la misma vara.                       */
+const CORTES_USU=[50,120,300,600];
+function bandaUsuarios(u){let b=1;for(const c of CORTES_USU){if(u>c)b++}return b}
+function indiceImpacto(f){
+  const b=bandaUsuarios(f.d.u);                       // 1..5
+  const p=((PESO_PERC[f.meta.nivel]??2)/3)*5;         // 1..5
+  return (b*60 + p*40)/100;
+}
+const NIV_IMP=['Muy bajo','Bajo','Medio','Alto','Crítico'];
+const COL_IMP=['#7CB342','#C0CA33','#FBC02D','#F57C00','#D32F2F'];
+function nivelImpacto(f){
+  const v=indiceImpacto(f);
+  return v>=4.5?4:v>=3.5?3:v>=2.5?2:v>=1.5?1:0;
+}
+
+const TOPE_ZONA=15;   // una lista que alguien pueda revisar de verdad
+function zonaImpacto(filas){
+  const L0=filas.filter(f=>f.d.u>0);
+  if(!L0.length) return null;
+  /* El nivel de impacto más alto que efectivamente ocurrió. Si nadie llega
+     a Crítico, se dice — no se fuerza un rojo que la data no respalda.  */
+  let nivTope=0; L0.forEach(f=>{const v=nivelImpacto(f); if(v>nivTope)nivTope=v});
+  const enTope=L0.filter(f=>nivelImpacto(f)===nivTope)
+                 .sort((a,b)=>puntajeImpacto(b)-puntajeImpacto(a));
+  const L=enTope.slice(0,TOPE_ZONA);
+  const totalTope=enTope.length;
+  const usuarios=L.reduce((a,f)=>a+f.d.u,0);
+  const niveles={}; L.forEach(f=>niveles[f.meta.nivel]=(niveles[f.meta.nivel]||0)+1);
+  const nivMax=Object.keys(niveles).sort((a,b)=>(PESO_PERC[b]??2)-(PESO_PERC[a]??2))[0];
+  const hayFuerte=!!niveles.fuerte;
+  /* Prioridad de revisión: cruza magnitud con severidad. Es una lectura,
+     no un cálculo oculto — la regla se muestra en pantalla.           */
+  let prioridad='MEDIA', porque='';
+  if(hayFuerte && usuarios>=1000){prioridad='MUY ALTA';porque='percepción fuerte sobre más de mil usuarios'}
+  else if(hayFuerte){prioridad='ALTA';porque='hay percepción fuerte reportada'}
+  else if(usuarios>=3000){prioridad='ALTA';porque='volumen alto de usuarios comprometidos'}
+  else if(usuarios>=800){prioridad='MEDIA';porque='volumen moderado de usuarios'}
+  else {prioridad='BAJA';porque='pocos usuarios comprometidos'}
+  return {filas:L, nivel:nivMax, niveles, usuarios, prioridad, porque,
+          nivTope, nivTopeNom:NIV_IMP[nivTope], totalTope, recortada:totalTope>L.length,
+          sinCritico:nivTope<4,
+          deps:[...new Set(L.map(f=>f.d.d))],
+          scd:L.reduce((a,f)=>a+f.d.sc,0), saf:L.reduce((a,f)=>a+f.d.sf+f.d.ge,0),
+          cobertura: filas.reduce((a,f)=>a+f.d.u,0) ? usuarios/filas.reduce((a,f)=>a+f.d.u,0) : 0};
+}
+/* alias: el resto del código la llamaba así */
+const zonaCritica=zonaImpacto;
+function verZonaCritica(avisa){
+  const zc=zonaImpacto(agrega().filas);
+  if(!zc){toast('El escenario está vacío');return}
+  encuadra(zc.filas);
+  if(avisa) toast(`Zona de mayor impacto · ${zc.filas.length} distritos · ${nf(zc.usuarios)} usuarios`);
+}
+function encuadra(filas){
+  let bb=null;
+  filas.forEach(f=>{
+    const x=bboxPuntos(f.u)||L.latLngBounds(CM.dist[f.u].c,CM.dist[f.u].c);
+    bb = bb ? bb.extend(x) : L.latLngBounds(x.getSouthWest(),x.getNorthEast());
+  });
+  if(S.evento==='sismo'){const e=L.latLng(S.sismo.lat,S.sismo.lon);
+    bb = bb ? bb.extend(e) : L.latLngBounds(e,e)}
+  if(bb) mapa.fitBounds(bb.pad(.12),{maxZoom:9});
+}
+function focoDistrito(u,mover){
+  S.foco=(S.foco===u)?null:u;
+  Object.entries(POL).forEach(([k,ls])=>ls.forEach(p=>{
+    const act=S.foco===k;
+    p.setStyle({weight:act?3:1.1,fillOpacity:act?.5:.2,color:act?'#FF0A6C':p.options.fillColor});
+    if(act) p.bringToFront();
+  }));
+  if(S.foco&&mover){
+    const bb=focoDe(u);
+    if(bb.getNorth()===bb.getSouth()) mapa.setView(bb.getCenter(),Math.max(mapa.getZoom(),10));
+    else mapa.fitBounds(bb.pad(.5),{maxZoom:13});
+  }
+  pintaTab();
+}
+
+/* ═══ HERRAMIENTAS ═══ */
+const TOOLS=[
+ {k:'capas',   ic:'🗂', n:'Capas',      t:'Capas del mapa'},
+ {k:'momento2',ic:'→', n:'Momento 2',  t:'¿Con qué podemos responder? · no es este producto'},
+ {k:'anillos', ic:'◎', n:'Anillos',    t:'Anillos referenciales', solo:'sismo'},
+ {k:'coen',    ic:'📄', n:'Comunicado', t:'Comunicado del COEN'},
+ {k:'agregar', ic:'✚', n:'Agregar',    t:'Agregar distritos'},
+ {k:'caja',    ic:'▭', n:'Caja',       t:'Seleccionar por caja'},
+ {k:'salida',  ic:'⬇', n:'Descargar',  t:'Exportar y compartir'},
+ {k:'metodo',  ic:'?',  n:'Ayuda',      t:'Cómo se calcula'},
+];
+/* Se arranca con lo mínimo que responde "¿dónde pegó?": los distritos y
+   el evento. Todo lo demás se enciende cuando hace falta — abrir con seis
+   capas encima es abrumar, no informar.                                 */
+S.capas={distritos:1, rotulos:1, puntos:0, anillos:1, epicentro:1};
+const CAPAS=[
+  {g:'La operación', items:[
+    {k:'distritos', ic:'▧', n:'Distritos del escenario', d:'el polígono y su nivel'},
+    {k:'rotulos',   ic:'🏷', n:'Nombres de distrito',    d:'los del padrón INEI, en español'},
+    {k:'puntos',    ic:'◉', n:'Puntos de atención',      d:'26,647 · centros poblados y locales'},
+  ]},
+  {g:'El evento', items:[
+    {k:'anillos',   ic:'◎', n:'Anillos referenciales', d:'distancia al epicentro', solo:'sismo'},
+    {k:'epicentro', ic:'✸', n:'Epicentro',             d:'punto y magnitud',       solo:'sismo'},
+  ]},
+];
+let toolAbierta=null;
+/* Cuatro lecturas del mismo mapa. El servicio responde "¿a quién afecta?";
+   los peligros, "¿de qué hay que protegerlo?" — y AMBOS muestra que rara
+   vez son la misma respuesta (§3 del brief: coinciden en 2.2 %).        */
+const COLORES=[['servicio','SERVICIO'],['inundacion','INUNDACIÓN'],
+               ['movimiento','MOV. MASA'],['ambos','AMBOS']];
+/* La leyenda no solo explica: filtra. Clic en un nivel y el mapa aísla. */
+function pintaLeyenda(){
+  const {filas}=agrega();
+  const usados=[...new Set(filas.map(f=>f.meta.nivel))];
+  const NIVL={fuerte:['Fuerte (VI–VII)','#D32F2F'],moderada:['Moderada (IV–V)','#F57C00'],
+              leve:['Leve (II–III)','#FBC02D'],exp:['Por exposición','#F57C00'],
+              manual:['Agregado a mano','#F57C00']};
+  const bloqueImp=`<div class="tt2">Impacto operativo en Cuna Más</div>
+    ${[4,3,2,1,0].map(i=>`<div class="r"><i style="background:${COL_IMP[i]}"></i>${NIV_IMP[i]}</div>`).join('')}`;
+  const bloquePer=`<div class="tt2">Percepción sísmica (MMI)</div>
+    ${(usados.length?usados:['exp']).map(n=>NIVL[n]
+      ?`<div class="r ${MAPX.filtroNivel&&MAPX.filtroNivel!==n?'off':''}" data-n="${n}"><i style="background:${NIVL[n][1]}"></i>${NIVL[n][0]}</div>`:'').join('')}`;
+  const bloquePts=MAPX.vista==='centros'?`<div class="sep"></div>
+    <div class="tt2">Centros Cuna Más</div>
+    <div class="r"><i class="dot" style="background:${C_SAF}"></i>SAF · en casa</div>
+    <div class="r"><i class="dot" style="background:${C_SCD}"></i>SCD · en local</div>`:'';
+  $('#leg').innerHTML=
+    (MAPX.capa==='percepcion'?bloquePer
+     :MAPX.capa==='ambas'?bloqueImp+'<div class="sep"></div>'+bloquePer
+     :bloqueImp)
+    + (S.evento==='sismo'?`<div class="sep"></div><div class="r"><i class="dot" style="background:#D32F2F"></i>Epicentro</div>`:'')
+    + bloquePts
+    + `<div class="zn" id="legZoom">—</div>`;
+  $$('#leg .r[data-n]').forEach(r=>r.onclick=()=>{
+    MAPX.filtroNivel = MAPX.filtroNivel===r.dataset.n ? null : r.dataset.n;
+    const {filas}=agrega();
+    dibujaPoligonos(filas); dibujaPercepcion(filas); dibujaPuntos(); pintaLeyenda();
+  });
+}
+function pintaCtl(){
+  const cc=$('#ctlCapa'); if(!cc) return;
+  cc.innerHTML=[['impacto','IMPACTO CUNA MÁS'],['percepcion','PERCEPCIÓN SÍSMICA'],['ambas','AMBAS']]
+    .map(([k,n])=>`<button data-p="${k}" class="${MAPX.capa===k?'on':''}">${n}</button>`).join('');
+  $$('#ctlCapa button').forEach(b=>b.onclick=()=>{
+    MAPX.capa=b.dataset.p; const {filas}=agrega();
+    pintaCtl(); dibujaPoligonos(filas); dibujaPercepcion(filas); pintaLeyenda()});
+  const cv=$('#ctlVista');
+  cv.innerHTML=[['distritos','DISTRITOS'],['centros','CENTROS POBLADOS']]
+    .map(([k,n])=>`<button data-v="${k}" class="${MAPX.vista===k?'on':''}">${n}</button>`).join('');
+  $$('#ctlVista button').forEach(b=>b.onclick=()=>{
+    MAPX.vista=b.dataset.v;
+    if(MAPX.vista==='centros') S.capas.puntos=1;
+    pintaCtl(); dibujaPuntos(); pintaLeyenda(); marcaTools()});
+  const bs=$('#ctlBase');
+  bs.innerHTML=[['claro','CLARO'],['limpio','SIN RÓTULOS'],['satelite','SATÉLITE']].map(([k,n])=>
+    `<button data-b="${k}" class="${MAPX.base===k?'on':''}">${n}</button>`).join('');
+  $$('#ctlBase button').forEach(b=>b.onclick=()=>{
+    if(MAPX.base===b.dataset.b) return;
+    mapa.removeLayer(BASES[MAPX.base]); MAPX.base=b.dataset.b;
+    BASES[MAPX.base].addTo(mapa).bringToBack();
+    document.body.dataset.base=MAPX.base; pintaCtl();
+  });
+}
+function pintaTools(){
+  $('#tools').innerHTML=TOOLS.filter(t=>!t.solo||t.solo===S.evento).map(t=>{
+    const bg=t.k==='coen'&&S.amb.length?`<span class="bg">${S.amb.length}</span>`:'';
+    return `<button class="tool" data-k="${t.k}">${t.ic}${bg}<b>${t.n}</b><span class="tt">${t.t}</span></button>`}).join('')
+    +`<div class="toolSep"></div>
+      <button class="tool" data-k="critica">◉<b>Impacto</b><span class="tt">Ir a la zona de mayor impacto</span></button>
+      <button class="tool" data-k="encuadrar">⤢<b>Todo</b><span class="tt">Ver todo el escenario</span></button>`;
+  $$('#tools .tool').forEach(b=>b.onclick=()=>{
+    if(b.dataset.k==='critica'){verZonaCritica(1);return}
+    if(b.dataset.k==='encuadrar'){encuadra(agrega().filas);toast('Escenario completo');return}
+    if(b.dataset.k==='caja'){
+      MAPX.box=!MAPX.box; cierraTool();
+      mapa.getContainer().style.cursor=MAPX.box?'crosshair':'';
+      toast(MAPX.box?'Arrastra sobre el mapa para sumar distritos':'Selección por caja desactivada');
+      marcaTools(); return;
+    }
+    abreTool(b.dataset.k);
+  });
+  marcaTools();
+}
+/* Solo el estado activo y el contador. Repintar la barra entera en cada
+   clic destruye el botón que el usuario acaba de pulsar.               */
+function marcaTools(){
+  $$('#tools .tool').forEach(b=>{
+    b.classList.toggle('on', b.dataset.k==='caja' ? MAPX.box : b.dataset.k===toolAbierta);
+    if(b.dataset.k==='capas'){
+      const n=Object.values(S.capas).filter(Boolean).length;
+      const v=b.querySelector('.bg');
+      if(v) v.textContent=n; else b.insertAdjacentHTML('afterbegin',`<span class="bg">${n}</span>`);
+    }
+    if(b.dataset.k==='coen'){
+      const v=b.querySelector('.bg');
+      if(S.amb.length){ if(v) v.textContent=S.amb.length;
+        else b.insertAdjacentHTML('afterbegin',`<span class="bg">${S.amb.length}</span>`) }
+      else if(v) v.remove();
+    }
+  });
+}
+function abreTool(k){
+  if(toolAbierta===k){cierraTool();return}
+  toolAbierta=k; $('#pnl').classList.add('on');
+  const t=TOOLS.find(x=>x.k===k); $('#pnlT').textContent=t?t.n:'';
+  $('#pnlB').innerHTML=cuerpoTool(k);
+  cableaTool(k); marcaTools();
+}
+function cierraTool(){toolAbierta=null;$('#pnl').classList.remove('on');marcaTools()}
+$('#pnlX').onclick=cierraTool;
+
+function cuerpoTool(k){
+  if(k==='anillos') return `
+    <p class="note" style="margin:0 0 10px"><b>Calibrados con el evento del 20-ago-2026.</b> Son los alcances máximos que el COEN reportó por nivel: fuerte hasta 77 km, moderada hasta 283, leve hasta 390. No es una regla física — es la referencia del único evento con reporte completo que tenemos.</p>
+    <div class="fld"><label><span>Radios en el mapa · km</span><input type="text" id="iRings" value="${S.sismo.rings.join(', ')}"></label></div>
+    <div class="rings" id="ringsPrev"></div>
+    <div id="ringsDiag"></div>
+    <button class="btn pri blk" id="btnRadio" style="margin-top:10px">APLICAR ANILLOS</button>
+    <div class="warn"><b>Son referenciales, no un pronóstico.</b> El COEN llamó "moderada" a Ica y Pisco, que están más lejos que Andahuaylas, reportado "leve". Eso es efecto de suelo y ninguna circunferencia lo produce: cuando llega el comunicado, manda el comunicado.</div>
+    <p class="note"><b>Por qué se muestra la distancia al foco.</b> Con foco a ${S.sismo.prof} km, Coracora (17 km del epicentro) y Pullo (77 km) están a 109 y 133 km del origen: casi lo mismo. Por eso sintieron parecido.</p>`;
+  if(k==='coen') return `
+    <p class="note" style="margin:0 0 9px">Pega el comunicado del COEN o del COER. Se extraen los distritos por nivel de percepción y se te pide confirmar lo ambiguo.</p>
+    <textarea id="txtCoen" placeholder="…el movimiento sísmico fue percibido fuerte en los distritos de …"></textarea>
+    <div class="btnRow"><button class="btn pri" id="btnCoen">LEER</button>
+      <button class="btn gho" id="btnDemo">EJEMPLO 20/08</button></div>
+    <div id="ambBox"></div>`;
+  if(k==='agregar') return `
+    <p class="note" style="margin:0 0 9px">Lo que solo sabe quien está en campo. El COEN puede omitir un distrito donde sí operamos.</p>
+    <div class="fld"><label><span>Buscar distrito</span><input type="text" id="iBusca" placeholder="escribe y elige…" list="dlDist"><datalist id="dlDist"></datalist></label></div>
+    <div class="fld"><label><span>Nivel asignado</span><select id="selNiv">
+      <option value="fuerte">fuerte</option><option value="moderada">moderada</option><option value="leve">leve</option></select></label></div>
+    <button class="btn pri blk" id="btnAdd">AGREGAR</button>
+    <p class="note" id="selCount"></p>
+    <button class="btn gho blk" id="btnClear" style="margin-top:8px">VACIAR ESCENARIO</button>`;
+  if(k==='capas') return `
+    <p class="note" style="margin:0 0 12px">El mapa abre con lo mínimo. Enciende una capa cuando la necesites.</p>
+    ${CAPAS.map(gr=>{
+      const its=gr.items.filter(i=>!i.solo||i.solo===S.evento);
+      if(!its.length) return '';
+      return `<div class="capG"><div class="capGT">${gr.g}${gr.sup?' <span class="sup">SUPUESTO</span>':''}</div>
+        ${its.map(i=>`<label class="capR">
+          <input type="checkbox" data-c="${i.k}" ${S.capas[i.k]?'checked':''}>
+          <span class="capIc">${i.ic}</span>
+          <span class="capT"><b>${i.n}</b><span>${i.d}</span></span></label>`).join('')}</div>`}).join('')}
+    <div class="warn" style="margin-top:6px">Las capas de <b>recursos</b> —carpas, emplazamientos, almacenes— pasaron al <b>Momento 2</b>. Siguen generadas en <code>data/_sup02.js</code>.</div>`;
+  if(k==='momento2') return panelMomento2();
+  if(k==='salida'){
+    const {a,filas}=agrega(); const zc=zonaCritica(filas);
+    return `
+    <p class="note" style="margin:0 0 12px">El escenario sale de aquí para que alguien actúe con él. ${zc?`Zona crítica: <b>${nf(zc.filas.length)} distritos · ${nf(zc.usuarios)} usuarios</b>.`:''}</p>
+    <div class="capG"><div class="capGT">Archivos</div>
+      <button class="expB" data-x="xlsx"><span class="capIc">📊</span><span class="capT"><b>Excel</b><span>tres hojas · resumen, distritos y puntos</span></span></button>
+      <button class="expB" data-x="word"><span class="capIc">📄</span><span class="capT"><b>Word</b><span>informe del escenario y su impacto</span></span></button>
+      <button class="expB" data-x="csv"><span class="capIc">🧾</span><span class="capT"><b>CSV</b><span>solo los distritos, para cruzar</span></span></button>
+    </div>
+    <div class="capG"><div class="capGT">Visual</div>
+      <button class="expB" data-x="png"><span class="capIc">🖼</span><span class="capT"><b>Imagen del mapa</b><span>PNG de la vista actual</span></span></button>
+      <button class="expB" data-x="pdf"><span class="capIc">🖨</span><span class="capT"><b>PDF</b><span>abre el diálogo de impresión</span></span></button>
+    </div>
+    <div class="capG"><div class="capGT">Compartir</div>
+      <button class="expB" data-x="wa"><span class="capIc">💬</span><span class="capT"><b>WhatsApp</b><span>resumen en texto, listo para enviar</span></span></button>
+      <button class="expB" data-x="copiar"><span class="capIc">⧉</span><span class="capT"><b>Copiar resumen</b><span>al portapapeles</span></span></button>
+    </div>
+    <div class="warn">WhatsApp solo admite <b>texto</b> por enlace. El Excel o la imagen se adjuntan a mano después.</div>`;
+  }
+  if(k==='metodo') return `
+    ${[['Ubicamos el evento','El epicentro viene del IGP con latitud, longitud, profundidad y magnitud. En lluvias y movimientos en masa no hay epicentro: el escenario se arma eligiendo distritos.'],
+       ['Dibujamos anillos','Referenciales, calibrados con el evento del 20-ago. La distancia al foco se muestra al lado porque es la que explica la sacudida.'],
+       ['El COEN manda','Los anillos son una hipótesis mientras no hay reporte. Al pegar el comunicado, su lista reemplaza a la geometría — y puede no ser concéntrica.'],
+       ['Cruzamos el padrón','Cada distrito se cruza contra los 26,647 puntos de atención georreferenciados, separando SAF y SCD.'],
+       ['Cruzamos percepción con magnitud','El impacto de cada distrito combina la percepción del evento con la banda de usuarios, igual que el 0.1 cruza exposición con impacto. Un distrito de percepción moderada con muchos usuarios pesa más que uno de percepción fuerte con pocos.'],
+       ['Hasta aquí llega el 0.2','Con qué responder es el Momento 2; cuánto cuesta, el Producto 0.3.']]
+      .map((x,i)=>`<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)">
+        <span style="flex:0 0 22px;height:22px;border-radius:7px;background:linear-gradient(140deg,var(--mg),var(--mg7));color:#fff;display:grid;place-items:center;font-size:9.5px;font-weight:800">${i+1}</span>
+        <span><b style="font-size:11px">${x[0]}</b><br><span style="font-size:10px;color:var(--ink3);line-height:1.5">${x[1]}</span></span></div>`).join('')}`;
+  return '';
+}
+function cableaTool(k){
+  if(k==='anillos'){
+    $('#iRings').oninput=()=>{S.sismo.rings=$('#iRings').value.split(',').map(x=>+x.trim()).filter(x=>x>0).slice(0,3);previewAnillos();dibujaAnillos()};
+    previewAnillos(); $('#btnRadio').onclick=()=>aplicaAnillos();
+  }
+  if(k==='coen'){
+    $('#btnCoen').onclick=()=>leeCoen($('#txtCoen').value);
+    $('#btnDemo').onclick=()=>{$('#txtCoen').value=DEMO;leeCoen(DEMO)};
+    pintaAmb();
+  }
+  if(k==='agregar'){
+    $('#dlDist').innerHTML=Object.entries(CM.dist).map(([u,d])=>`<option value="${d.n} — ${d.p}, ${d.d}">`).join('');
+    $('#btnAdd').onclick=agregaManual;
+    $('#btnClear').onclick=()=>{const n=S.sel.size;S.sel.clear();S.amb=[];S.foco=null;anota('Escenario vaciado',`${n} distritos retirados`);render()};
+    actualizaConteo();
+  }
+  if(k==='salida') $$('#pnlB .expB').forEach(b=>b.onclick=()=>exporta2(b.dataset.x));
+  if(k==='capas') $$('#pnlB input[data-c]').forEach(c=>c.onchange=()=>{
+    S.capas[c.dataset.c]=c.checked?1:0;
+    const {filas}=agrega();
+    dibujaPoligonos(filas); dibujaPercepcion(filas); dibujaAnillos();
+    dibujaPuntos(); dibujaRecursos(filas);
+    pintaLeyenda(); marcaTools();
+  });
+}
+function previewAnillos(){
+  const cols=[RAMP[5],RAMP[3],RAMP[0]];
+  $('#ringsPrev').innerHTML=S.sismo.rings.map((r,i)=>
+    `<div class="ring" style="background:${cols[i]||RAMP[0]}"><b>${r}</b>km epicentro<br>
+      <span style="opacity:.85">${alFoco(r,S.sismo.prof).toFixed(0)} al foco</span></div>`).join('');
+  diagAnillos();
+}
+/* Cuántos distritos caen dentro de cada anillo. Sirve para ver, con el
+   número delante, que un anillo grande barre el mapa entero: el COEN nombró
+   25 distritos y el anillo de 390 km contiene cientos. Eso es exactamente
+   por qué los anillos son una hipótesis y no una respuesta.               */
+function diagAnillos(){
+  const e=$('#ringsDiag'); if(!e) return;
+  const {lat,lon,rings}=S.sismo;
+  const cnt=rings.map(()=>0); let usu=rings.map(()=>0);
+  for(const [u,d] of Object.entries(CM.dist)){
+    if(!d.u) continue;
+    const dd=hav([lat,lon],d.c);
+    for(let i=0;i<rings.length;i++) if(dd<=rings[i]){cnt[i]++;usu[i]+=d.u;break}
+  }
+  const tot=cnt.reduce((a,b)=>a+b,0), tu=usu.reduce((a,b)=>a+b,0);
+  const nom=['fuerte','moderada','leve'];
+  e.innerHTML=`<dl class="kv" style="margin-top:9px">
+    ${rings.map((r,i)=>`<div><dt>${nom[i]||'anillo '+(i+1)} · ≤${r} km</dt><dd>${nf(cnt[i])} distritos · ${nf(usu[i])} usu</dd></div>`).join('')}
+    <div><dt><b>Total que seleccionaría</b></dt><dd>${nf(tot)} distritos · ${nf(tu)} usu</dd></div></dl>
+    ${tot>120?`<div class="warn"><b>El anillo barre ${nf(tot)} distritos.</b> El COEN del 20-ago nombró <b>25</b>. Un anillo grande no dice quién sintió el sismo: dice quién está cerca. Úsalo para encuadrar y espera el comunicado.</div>`:''}`;
+}
+function actualizaConteo(){const e=$('#selCount');if(e)e.textContent=`${S.sel.size} distritos en el escenario`}
+
+/* ═══ PANEL DERECHO ═══ */
+const TABS=[{k:'resumen',n:'RESUMEN'},{k:'distritos',n:'DISTRITOS'},
+            {k:'centros',n:'CENTROS'},{k:'bitacora',n:'BITÁCORA'}];
+function pintaTabs(){
+  const nCen=S.tab==='centros'||true?centrosDe(agrega().filas).length:0;
+  $('#tabs').innerHTML=TABS.map(t=>{
+    const c=t.k==='distritos'?S.sel.size:(t.k==='centros'?nCen:null);
+    return `<button data-k="${t.k}" class="${S.tab===t.k?'on':''}">${t.n}${c!==null?` <span style="opacity:.6">${nf(c)}</span>`:''}</button>`}).join('');
+  $$('#tabs button').forEach(b=>b.onclick=()=>{S.tab=b.dataset.k;pintaTabs();pintaTab()});
+}
+function pintaTab(){
+  const {a,filas}=agrega();
+  if(S.tab==='resumen'){ $('#tabBd').innerHTML=tabResumen(a,filas);
+    const b=$('#btnZc'); if(b) b.onclick=()=>verZonaCritica(1);
+    const v=$('#btnVerCrit'); if(v) v.onclick=()=>{
+      const zc=zonaImpacto(filas); if(!zc)return;
+      S.filtro.srv='TODOS'; S.filtro.niv=''; S.filtro.soloZona=1;
+      S.tab='distritos'; pintaTabs(); pintaTab(); verZonaCritica();
+    };
+    const c=$('#btnCap'); if(c) c.onclick=()=>abreTool('momento2');
+    $$('#tabBd .chipD').forEach(ch=>ch.onclick=()=>focoDistrito(ch.dataset.u,1));
+  }
+  else if(S.tab==='distritos'){ $('#tabBd').innerHTML=tabDistritos(filas); cableaDistritos() }
+  else if(S.tab==='centros'){ $('#tabBd').innerHTML=tabCentros(filas); cableaCentros() }
+  else $('#tabBd').innerHTML=tabBitacora();
+}
+/* ── El panel derecho ─────────────────────────────────────────────────
+   Responde cuatro preguntas en orden, y ninguna más. La capacidad de
+   respuesta es el Momento 2: aquí solo se ofrece el paso siguiente, no
+   se mezcla con la lectura del impacto.                              */
+function tabResumen(a,filas){
+  const zc=zonaImpacto(filas);
+  if(!zc) return `<div class="empty"><div class="ic">🗺️</div><p>El escenario está vacío.<br>Usa las herramientas de la izquierda.</p></div>`;
+
+  const PR={'MUY ALTA':['#B71C1C','#FFEBEE'],'ALTA':['#E65100','#FFF3E0'],
+            'MEDIA':['#A97400','#FFF8E1'],'BAJA':['#2E7D32','#E8F5E9']};
+  const pc=PR[zc.prioridad]||PR.MEDIA;
+  const dSAF=filas.filter(f=>f.d.sf+f.d.ge>0).length, dSCD=filas.filter(f=>f.d.sc>0).length;
+  const nivTxt=Object.entries(zc.niveles).map(([k,v])=>`${v} ${k}`).join(' · ');
+
+  return `
+  <div class="preg">1 · ¿Cuánto está comprometido?</div>
+  <div class="zc" id="zcCard">
+    <div class="zcH"><span class="zcT">Zona de mayor impacto</span>
+      <span class="zcN" style="background:${COL_IMP[zc.nivTope]}33;color:${COL_IMP[zc.nivTope]}">impacto ${zc.nivTopeNom.toLowerCase()}</span></div>
+    <div class="zcV">${nf(zc.usuarios)}<span>usuarios potencialmente afectados en ${nf(zc.filas.length)} distritos</span></div>
+    <div class="zcS"><span style="color:#7FFFE0">SAF ${nf(zc.saf)}</span><span style="color:#E9B8FF">SCD ${nf(zc.scd)}</span></div>
+    <div class="zcP">${nivTxt} · ${Math.round(zc.cobertura*100)} % de los usuarios del escenario${zc.recortada?` · se listan los ${zc.filas.length} de mayor puntaje de ${zc.totalTope}`:''}</div>
+    <button class="zcB" id="btnZc">◉ VER EN EL MAPA</button>
+  </div>
+  <div class="prio" style="background:${pc[1]};color:${pc[0]}">
+    <div><span class="prioL">Prioridad de revisión</span><b>${zc.prioridad}</b></div>
+    <span class="prioQ">${zc.porque}</span>
+  </div>
+  ${zc.sinCritico?`<div class="hall">
+    <b>Ningún distrito alcanza impacto crítico.</b> Eso requiere percepción fuerte sobre más de 600 usuarios a la vez, y en este evento no coincidieron: donde se sintió fuerte hay poca gente nuestra, y donde hay mucha gente se sintió moderado. <span>Es un hallazgo del escenario, no un vacío de datos.</span></div>`:''}
+
+  <div class="stats">
+    <div class="st"><span class="stI">📍</span><b>${nf(zc.filas.length)}</b>
+      <span>DISTRITOS DE MAYOR IMPACTO</span><em>en ${zc.deps.length} departamento${zc.deps.length>1?'s':''}</em></div>
+    <div class="st"><span class="stI">👥</span><b>${nf(zc.filas.reduce((x,f)=>x+f.pts,0))}</b>
+      <span>CENTROS CUNA MÁS</span><em>SAF ${nf(zc.filas.reduce((x,f)=>x+f.nSAF,0))} · SCD ${nf(zc.filas.reduce((x,f)=>x+f.nSCD,0))}</em></div>
+    <div class="st"><span class="stI">⚠</span><b>${nf(a.exp45)}</b>
+      <span>EN EXPOSICIÓN 4–5</span><em>peligro CENEPRED</em></div>
+  </div>
+
+  <div class="preg">2 · ¿Dónde?</div>
+  <div class="blk">
+    <dl class="kv">
+      <div><dt>Distritos de mayor impacto</dt><dd>${nf(zc.filas.length)}</dd></div>
+      <div><dt>Departamentos</dt><dd>${zc.deps.join(' · ')}</dd></div>
+      <div><dt>Escenario completo</dt><dd>${nf(a.dist)} distritos · ${nf(a.usu)} usuarios</dd></div>
+    </dl>
+    <div class="chipsD">${zc.filas.slice(0,10).map(f=>
+      `<button class="chipD" data-u="${f.u}">${f.d.n}<span>${nf(f.d.u)}</span></button>`).join('')}
+      ${zc.filas.length>10?`<span class="chipMas">+${zc.filas.length-10}</span>`:''}</div>
+  </div>
+
+  <div class="preg">3 · ¿Qué está expuesto?</div>
+  <div class="svc">
+    <div class="svcC saf"><div class="t">SAF · EN CASA</div><div class="v">${nf(a.sf+a.ge)}</div>
+      <div class="s">usuarios en ${nf(dSAF)} distritos</div>
+      <dl><div><dt>niñas y niños</dt><dd>${nf(a.sf)}</dd></div>
+          <div><dt>gestantes</dt><dd>${nf(a.ge)}</dd></div>
+          <div><dt>familias</dt><dd>${nf(a.fa)}</dd></div>
+          <div><dt>centros poblados</dt><dd>${nf(a.ccppSAF)}</dd></div></dl></div>
+    <div class="svcC scd"><div class="t">SCD · EN LOCAL</div><div class="v">${nf(a.sc)}</div>
+      <div class="s">niñas y niños en ${nf(dSCD)} distritos</div>
+      <dl><div><dt>locales</dt><dd>${nf(a.lo)}</dd></div>
+          <div><dt>madres cuidadoras</dt><dd>${nf(a.mc)}</dd></div>
+          <div><dt>niños por local</dt><dd>${a.lo?(a.sc/a.lo).toFixed(1):'—'}</dd></div>
+          <div><dt>por cuidadora</dt><dd>${a.mc?(a.sc/a.mc).toFixed(1):'—'}</dd></div></dl></div>
+  </div>
+
+
+  <div class="preg">4 · ¿Qué hacemos ahora?</div>
+  <div class="acc">
+    <div class="accN">Próximas acciones recomendadas</div>
+    <ol class="accL">
+      <li>Revisar continuidad del servicio en los <b>${nf(zc.filas.length)} distritos</b> de mayor impacto.</li>
+      <li>Monitorear comunicación y accesibilidad a los <b>${nf(zc.filas.reduce((x,f)=>x+f.pts,0))} centros</b> de esa zona.</li>
+      <li>Llevar este dimensionamiento al <b>Momento 2</b> para evaluar con qué se responde.</li>
+    </ol>
+    <button class="accB" id="btnVerCrit">VER DISTRITOS DE MAYOR IMPACTO →</button>
+  </div>
+  <button class="sig" id="btnCap">
+    <span class="sigT">¿Con qué podemos responder?</span>
+    <span class="sigD">Momento 2 · recursos y brecha — no se responde en este producto</span>
+    <span class="sigF">→</span></button>
+
+  <div class="blk" style="margin-top:14px">
+    <h4>Calidad del dato</h4>
+    <dl class="kv">
+      <div><dt>Puntos con coordenada real</dt><dd>${(()=>{let r=0,t=0;filas.forEach(x=>(CM.pts[x.u]||[]).forEach(p=>{t++;if(p[PI.src]<3)r++}));return t?nf(r)+' · '+(100*r/t).toFixed(1)+' %':'—'})()}</dd></div>
+      <div><dt>Comités · facilitadoras</dt><dd style="color:var(--ink4)">sin dato</dd></div>
+      <div><dt>Servicios alimentarios</dt><dd style="color:var(--ink4)">sin dato</dd></div>
+    </dl>
+    <div class="warn" style="background:#F4F0F5;color:var(--ink3)">
+      Sin <code>CUI del CG</code> en SAF, sumar comités y facilitadoras por centro poblado duplica.<br>
+      <b>Costos y presupuesto</b> son del <b>Producto 0.3</b>.</div>
+  </div>`;
+}
+
+/* Los recursos disponibles y la brecha de instalación temporal son la
+   pregunta del MOMENTO 2 —"¿con qué podemos responder?"—, no de este
+   producto. El 0.2 dimensiona lo comprometido; qué hacer con eso es el
+   momento siguiente. El inventario (data/_sup02.js) queda generado y
+   esperando a que ese momento se construya.                          */
+function panelMomento2(){
+  return `
+    <p class="note" style="margin:0 0 12px"><b>Momento 2 · ¿con qué podemos responder?</b></p>
+    <div class="m2">
+      <div class="m2T">Esta pregunta no se responde aquí</div>
+      <p>El <b>0.2 dimensiona lo que está comprometido</b>. Con qué recursos se responde —carpas, emplazamientos, transporte, almacenes— es el <b>Momento 2</b>, que en esta entrega queda como visión documentada.</p>
+      <p>Mezclarlo en esta pantalla tapaba la lectura del impacto, que es lo que este producto tiene que dejar claro.</p>
+    </div>
+    <div class="capG"><div class="capGT">Lo que ya está listo para ese momento</div>
+      <div class="m2L"><b>Inventario de carpas</b><span>20 unidades · conteo por región real (<code>00_</code> §14)</span></div>
+      <div class="m2L"><b>Criterios de armado</b><span>60 m² · 20 niños · 3 h · equipo de 6 (<code>00_</code> §13)</span></div>
+      <div class="m2L"><b>Capa de emplazamientos</b><span>generada en <code>data/_sup02.js</code> — <span class="sup">SUPUESTO</span></span></div>
+      <div class="m2L"><b>Parque vehicular</b><span>4 camionetas y 7 motocicletas (<code>00_</code> §14)</span></div>
+    </div>
+    <div class="warn">Lo <b>económico</b> —costo del cambio de modelo, meta y presupuesto— es del <b>Producto 0.3</b>, que tampoco se responde aquí.</div>`;
+}
+
+function tabDistritos(filas){
+  const F=S.filtro;
+  let L=filas.slice();
+  if(F.soloZona){ const zc=zonaImpacto(filas);
+    const S2=new Set(zc?zc.filas.map(f=>f.u):[]); L=L.filter(f=>S2.has(f.u)) }
+  if(F.srv==='SAF') L=L.filter(f=>f.d.sf+f.d.ge>0);
+  if(F.srv==='SCD') L=L.filter(f=>f.d.sc>0);
+  if(F.niv) L=L.filter(f=>f.meta.nivel===F.niv);
+  const ord={usu:(x,y)=>y.d.u-x.d.u, saf:(x,y)=>(y.d.sf+y.d.ge)-(x.d.sf+x.d.ge),
+             scd:(x,y)=>y.d.sc-x.d.sc, exp:(x,y)=>y.e45-x.e45,
+             nom:(x,y)=>x.d.n.localeCompare(y.d.n), dep:(x,y)=>x.d.d.localeCompare(y.d.d)||y.d.u-x.d.u};
+  L.sort(ord[F.orden]||ord.usu);
+  const niveles=[...new Set(filas.map(f=>f.meta.nivel))];
+  return `
+  <div class="filt">
+    <button class="zonaT ${F.soloZona?'on':''}" id="fZona">${F.soloZona?'◉ solo mayor impacto':'○ todo el escenario'}</button>
+    <div class="seg">${['TODOS','SAF','SCD'].map(s=>`<button data-s="${s}" class="${F.srv===s?'on':''}">${s}</button>`).join('')}</div>
+    <select id="fNiv"><option value="">todos los niveles</option>
+      ${niveles.map(n=>`<option value="${n}" ${F.niv===n?'selected':''}>${n}</option>`).join('')}</select>
+    <select id="fOrd">
+      ${[['usu','usuarios'],['saf','usuarios SAF'],['scd','niños SCD'],['exp','exposición 4–5'],['nom','nombre'],['dep','departamento']]
+        .map(o=>`<option value="${o[0]}" ${F.orden===o[0]?'selected':''}>ordenar por ${o[1]}</option>`).join('')}</select>
+  </div>
+  ${L.length?`<div class="dl">${L.map(f=>{
+    const saf=f.d.sf+f.d.ge, scd=f.d.sc;
+    return `<div class="dRow ${S.foco===f.u?'sel':''}" data-u="${f.u}">
+      <span class="lv" style="background:${COLNIV[f.meta.nivel]||RAMP[4]}"></span>
+      <span class="nm"><b>${f.d.n}</b><span>${f.d.p}, ${f.d.d}</span></span>
+      <span class="vv"><b>${nf(f.d.u)}</b>
+        <span>${saf?`<i class="sv" style="background:${C_SAF}"></i>${nf(saf)}`:''}${saf&&scd?' ':''}${scd?`<i class="sv" style="background:${C_SCD}"></i>${nf(scd)}`:''}</span></span>
+      <button class="x" data-x="${f.u}">×</button></div>`}).join('')}</div>`
+   :`<div class="empty"><div class="ic">🗺️</div><p>${filas.length?'Ningún distrito pasa el filtro.':'El escenario está vacío.<br>Usa las herramientas de la izquierda.'}</p></div>`}`;
+}
+function cableaDistritos(){
+  $$('#tabBd .seg button').forEach(b=>b.onclick=()=>{S.filtro.srv=b.dataset.s;pintaTab()});
+  const fz=$('#fZona'); if(fz) fz.onclick=()=>{S.filtro.soloZona=S.filtro.soloZona?0:1;pintaTab()};
+  const n=$('#fNiv'), o=$('#fOrd');
+  if(n) n.onchange=()=>{S.filtro.niv=n.value;pintaTab()};
+  if(o) o.onchange=()=>{S.filtro.orden=o.value;pintaTab()};
+  $$('#tabBd .dRow').forEach(r=>r.onclick=e=>{
+    if(e.target.dataset.x){const u=e.target.dataset.x;const nm=CM.dist[u].n;
+      S.sel.delete(u); if(S.foco===u)S.foco=null; anota('Distrito retirado',nm); render(); return}
+    focoDistrito(r.dataset.u,1);
+  });
+}
+/* ── Centros de atención ───────────────────────────────────────────────
+   El distrito es la unidad de decisión, pero no la de operación: el
+   servicio ocurre en un centro poblado o en un local. Esta lista es la
+   única vista donde la exposición a cada peligro se puede comparar punto
+   a punto y ordenar.
+   NO se muestran facilitadoras: la base no trae CUI del CG en SAF y el
+   valor por punto no es sumable (daría 79,901). Tampoco servicios
+   alimentarios: la columna viene vacía en las 26,647 filas.          */
+let _cenCache=null, _cenKey='';
+function centrosDe(filas){
+  const k=filas.length+'|'+S.sel.size;
+  if(_cenCache && _cenKey===k) return _cenCache;
+  const out=[];
+  filas.forEach(f=>(CM.pts[f.u]||[]).forEach(p=>{
+    if(!p[PI.usu]) return;
+    out.push({p, u:f.u, d:f.d, meta:f.meta, imp:nivelImpacto(f)});
+  }));
+  _cenKey=k; return (_cenCache=out);
+}
+const TOPE_CEN=500;
+function tabCentros(filas){
+  const F=S.fCen;
+  let L=centrosDe(filas);
+  if(F.soloZona){ const zc=zonaImpacto(filas);
+    const Z=new Set(zc?zc.filas.map(f=>f.u):[]); L=L.filter(c=>Z.has(c.u)) }
+  if(F.srv==='SAF') L=L.filter(c=>c.p[PI.scd]===0);
+  if(F.srv==='SCD') L=L.filter(c=>c.p[PI.scd]===1);
+  if(F.exp){ L=L.filter(c=>{
+    const v=F.peligro==='inu'?c.p[PI.nivI]:F.peligro==='mm'?c.p[PI.nivM]
+            :Math.max(c.p[PI.nivI],c.p[PI.nivM]);
+    return v>=F.exp}) }
+  if(F.q){ const q=norm(F.q);
+    L=L.filter(c=>norm(c.p[PI.n]||'').includes(q)||norm(c.d.n).includes(q)) }
+  const ex=c=>F.peligro==='inu'?c.p[PI.nivI]:F.peligro==='mm'?c.p[PI.nivM]:Math.max(c.p[PI.nivI],c.p[PI.nivM]);
+  const ord={usu:(a,b)=>b.p[PI.usu]-a.p[PI.usu], exp:(a,b)=>ex(b)-ex(a)||b.p[PI.usu]-a.p[PI.usu],
+             nom:(a,b)=>(a.p[PI.n]||'').localeCompare(b.p[PI.n]||''),
+             dis:(a,b)=>a.d.n.localeCompare(b.d.n)||b.p[PI.usu]-a.p[PI.usu]};
+  L.sort(ord[F.orden]||ord.usu);
+  const tot=L.length, vis=L.slice(0,TOPE_CEN);
+  const uSAF=L.filter(c=>c.p[PI.scd]===0).reduce((x,c)=>x+c.p[PI.usu],0);
+  const uSCD=L.filter(c=>c.p[PI.scd]===1).reduce((x,c)=>x+c.p[PI.usu],0);
+
+  return `
+  <div class="cenHd">
+    <div><b>${nf(tot)}</b> centros · <b>${nf(uSAF+uSCD)}</b> usuarios</div>
+    <div class="cenS"><span style="color:${C_SAF}">SAF ${nf(uSAF)}</span><span style="color:${C_SCD}">SCD ${nf(uSCD)}</span></div>
+  </div>
+  <div class="filt">
+    <button class="zonaT ${F.soloZona?'on':''}" id="cZona">${F.soloZona?'◉ solo mayor impacto':'○ todo el escenario'}</button>
+    <div class="seg">${['TODOS','SAF','SCD'].map(x=>`<button data-s="${x}" class="${F.srv===x?'on':''}">${x}</button>`).join('')}</div>
+  </div>
+  <div class="filt">
+    <input type="text" id="cQ" placeholder="buscar centro o distrito…" value="${F.q}" style="flex:1 1 130px">
+    <select id="cOrd">${[['usu','usuarios'],['exp','exposición'],['nom','nombre'],['dis','distrito']]
+      .map(o=>`<option value="${o[0]}" ${F.orden===o[0]?'selected':''}>ordenar por ${o[1]}</option>`).join('')}</select>
+  </div>
+  <div class="filt">
+    <select id="cPel">${[['max','peor de los dos peligros'],['inu','solo inundación'],['mm','solo mov. en masa']]
+      .map(o=>`<option value="${o[0]}" ${F.peligro===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>
+    <select id="cExp">${[[0,'cualquier nivel'],[3,'nivel 3 o más'],[4,'nivel 4 o más'],[5,'solo nivel 5']]
+      .map(o=>`<option value="${o[0]}" ${F.exp===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>
+  </div>
+  ${tot?`<div class="dl">${vis.map((c,i)=>{
+    const scd=c.p[PI.scd]===1;
+    return `<div class="cRow" data-i="${i}">
+      <span class="cBar" style="background:${scd?C_SCD:C_SAF}"></span>
+      <span class="nm"><b>${c.p[PI.n]||'(sin nombre)'}</b>
+        <span>${c.d.n} · ${c.d.p}</span>
+        <span class="cHz"><i style="background:${NIVC[c.p[PI.nivI]]}"></i>inund ${c.p[PI.nivI]||'—'}
+          <i style="background:${NIVC[c.p[PI.nivM]]}"></i>mov ${c.p[PI.nivM]||'—'}
+          ${c.p[PI.src]>=3?'<em title="sin coordenada propia">◌ centroide</em>':''}</span></span>
+      <span class="vv"><b>${nf(c.p[PI.usu])}</b>
+        <span style="color:${scd?C_SCD:C_SAF}">${scd?'SCD':'SAF'}</span>
+        <span class="cSub">${scd?nf(c.p[PI.mc])+' MC':nf(c.p[PI.fam])+' fam'}</span></span>
+    </div>`}).join('')}</div>
+   ${tot>TOPE_CEN?`<div class="cenMas">Se muestran los <b>${nf(TOPE_CEN)}</b> primeros de ${nf(tot)}.<br>
+     El listado completo va en la hoja <b>Puntos</b> del Excel — herramienta <b>Descargar ⬇</b>.</div>`:''}`
+   :`<div class="empty"><div class="ic">◉</div><p>Ningún centro pasa el filtro.</p></div>`}
+  <div class="warn" style="background:#F4F0F5;color:var(--ink3);margin-top:12px">
+    <b>No se listan facilitadoras</b> — la base no trae <code>CUI del CG</code> en SAF y el valor por punto no es sumable.<br>
+    <b>Ni servicios alimentarios</b> — la columna viene vacía en las 26,647 filas.<br>
+    El padrón llega anonimizado: <b>no hay contacto ni responsable</b>. Esta lista sirve para ubicar y dimensionar, no para llamar.</div>`;
+}
+function cableaCentros(){
+  const F=S.fCen;
+  $$('#tabBd .seg button').forEach(b=>b.onclick=()=>{F.srv=b.dataset.s;pintaTab()});
+  const z=$('#cZona'); if(z) z.onclick=()=>{F.soloZona=F.soloZona?0:1;pintaTab()};
+  const o=$('#cOrd'); if(o) o.onchange=()=>{F.orden=o.value;pintaTab()};
+  const p=$('#cPel'); if(p) p.onchange=()=>{F.peligro=p.value;pintaTab()};
+  const e=$('#cExp'); if(e) e.onchange=()=>{F.exp=+e.value;pintaTab()};
+  const q=$('#cQ');
+  if(q){ let t; q.oninput=()=>{clearTimeout(t);t=setTimeout(()=>{F.q=q.value;pintaTab();
+    const n=$('#cQ'); if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},280)} }
+  /* la lista visible se recalcula igual que al pintar, para que el índice
+     de cada fila apunte al centro correcto */
+  const {filas}=agrega();
+  $$('#tabBd .cRow').forEach(r=>r.onclick=()=>{
+    const L=listaCentrosVisible(filas);
+    const c=L[+r.dataset.i]; if(!c||!mapa) return;
+    S.capas.puntos=1; MAPX.vista='centros';
+    mapa.setView([c.p[PI.lat],c.p[PI.lon]],13);
+    pintaCtl(); dibujaPuntos();
+    $$('#tabBd .cRow').forEach(x=>x.classList.remove('sel')); r.classList.add('sel');
+    toast(`${c.p[PI.n]||'centro'} · ${nf(c.p[PI.usu])} usuarios`);
+  });
+}
+/* misma cadena de filtro y orden que tabCentros, para no duplicar criterio */
+function listaCentrosVisible(filas){
+  const F=S.fCen;
+  let L=centrosDe(filas);
+  if(F.soloZona){ const zc=zonaImpacto(filas);
+    const Z=new Set(zc?zc.filas.map(f=>f.u):[]); L=L.filter(c=>Z.has(c.u)) }
+  if(F.srv==='SAF') L=L.filter(c=>c.p[PI.scd]===0);
+  if(F.srv==='SCD') L=L.filter(c=>c.p[PI.scd]===1);
+  if(F.exp){ L=L.filter(c=>{
+    const v=F.peligro==='inu'?c.p[PI.nivI]:F.peligro==='mm'?c.p[PI.nivM]
+            :Math.max(c.p[PI.nivI],c.p[PI.nivM]);
+    return v>=F.exp}) }
+  if(F.q){ const q=norm(F.q);
+    L=L.filter(c=>norm(c.p[PI.n]||'').includes(q)||norm(c.d.n).includes(q)) }
+  const ex=c=>F.peligro==='inu'?c.p[PI.nivI]:F.peligro==='mm'?c.p[PI.nivM]:Math.max(c.p[PI.nivI],c.p[PI.nivM]);
+  const ord={usu:(a,b)=>b.p[PI.usu]-a.p[PI.usu], exp:(a,b)=>ex(b)-ex(a)||b.p[PI.usu]-a.p[PI.usu],
+             nom:(a,b)=>(a.p[PI.n]||'').localeCompare(b.p[PI.n]||''),
+             dis:(a,b)=>a.d.n.localeCompare(b.d.n)||b.p[PI.usu]-a.p[PI.usu]};
+  return L.sort(ord[F.orden]||ord.usu).slice(0,TOPE_CEN);
+}
+
+function tabBitacora(){
+  if(!S.bitacora.length) return `<div class="empty"><div class="ic">🕘</div><p>Sin movimientos todavía.</p></div>`;
+  return S.bitacora.slice().reverse().map(b=>{const d=new Date(b.t);
+    return `<div class="bitR"><time>${d.toLocaleString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</time>
+      <span><b>${b.accion}</b><br><span style="color:var(--ink3)">${b.detalle}</span></span></div>`}).join('');
+}
+function pintaAmb(){
+  const box=$('#ambBox'); if(!box) return;
+  const sc=(S.noCM||[]).length?`<div class="warn" style="margin-top:9px"><b>${S.noCM.length} sin correspondencia:</b> ${S.noCM.join(' · ')}.<br>Son distritos sin Cuna Más o erratas del comunicado.</div>`:'';
+  if(!S.amb.length){box.innerHTML=sc;return}
+  box.innerHTML=`<div class="amb"><h4>⚠ ${S.amb.length} por confirmar — el comunicado mezcla provincias y distritos</h4>`+
+    S.amb.map((a,i)=>{
+      const su=L=>L.reduce((s,u)=>s+CM.dist[u].u,0);
+      const opc=(k,t)=>{const d=IX_DIST[k]||[],p=IX_PROV[k]||[],e=IX_DEP[k]||[];
+        return (d.length?`<button data-i="${i}" data-k="${k}" data-t="d">${t}distrito · ${nf(su(d))}</button>`:'')
+             +(p.length?`<button data-i="${i}" data-k="${k}" data-t="p">${t}provincia · ${p.length}d · ${nf(su(p))}</button>`:'')
+             +(e.length?`<button data-i="${i}" data-k="${k}" data-t="e">${t}depto · ${e.length}d · ${nf(su(e))}</button>`:'')};
+      const cab=a.exacto?a.nm:`${a.nm} <span style="font-weight:600;opacity:.8">← "${a.crudo}"</span>`;
+      return `<div class="ambR"><span class="nm">${cab}<br><span style="font-weight:600;font-size:8.5px;opacity:.75">nivel ${a.nivel}${a.exacto?'':' · errata'}</span></span>
+        ${opc(a.nm,'')}${(a.alts||[]).filter(k=>k!==a.nm).map(k=>opc(k,k+' · ')).join('')}
+        <button data-i="${i}" data-t="x">omitir</button></div>`}).join('')+'</div>'+sc;
+  $$('.ambR button',box).forEach(b=>b.onclick=()=>{
+    const a=S.amb[+b.dataset.i],t=b.dataset.t,k=b.dataset.k||a.nm;
+    if(t!=='x'){const L=t==='d'?(IX_DIST[k]||[]):(t==='p'?(IX_PROV[k]||[]):(IX_DEP[k]||[]));
+      L.forEach(u=>{if(!S.sel.has(u))S.sel.set(u,{nivel:a.nivel,origen:'coen'})});
+      anota('Ambigüedad resuelta',`${k} como ${t==='d'?'distrito':(t==='p'?'provincia':'departamento')} · ${L.length} distritos`)}
+    else anota('Ambigüedad omitida',a.nm);
+    S.amb.splice(+b.dataset.i,1); render();
+  });
+}
+
+/* ═══ RENDER ═══ */
+function render(){
+  _cenCache=null;
+  const {filas}=agrega();
+  dibujaPoligonos(filas); dibujaPercepcion(filas); dibujaAnillos();
+    dibujaPuntos(); dibujaRecursos(filas);
+  pintaTabs(); pintaTab(); pintaTools(); pintaCtl(); actualizaConteo();
+  if(toolAbierta==='coen') pintaAmb();
+  pintaLeyenda();
+  dibujaPuntos();
+}
+
+/* ═══ MODAL ═══ */
+/* Arquitectura del gemelo (00_ §9). Los tres productos —0.1, 0.2 y 0.3—
+   viven TODOS dentro del Momento 0 · Preparación: responden "¿qué
+   tenemos y qué podría pasar?". Los momentos 1, 2 y 3 son la operación
+   durante un evento real y quedan como visión documentada.
+   Confundirlos hace parecer que el 0.2 responde a un sismo que ya
+   ocurrió, cuando lo que hace es simularlo antes.                     */
+const MOMENTOS=[['0','PREPARACIÓN',1],['1','EVENTO',0],
+                ['2','CAPACIDAD / RESPUESTA',0],['3','TERRENO / SEGUIMIENTO',0]];
+const PRODUCTOS=[['0.1','Matriz de Riesgos',0],['0.2','Simulación del Evento',1],
+                 ['0.3','Presupuesto y Capacidad',0]];
+function pintaMomentos(){
+  $('#momNav').innerHTML=
+    '<span class="momT">MOMENTO</span>'
+    + MOMENTOS.map(([n,t,act])=>
+        `<span class="mom ${act?'on':'fut'}" data-m="${n}"><i>${n}</i>${t}</span>`)
+      .join('<span class="momSep">›</span>')
+    + '<span class="momBar2">'
+    + PRODUCTOS.map(([c,t,act])=>
+        `<span class="prod ${act?'on':''}" data-p="${c}"><b>${c}</b>${t}</span>`).join('')
+    + '</span>';
+  $$('#momNav .mom').forEach(m=>m.onclick=()=>{
+    if(m.dataset.m==='0') return;
+    if(m.dataset.m==='2'){abreTool('momento2');return}
+    toast(`Momento ${m.dataset.m} · visión documentada — no se construye en esta entrega`);
+  });
+  $$('#momNav .prod').forEach(p=>p.onclick=()=>{
+    const c=p.dataset.p;
+    if(c==='0.2') return;
+    toast(c==='0.1' ? 'Producto 0.1 · la matriz de riesgos es otra pantalla'
+                    : 'Producto 0.3 · presupuesto y capacidad, aún no construido');
+  });
+  const v=$('#vigTxt');
+  if(v) v.textContent=`Padrón ${CM.meta.padron} · CENEPRED ago 2026`;
+}
+function abreModal(){
+  $('#ovl').classList.add('on'); document.body.style.overflow='hidden';
+  pintaMomentos();
+  $('#mTit').textContent=S.nombre;
+  const c=[];
+  if(S.evento==='sismo'){
+    c.push(`M ${S.sismo.mag}`,`prof. ${S.sismo.prof} km`,`${S.sismo.lat}, ${S.sismo.lon}`);
+    if(S.sismo.inten)c.push('Int. '+S.sismo.inten);
+    if(S.sismo.fecha)c.push(new Date(S.sismo.fecha).toLocaleString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}));
+    if(S.sismo.cod)c.push(S.sismo.cod);
+  }else c.push(S.evento==='inundacion'?'Inundación':'Movimiento en masa',S.ambito.dep||'—',`exposición ≥ ${S.umbral}`);
+  $('#mChips').innerHTML=c.map(x=>`<span class="chip">${x}</span>`).join('')
+    +(S.sismo.url&&S.evento==='sismo'?`<a class="src" href="${S.sismo.url}" target="_blank" rel="noopener">◈ FUENTE IGP</a>`:'');
+  toolAbierta=null; $('#pnl').classList.remove('on'); S.tab='resumen';
+  if(!mapa) initMapa();
+  setTimeout(()=>{mapa.invalidateSize();render();verZonaCritica()},70);
+}
+$('#btnClose').onclick=()=>{guardaEvento(1);$('#ovl').classList.remove('on');document.body.style.overflow='';pintaLista()};
+$('#btnSave').onclick=()=>guardaEvento();
+$('#btnExp').onclick=()=>exporta(serializa());
+$('#btnCsv').onclick=()=>{
+  const {filas}=agrega();
+  if(!filas.length){toast('El escenario está vacío');return}
+  const h=['ubigeo','departamento','provincia','distrito','nivel','origen','usuarios_total',
+           'saf_ninos','saf_gestantes','saf_usuarios','saf_familias','scd_ninos','scd_locales',
+           'scd_madres_cuidadoras','centros_poblados','usuarios_exp_4_5'];
+  const rows=filas.map(f=>[f.u,f.d.d,f.d.p,f.d.n,f.meta.nivel,f.meta.origen,f.d.u,
+    f.d.sf,f.d.ge,f.d.sf+f.d.ge,f.d.fa,f.d.sc,f.d.lo,f.d.mc,f.pts,f.e45]);
+  const csv='﻿'+[h,...rows].map(r=>r.map(x=>`"${x}"`).join(';')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=`MAIA_0.2_${(S.nombre||'escenario').replace(/[^\w]+/g,'_')}.csv`;a.click();
+  toast(`${filas.length} distritos exportados`);
+};
+
+/* ═══ SALIDAS ═══════════════════════════════════════════════════════════
+   Un escenario que no sale de la pantalla no sirve para nada. Cada
+   formato tiene su destinatario: Excel para quien cruza, Word para quien
+   firma, imagen y WhatsApp para quien está en campo.                   */
+function nombreArchivo(ext){
+  return `MAIA_0.2_${(S.nombre||'escenario').replace(/[^\wáéíóúñÁÉÍÓÚÑ]+/g,'_').slice(0,60)}.${ext}`;
+}
+function bajar(blob,nom){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nom; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+function cabeceraEvento(){
+  const S2=S.sismo;
+  return S.evento==='sismo'
+    ? [['Evento',S.nombre],['Tipo','Sismo'],['Magnitud',S2.mag],['Profundidad km',S2.prof],
+       ['Latitud',S2.lat],['Longitud',S2.lon],['Intensidad',S2.inten||'—'],
+       ['Referencia',S2.ref||'—'],['Reporte',S2.cod||'—'],['Fuente',S2.url||'—'],
+       ['Fecha del evento',S2.fecha||'—']]
+    : [['Evento',S.nombre],['Tipo',S.evento==='inundacion'?'Lluvias / inundación':'Movimientos en masa'],
+       ['Departamento',S.ambito.dep],['Provincia',S.ambito.prov||'todas'],
+       ['Umbral de exposición','≥ '+S.umbral]];
+}
+function resumenTexto(){
+  const {a,filas}=agrega(), zc=zonaImpacto(filas);
+  const L=[];
+  L.push(`*MAIA 0.2 · ${S.nombre}*`);
+  if(S.evento==='sismo') L.push(`M ${S.sismo.mag} · prof. ${S.sismo.prof} km · ${S.sismo.ref||''}`);
+  L.push('');
+  if(zc){
+    L.push(`*ZONA DE MAYOR IMPACTO — ${zc.nivTopeNom.toLowerCase()}*`);
+    L.push(`Prioridad de revisión: ${zc.prioridad}`);
+    L.push(`${nf(zc.filas.length)} distritos · ${nf(zc.usuarios)} usuarios`);
+    L.push(`SAF ${nf(zc.saf)} · SCD ${nf(zc.scd)}`);
+    L.push(zc.filas.slice(0,8).map(f=>f.d.n).join(', ')+(zc.filas.length>8?`, +${zc.filas.length-8}`:''));
+    L.push('');
+  }
+  L.push(`*ESCENARIO COMPLETO*`);
+  L.push(`${nf(a.dist)} distritos · ${nf(a.usu)} usuarios`);
+  L.push(`SAF ${nf(a.sf+a.ge)} (${nf(a.fa)} familias) · SCD ${nf(a.sc)} en ${nf(a.lo)} locales`);
+  L.push('');
+  L.push(`*SIGUIENTE PASO*`);
+  L.push(`Evaluar con qué se responde → Momento 2`);
+  L.push(`Costos y presupuesto → Producto 0.3`);
+  L.push('');
+  L.push(`_Padrón Cuna Más ${CM.meta.padron} · exposición ${CM.meta.exposicion}_`);
+  L.push(`_Comités, facilitadoras y servicios alimentarios: sin dato_`);
+  L.push(`_MAIA 0.2 · Momento 0 · simulación, no evento en curso_`);
+  return L.join('\n');
+}
+async function mapaPNG(){
+  const cont=mapa.getContainer(), W=cont.clientWidth, H=cont.clientHeight;
+  const out=document.createElement('canvas'); out.width=W*2; out.height=H*2;
+  const g=out.getContext('2d'); g.scale(2,2);
+  g.fillStyle='#EEE9EC'; g.fillRect(0,0,W,H);
+  const cr=cont.getBoundingClientRect();
+  for(const img of cont.querySelectorAll('.leaflet-tile-loaded')){
+    const r=img.getBoundingClientRect();
+    try{ g.drawImage(img,r.left-cr.left,r.top-cr.top,r.width,r.height) }catch(e){}
+  }
+  for(const cv of cont.querySelectorAll('canvas')){
+    if(cv===out) continue;
+    const r=cv.getBoundingClientRect();
+    try{ g.drawImage(cv,r.left-cr.left,r.top-cr.top,r.width,r.height) }catch(e){}
+  }
+  /* pie con la procedencia: una imagen sin fuente no se puede usar */
+  g.fillStyle='rgba(255,255,255,.92)'; g.fillRect(0,H-26,W,26);
+  g.fillStyle='#3A2F40'; g.font='700 11px Manrope'; g.textAlign='left';
+  g.fillText(`MAIA 0.2 · ${S.nombre}`,10,H-10);
+  g.fillStyle='#6E6175'; g.font='400 10px Manrope'; g.textAlign='right';
+  g.fillText(`Padrón ${CM.meta.padron} · © OpenStreetMap, CARTO`,W-10,H-10);
+  return new Promise(r=>out.toBlob(r,'image/png'));
+}
+async function exporta2(k){
+  const {a,filas}=agrega();
+  if(!filas.length && k!=='copiar'){toast('El escenario está vacío');return}
+  const zc=zonaCritica(filas);
+
+  if(k==='csv'){ $('#btnCsv').click(); return }
+
+  if(k==='xlsx'){
+    if(typeof XLSX==='undefined'){toast('No cargó la librería de Excel');return}
+    const wb=XLSX.utils.book_new();
+    const res=[...cabeceraEvento(),[],
+      ['ESCENARIO',''],['Distritos',a.dist],['Usuarios Cuna Más',a.usu],
+      ['SAF · niñas y niños',a.sf],['SAF · gestantes',a.ge],['SAF · familias',a.fa],
+      ['SCD · niñas y niños',a.sc],['SCD · locales',a.lo],['SCD · madres cuidadoras',a.mc],
+      ['Puntos de atención',a.ccpp],['Usuarios en exposición 4-5',a.exp45],[],
+      ['ZONA DE MAYOR IMPACTO',''],['Nivel de impacto',zc?zc.nivTopeNom:'—'],
+      ['Prioridad de revisión',zc?zc.prioridad:'—'],['Por qué',zc?zc.porque:'—'],
+      ['Distritos',zc?zc.filas.length:0],['Usuarios',zc?zc.usuarios:0],
+      ['SAF',zc?zc.saf:0],['SCD',zc?zc.scd:0],[],
+      ['SIN DATO',''],['Comités de gestión','falta CUI del CG en SAF'],
+      ['Facilitadoras','falta CUI del CG en SAF'],['Servicios alimentarios','columna vacía en la fuente'],
+      ['Costos y presupuesto','corresponde al Producto 0.3'],
+      ['Recursos y brecha de carpas','corresponde al Momento 2'],[],
+      ['Corte del padrón',CM.meta.padron],['Exposición',CM.meta.exposicion]];
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(res),'Resumen');
+    const enc=['ubigeo','departamento','provincia','distrito','nivel','origen','zona_critica',
+      'usuarios','saf_ninos','saf_gestantes','saf_familias','scd_ninos','scd_locales',
+      'scd_madres_cuidadoras','puntos_atencion','usuarios_exp_4_5','poblacion_censo_2025'];
+    const cri=new Set(zc?zc.filas.map(f=>f.u):[]);
+    const dis=filas.map(f=>[f.u,f.d.d,f.d.p,f.d.n,f.meta.nivel,f.meta.origen,cri.has(f.u)?'SÍ':'',
+      f.d.u,f.d.sf,f.d.ge,f.d.fa,f.d.sc,f.d.lo,f.d.mc,f.pts,f.e45,f.d.pob]);
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([enc,...dis]),'Distritos');
+    const pe=['ubigeo','distrito','servicio','centro_poblado','usuarios','familias','locales',
+      'madres_cuidadoras','nivel_inundacion','nivel_mov_masa','latitud','longitud','origen_coordenada'];
+    const pts=[];
+    filas.forEach(f=>(CM.pts[f.u]||[]).forEach(p=>{ if(!p[PI.usu])return;
+      pts.push([f.u,f.d.n,p[PI.scd]?'SCD':'SAF',p[PI.n],p[PI.usu],p[PI.fam],p[PI.loc],p[PI.mc],
+        NIVN[p[PI.nivI]],NIVN[p[PI.nivM]],p[PI.lat],p[PI.lon],CM.srcNom[p[PI.src]]])}));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([pe,...pts]),'Puntos');
+    XLSX.writeFile(wb,nombreArchivo('xlsx'));
+    toast(`Excel · ${nf(filas.length)} distritos y ${nf(pts.length)} puntos`); return;
+  }
+
+  if(k==='word'||k==='pdf'){
+    let img='';
+    try{ const b=await mapaPNG(); img=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)}) }catch(e){}
+    const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">
+      <title>${S.nombre}</title><style>
+      body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1a1a1a;margin:2cm}
+      h1{font-size:17pt;margin:0 0 4pt}h2{font-size:12pt;margin:16pt 0 6pt;color:#A8004A}
+      .sub{color:#666;font-size:9pt;margin-bottom:14pt}
+      table{border-collapse:collapse;width:100%;font-size:9.5pt;margin-bottom:10pt}
+      th,td{border:1px solid #ddd;padding:5px 7px;text-align:left}
+      th{background:#f4f0f5;font-size:8.5pt;text-transform:uppercase}
+      td.n{text-align:right}
+      .kpi{display:inline-block;border:1px solid #ddd;padding:8px 12px;margin:0 8px 8px 0;min-width:120px}
+      .kpi b{display:block;font-size:16pt}.kpi span{font-size:8pt;color:#666}
+      .av{background:#FFF4E5;border-left:3px solid #E65100;padding:8px 11px;font-size:9pt;margin:10pt 0}
+      img{max-width:100%;border:1px solid #ddd}
+      .pie{font-size:8pt;color:#777;border-top:1px solid #ddd;padding-top:8pt;margin-top:18pt}
+      </style></head><body>
+      <h1>${S.nombre}</h1>
+      <div class="sub">MAIA · Momento 0 · Producto 0.2 — Simulación del Evento<br>
+        Generado ${new Date().toLocaleString('es-PE')} · <b>es una simulación, no un evento en curso</b></div>
+      ${cabeceraEvento().map(([k2,v])=>`<b>${k2}:</b> ${v}<br>`).join('')}
+      ${zc?`<h2>Zona de mayor impacto — ${zc.nivTopeNom.toLowerCase()} · prioridad ${zc.prioridad}</h2>
+        <div class="kpi"><b>${nf(zc.filas.length)}</b><span>DISTRITOS</span></div>
+        <div class="kpi"><b>${nf(zc.usuarios)}</b><span>USUARIOS</span></div>
+        <div class="kpi"><b>${nf(zc.saf)}</b><span>SAF</span></div>
+        <div class="kpi"><b>${nf(zc.scd)}</b><span>SCD</span></div>
+        <p>${zc.filas.map(f=>f.d.n).join(' · ')}</p>`:''}
+      <h2>Escenario completo</h2>
+      <div class="kpi"><b>${nf(a.dist)}</b><span>DISTRITOS</span></div>
+      <div class="kpi"><b>${nf(a.usu)}</b><span>USUARIOS</span></div>
+      <div class="kpi"><b>${nf(a.sf+a.ge)}</b><span>SAF · EN CASA</span></div>
+      <div class="kpi"><b>${nf(a.sc)}</b><span>SCD · EN LOCAL</span></div>
+      <h2>Qué sigue</h2>
+      <div class="av"><b>Este informe dimensiona lo que está comprometido, no cómo responder.</b><br>
+        · <b>Con qué se responde</b> —carpas, emplazamientos, transporte, brecha de instalación temporal— es el <b>Momento 2</b>.<br>
+        · <b>Cuánto cuesta</b> —costo del cambio de modelo, meta y presupuesto— es el <b>Producto 0.3</b>.<br>
+        Ambos quedan como visión documentada en el brief maestro.</div>
+      ${img?`<h2>Mapa del escenario</h2><img src="${img}">`:''}
+      <h2>Distritos</h2>
+      <table><tr><th>Distrito</th><th>Provincia</th><th>Depto.</th><th>Nivel</th><th>Usuarios</th><th>SAF</th><th>SCD</th></tr>
+      ${filas.slice(0,220).map(f=>`<tr><td>${f.d.n}</td><td>${f.d.p}</td><td>${f.d.d}</td><td>${f.meta.nivel}</td>
+        <td class="n">${nf(f.d.u)}</td><td class="n">${nf(f.d.sf+f.d.ge)}</td><td class="n">${nf(f.d.sc)}</td></tr>`).join('')}</table>
+      ${filas.length>220?`<p><i>Se listan los primeros 220 de ${nf(filas.length)}. El detalle completo está en el Excel.</i></p>`:''}
+      <div class="pie"><b>Padrón Cuna Más ${CM.meta.padron}</b> · exposición ${CM.meta.exposicion} · geometría ${CM.meta.geometria}.<br>
+      Comités, facilitadoras y servicios alimentarios: <b>sin dato</b> — falta el <i>CUI del CG</i> en SAF y la columna de servicios alimentarios viene vacía.<br>
+      Costos, presupuesto y brecha financiera corresponden al <b>Producto 0.3</b>.<br>
+      MAIA · Phillyps BRAV[O]</div></body></html>`;
+    if(k==='word'){ bajar(new Blob(['\ufeff'+html],{type:'application/msword'}),nombreArchivo('doc'));
+      toast('Informe Word descargado'); return }
+    const w=window.open('','_blank');
+    if(!w){toast('El navegador bloqueó la ventana de impresión');return}
+    w.document.write(html); w.document.close();
+    setTimeout(()=>{w.focus();w.print()},600);
+    toast('Elige "Guardar como PDF" en el diálogo'); return;
+  }
+
+  if(k==='png'){
+    try{ const b=await mapaPNG(); if(!b) throw 0;
+      bajar(b,nombreArchivo('png')); toast('Imagen del mapa descargada') }
+    catch(e){ toast('El navegador bloqueó la captura de las teselas') }
+    return;
+  }
+
+  if(k==='wa'){
+    window.open('https://wa.me/?text='+encodeURIComponent(resumenTexto()),'_blank');
+    toast('Se abre WhatsApp con el resumen'); return;
+  }
+  if(k==='copiar'){
+    try{ await navigator.clipboard.writeText(resumenTexto()); toast('Resumen copiado') }
+    catch(e){ toast('No se pudo copiar — usa WhatsApp') }
+    return;
+  }
+}
+
+$('#pMeta').textContent='padrón '+CM.meta.padron;
+pintaForm(); pintaLista();
+</script>
+</body>
+</html>
