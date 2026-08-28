@@ -407,6 +407,37 @@ section#resultadosArea{margin-top:4px;}
   .service-meta { gap: 6px; }
   .card-chip { font-size: .58rem; padding: 3px 8px; }
 }
+
+/* ── Filtros plegables y exportación compacta ── */
+.filter-card-title{
+  width:100%;display:flex;align-items:center;gap:10px;
+  background:none;border:none;padding:0;cursor:pointer;
+  font-family:inherit;text-align:left;color:inherit;
+}
+.filtro-resumen{
+  margin-left:auto;font-size:.7rem;font-weight:700;color:#4338CA;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46%;
+}
+.filtro-chevron{
+  flex-shrink:0;font-size:1.2rem;line-height:1;color:#94a3b8;
+  transition:transform .25s cubic-bezier(.16,1,.3,1);
+}
+.filter-card.plegado .filtro-chevron{transform:rotate(-90deg)}
+#filtroCuerpo{
+  overflow:hidden;max-height:1400px;opacity:1;margin-top:14px;
+  transition:max-height .3s cubic-bezier(.16,1,.3,1),opacity .2s,margin-top .3s;
+}
+.filter-card.plegado #filtroCuerpo{max-height:0;opacity:0;margin-top:0}
+
+@media (max-width:820px){
+  .filter-card{padding:16px}
+  .export-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;width:100%}
+  .export-bar .btn{
+    flex:none;min-height:46px;padding:10px 2px;font-size:.63rem;
+    justify-content:center;gap:0;
+  }
+  .export-bar .btn span{display:block;line-height:1.2}
+}
 </style>
 </head>
 <body>
@@ -431,10 +462,14 @@ section#resultadosArea{margin-top:4px;}
   <!-- FILTROS -->
   <section>
     <div class="filter-card">
-      <div class="filter-card-title">
+      <button type="button" class="filter-card-title" id="filtroToggle"
+              onclick="toggleFiltros()" aria-expanded="true" aria-controls="filtroCuerpo">
         <span class="filter-icon">📍</span>
         <h2>Búsqueda por Ubicación</h2>
-      </div>
+        <span class="filtro-resumen" id="filtroResumen"></span>
+        <span class="filtro-chevron" aria-hidden="true">⌄</span>
+      </button>
+      <div id="filtroCuerpo">
       <div class="filter-row">
         <div class="select-group">
           <label for="selectDepartamento">Departamento</label>
@@ -466,6 +501,7 @@ section#resultadosArea{margin-top:4px;}
           <span id="especial-label"></span>
         </div>
       </div>
+      </div>
     </div>
   </section>
 
@@ -483,10 +519,10 @@ section#resultadosArea{margin-top:4px;}
         <p id="resultadosSubtitulo"></p>
       </div>
       <div class="export-bar">
-        <button id="btnPDF"   class="btn btn-pdf"   onclick="exportarPDF()"         disabled>📄 Exportar PDF</button>
-        <button id="btnWord"  class="btn btn-word"  onclick="exportarWord()"        disabled>📘 Exportar Word</button>
-        <button id="btnExcel" class="btn btn-excel" onclick="exportarExcel()"       disabled>📊 Exportar Excel</button>
-        <button id="btnWA"    class="btn btn-wa"    onclick="compartirWhatsApp()"   disabled>💬 WhatsApp</button>
+        <button id="btnPDF"   class="btn btn-pdf"   onclick="exportarPDF()"         disabled><span>PDF</span></button>
+        <button id="btnWord"  class="btn btn-word"  onclick="exportarWord()"        disabled><span>Word</span></button>
+        <button id="btnExcel" class="btn btn-excel" onclick="exportarExcel()"       disabled><span>Excel</span></button>
+        <button id="btnWA"    class="btn btn-wa"    onclick="compartirWhatsApp()"   disabled><span>WhatsApp</span></button>
       </div>
     </div>
     <div id="resultados" class="kpi-container" style="margin-top:20px"></div>
@@ -534,7 +570,7 @@ section#resultadosArea{margin-top:4px;}
 <!-- DATA -->
 <!-- Datos por corte: solo se descarga el mes consultado,
      en vez de los 30 meses juntos. -->
-<script src="am/data/manifest.js"></script>
+<script src="/am/data/manifest.js"></script>
 <script>
 (function () {
   const C = window.AM_CAMPOS, GEO = C.geo, NUM = C.num, nN = NUM.length;
@@ -558,11 +594,11 @@ section#resultadosArea{margin-top:4px;}
   window.AM_CORTE_SEL = sel.f;
   window.AM_EN_MEMORIA = new Set([sel.f]);   // cortes ya rehidratados
   window.AM_PEDIDOS    = {};                 // descargas en curso
-  document.write('<script src="am/data/' + sel.a + '"><\/script>');
+  document.write('<script src="/am/data/' + sel.a + '"><\/script>');
 })();
 </script>
 <script>var dataset = window.AM_DATA;</script>
-<script src="am/actores_julio26.js"></script>
+<script src="/am/actores_julio26.js"></script>
 
 <script>
 // ══════════════════════════════════════════════════
@@ -664,7 +700,7 @@ function _traerCorte(f) {
   if (!window.AM_PEDIDOS[f]) {
     window.AM_PEDIDOS[f] = new Promise((ok, mal) => {
       const sc = document.createElement('script');
-      sc.src = 'am/data/' + m.a;
+      sc.src = '/am/data/' + m.a;
       sc.onload = () => { window.AM_EN_MEMORIA.add(f); ok(); };
       sc.onerror = mal;
       document.head.appendChild(sc);
@@ -833,11 +869,32 @@ function setExportButtons(enabled) {
   });
 }
 
+
+// ── Filtros plegables ──────────────────────────────────────────────────────
+// En el celular ocupaban media pantalla. Tras consultar se recogen solos y
+// la cabecera muestra el ámbito elegido.
+function toggleFiltros(forzar) {
+  const card = document.querySelector('.filter-card');
+  const btn  = document.getElementById('filtroToggle');
+  if (!card || !btn) return;
+  const abrir = typeof forzar === 'boolean' ? forzar : card.classList.contains('plegado');
+  card.classList.toggle('plegado', !abrir);
+  btn.setAttribute('aria-expanded', String(abrir));
+}
+function resumirFiltros() {
+  const r = document.getElementById('filtroResumen');
+  if (!r) return;
+  const v = i => (document.getElementById(i) || {}).value || '';
+  const p = [v('selectDepartamento'), v('selectProvincia'), v('selectDistrito')].filter(Boolean);
+  r.textContent = p.length ? p.join(' · ') : '';
+}
+
 function limpiar() {
   selectDep.value  = '';
   selectProv.innerHTML = '<option value="">— Todas —</option>';
   selectDist.innerHTML = '<option value="">— Todas —</option>';
   document.getElementById('loadingState').classList.add('hidden');
+  resumirFiltros(); toggleFiltros(true);
   mostrarResumenNacional();   // se vuelve al panorama nacional, no a una pantalla vacía
 }
 
@@ -999,6 +1056,8 @@ function filtrarEspecial() {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('resultadosArea').classList.remove('hidden');
     setExportButtons(true);
+    resumirFiltros();
+    if (window.matchMedia('(max-width:820px)').matches) toggleFiltros(false);
   }, 40);
 }
 
@@ -1180,6 +1239,8 @@ function filtrar() {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('resultadosArea').classList.remove('hidden');
     setExportButtons(true);
+    resumirFiltros();
+    if (window.matchMedia('(max-width:820px)').matches) toggleFiltros(false);
   }, 40);
 }
 
