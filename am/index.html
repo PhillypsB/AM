@@ -323,6 +323,81 @@ body{
   .kpi-grid{grid-template-columns:repeat(2,1fr)}
   .kpi-value{font-size:1.4rem}
 }
+
+.am-narrativa{
+  grid-column:1 / -1;                 /* ocupa el ancho completo, no media columna */
+  background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+  box-shadow:0 2px 16px rgba(0,0,0,.07);
+  padding:24px 30px 26px;margin-top:4px;
+  font-size:.88rem;line-height:1.75;color:#334155;text-align:justify;
+}
+.am-narrativa-lbl{
+  font-size:.62rem;font-weight:700;color:#94a3b8;
+  text-transform:uppercase;letter-spacing:.1em;
+  padding-bottom:12px;margin-bottom:18px;border-bottom:1px solid #f1f5f9;
+}
+.am-narrativa h2{display:none;}       /* redundante en pantalla; se conserva en Word y PDF */
+.am-narrativa h3{
+  font-size:.8rem;font-weight:700;color:#1e293b;letter-spacing:.01em;
+  margin:0 0 10px;padding-left:11px;border-left:3px solid #cbd5e1;
+}
+/* dos columnas: SAF a la izquierda, SCD a la derecha */
+.am-cols{
+  display:grid;grid-template-columns:1fr 1fr;gap:30px;
+  margin-top:18px;padding-top:18px;border-top:1px solid #f1f5f9;
+}
+.am-col-scd{border-left:1px solid #f1f5f9;padding-left:30px;}
+.am-col-saf h3{border-left-color:#ec4899;}
+.am-col-scd h3{border-left-color:#10b981;}
+/* apilado: va DESPUÉS de las reglas base para que gane el orden de cascada */
+@media(max-width:960px){
+  .am-cols{grid-template-columns:1fr;gap:0;}
+  .am-col-scd{border-left:none;padding-left:0;padding-top:22px;margin-top:22px;border-top:1px solid #f1f5f9;}
+}
+.am-narrativa p{margin:0 0 11px;}
+.am-cols p{max-width:60ch;}   /* la medida corta solo aplica dentro de las columnas */
+.am-narrativa p:last-child{margin-bottom:0;}
+.am-narrativa strong{color:#0f172a;font-weight:700;}
+
+/* ── filas de actores dentro de las tarjetas ── */
+.detail-table tr.row-sep td{
+  padding:14px 6px 5px;font-size:.63rem;font-weight:700;color:#94a3b8;
+  text-transform:uppercase;letter-spacing:.08em;
+}
+.detail-table tr.row-sep{border-bottom:1px solid #e2e8f0;}
+.detail-table tr.row-total td{
+  padding-top:11px;font-weight:800;color:#0f172a;
+}
+.detail-table tr.row-total{border-top:1px solid #e2e8f0;border-bottom:none;}
+
+/* ── separación clara entre la consulta y los resultados ── */
+.results-header{
+  padding-top:26px;margin-top:30px;border-top:2px solid #e2e8f0;
+}
+.results-header h2{line-height:1.2;}
+#resultados.kpi-container{margin-top:18px !important;gap:22px;}
+section#resultadosArea{margin-top:4px;}
+
+/* ── chips de periodo/ámbito y botón de descarga en la tarjeta ── */
+.service-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.card-chip{
+  font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:#64748b;background:#f1f5f9;border:1px solid #e2e8f0;
+  padding:3px 9px;border-radius:50px;white-space:nowrap;
+}
+.card-chip-amb{color:#1e293b;background:#fff;border-color:#cbd5e1;font-weight:800;max-width:230px;overflow:hidden;text-overflow:ellipsis;}
+.card-dl{
+  width:26px;height:26px;flex-shrink:0;cursor:pointer;
+  border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#64748b;
+  font-size:.85rem;line-height:1;font-family:inherit;
+  display:inline-flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.card-dl:hover{background:#1e293b;color:#fff;border-color:#1e293b;}
+
+/* la meta se alinea a la derecha, también cuando la cabecera envuelve */
+.service-meta{margin-left:auto;justify-content:flex-end;}
+.service-title{flex:1 1 auto;min-width:0;}
+.service-title h3{min-width:0;}
 </style>
 </head>
 <body>
@@ -420,9 +495,11 @@ body{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- DATA -->
-<script src="am/bd.js"></script>
+<script src="bd.js"></script>
+<script src="actores_julio26.js"></script>
 
 <script>
 // ══════════════════════════════════════════════════
@@ -520,14 +597,34 @@ selectCorte.addEventListener('change', () => {
   ultimaFecha = new Date(selectCorte.value);
   mesNombre   = ultimaFecha.toLocaleDateString('es-PE', { month: 'long' }).toUpperCase();
   año         = ultimaFecha.getFullYear();
-  if (selectDep.value) filtrar();
+  if (selectDep.value) filtrar(); else mostrarResumenNacional();
 });
+
+// ── Vista inicial: resumen nacional, antes de cualquier consulta ──
+function mostrarResumenNacional() {
+  const r = calcularResumenNacional();
+  document.getElementById('resultadosTitulo').textContent    = 'Resumen nacional';
+  document.getElementById('resultadosSubtitulo').textContent = 'Todo el país · ' + mesNombre + ' ' + año;
+  document.getElementById('resultados').innerHTML =
+    renderKPIs(r, null, null, null) +
+    `<div class="am-narrativa"><div class="am-narrativa-lbl">Resumen narrativo</div>` +
+      generarIntroNarrativa('nacional', null, null, null, r) +
+      `<div class="am-cols">` +
+        `<div class="am-col am-col-saf">${generarNarrativaSAF('nacional', r)}</div>` +
+        `<div class="am-col am-col-scd">${generarNarrativaSCD('nacional', r)}</div>` +
+      `</div></div>`;
+  document.getElementById('resultadosArea').classList.remove('hidden');
+  // el ámbito nacional también es exportable
+  r.departamento = null; r.provincia = null; r.distrito = null;
+  window.ultimoResultado = r;
+  setExportButtons(true);
+}
 
 const selectDep  = document.getElementById('selectDepartamento');
 const selectProv = document.getElementById('selectProvincia');
 const selectDist = document.getElementById('selectDistrito');
 
-const departamentos = [...new Set(dataset.map(d => d.departamento))];
+const departamentos = [...new Set(dataset.map(d => d.departamento))].sort((a, b) => a.localeCompare(b, 'es'));
 selectDep.innerHTML = '<option value="">— Elegir —</option>';
 departamentos.forEach(dep => {
   const opt = document.createElement('option');
@@ -539,7 +636,7 @@ selectDep.addEventListener('change', () => {
   const dep = selectDep.value;
   selectProv.innerHTML = '<option value="">— Todas —</option>';
   selectDist.innerHTML = '<option value="">— Todas —</option>';
-  const provincias = [...new Set(dataset.filter(d => d.departamento === dep).map(d => d.provincia))];
+  const provincias = [...new Set(dataset.filter(d => d.departamento === dep).map(d => d.provincia))].sort((a, b) => a.localeCompare(b, 'es'));
   provincias.forEach(prov => {
     const opt = document.createElement('option');
     opt.value = opt.text = prov;
@@ -552,7 +649,7 @@ selectProv.addEventListener('change', () => {
   const dep  = selectDep.value;
   const prov = selectProv.value;
   selectDist.innerHTML = '<option value="">— Todas —</option>';
-  const distritos = [...new Set(dataset.filter(d => d.departamento === dep && d.provincia === prov).map(d => d.distrito))];
+  const distritos = [...new Set(dataset.filter(d => d.departamento === dep && d.provincia === prov).map(d => d.distrito))].sort((a, b) => a.localeCompare(b, 'es'));
   distritos.forEach(dist => {
     const opt = document.createElement('option');
     opt.value = opt.text = dist;
@@ -574,6 +671,55 @@ function getEtiquetaFocalizacion(valor) {
   return                    { emoji: '❌', texto: 'NO FOCALIZADO', color: '#f8d7da', borde: '#dc3545' };
 }
 
+// ── Descarga de una tarjeta como imagen ────────────────────────────────────
+// html2canvas devuelve un lienzo VACÍO si el objetivo es .service-card (o el
+// contenedor que la aloja): la tarjeta es un grid item y no la dibuja. Sus
+// partes internas sí se dibujan, así que se reconstruye la tarjeta como un div
+// plano —mismos estilos, sin la clase que rompe la captura— dentro de un marco
+// con el gris de la página, que además reemplaza a la sombra (tampoco se captura).
+async function descargarTarjeta(serv) {
+  const card = document.querySelector(`#resultados .service-card[data-serv="${serv}"]`);
+  if (!card) return;
+  if (typeof html2canvas === 'undefined') {
+    alert('No se pudo cargar la librería de captura. Verifique la conexión.');
+    return;
+  }
+  const FONDO  = '#eef1f6';
+  const BORDE  = serv === 'saf' ? '#e53e3e' : '#38a169';
+  const ancho  = Math.round(card.getBoundingClientRect().width);
+
+  const marco = document.createElement('div');
+  marco.style.cssText = `position:fixed;left:-10000px;top:0;padding:26px;background:${FONDO};` +
+                        `width:${ancho + 52}px;font-family:'Inter','Segoe UI',Roboto,sans-serif;`;
+  const copia = document.createElement('div');
+  copia.style.cssText = `width:${ancho}px;background:#fff;border:1px solid #dbe1ea;` +
+                        `border-top:4px solid ${BORDE};border-radius:16px;`;
+  copia.innerHTML = card.innerHTML;
+  copia.querySelectorAll('.card-dl').forEach(b => b.remove());
+  marco.appendChild(copia);
+  document.body.appendChild(marco);
+
+  try {
+    const lienzo = await html2canvas(marco, { backgroundColor: FONDO, scale: 2, logging: false });
+    const amb = (card.querySelector('.card-chip-amb')?.textContent || 'NACIONAL').replace(/[\/ ]+/g, '_');
+    const per = (card.querySelector('.card-chip')?.textContent || '').replace(/\s+/g, '_');
+    const nombre = `Tarjeta_${serv.toUpperCase()}_${amb}_${per}.png`;
+    await new Promise(res => lienzo.toBlob(b => {
+      if (typeof saveAs === 'function') saveAs(b, nombre);
+      else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(b); a.download = nombre;
+        document.body.appendChild(a); a.click(); a.remove();
+      }
+      res();
+    }));
+  } catch (e) {
+    alert('No se pudo generar la imagen: ' + e.message);
+  } finally {
+    marco.remove();
+  }
+}
+
 function setExportButtons(enabled) {
   ['btnPDF','btnWord','btnExcel','btnWA'].forEach(id => {
     document.getElementById(id).disabled = !enabled;
@@ -584,10 +730,8 @@ function limpiar() {
   selectDep.value  = '';
   selectProv.innerHTML = '<option value="">— Todas —</option>';
   selectDist.innerHTML = '<option value="">— Todas —</option>';
-  document.getElementById('resultadosArea').classList.add('hidden');
   document.getElementById('loadingState').classList.add('hidden');
-  window.ultimoResultado = null;
-  setExportButtons(false);
+  mostrarResumenNacional();   // se vuelve al panorama nacional, no a una pantalla vacía
 }
 
 // ══════════════════════════════════════════════════
@@ -701,8 +845,8 @@ function filtrarEspecial() {
   }
 
   const sumBy = (key) => datosAm.reduce((s,d) => s+(d[key]||0), 0);
-  const distSAF = new Set(datosAm.filter(d=>d.nfamilia_saf>0).map(d=>d.departamento+'|'+d.provincia+'|'+d.distrito));
-  const distSCD = new Set(datosAm.filter(d=>d.nniños_scd>0).map(d=>d.departamento+'|'+d.provincia+'|'+d.distrito));
+  const distSAF = new Set(datosAm.filter(d=>d.nfamilia_saf>0).map(d => d.ubigeo));
+  const distSCD = new Set(datosAm.filter(d=>d.nniños_scd>0).map(d => d.ubigeo));
   const provSAF = new Set(datosAm.filter(d=>d.nfamilia_saf>0).map(d=>d.provincia));
   const provSCD = new Set(datosAm.filter(d=>d.nniños_scd>0).map(d=>d.provincia));
   const depsSAF = new Set(datosAm.filter(d=>d.nfamilia_saf>0).map(d=>d.departamento));
@@ -753,7 +897,7 @@ function filtrarEspecial() {
 
 function renderKPIsEspecial(res, ambito, datos, fStr) {
   const fN = n => (n||0).toLocaleString('es-PE');
-  const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2});
+  const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
   const crSAF = null; const crSCD = null;
   return renderKPIs(res, ambito, '', '');
 }
@@ -873,10 +1017,10 @@ function filtrar() {
 
     const distritosSAF = new Set(dataset
       .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep && (!prov || d.provincia === prov))
-      .filter(d => d.nfamilia_saf > 0).map(d => `${d.departamento}|${d.provincia}|${d.distrito}`));
+      .filter(d => d.nfamilia_saf > 0).map(d => d.ubigeo));
     const distritosSCD = new Set(dataset
       .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep && (!prov || d.provincia === prov))
-      .filter(d => d.nniños_scd > 0).map(d => `${d.departamento}|${d.provincia}|${d.distrito}`));
+      .filter(d => d.nniños_scd > 0).map(d => d.ubigeo));
     const provinciasSAF = new Set(dataset
       .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep)
       .filter(d => d.nfamilia_saf > 0).map(d => d.provincia));
@@ -905,6 +1049,7 @@ function filtrar() {
       prov_scd:            provinciasSCD.size,
       CUMPLE_SAF:          datosUltima[0]?.CUMPLE_SAF ?? null,
       CUMPLE_SCD:          datosUltima[0]?.CUMPLE_SCD ?? null,
+      ubigeos:             [...new Set(datosUltima.map(x => x.ubigeo))],
       departamento: dep, provincia: prov, distrito: dist
     };
 
@@ -916,7 +1061,16 @@ function filtrar() {
     document.getElementById('resultadosTitulo').textContent   = nombreUbicacion.join(' / ');
     document.getElementById('resultadosSubtitulo').textContent = nivelLabel + ' · ' + mesNombre + ' ' + año;
 
+    const _niv = dist ? 'distrito' : prov ? 'provincia' : 'departamento';
     let htmlSalida = renderKPIs(resumen, dep, prov, dist);
+    // narrativa en pantalla (el mismo texto que va a Word y PDF)
+    htmlSalida += `<div class="am-narrativa">` +
+      `<div class="am-narrativa-lbl">Resumen narrativo</div>` +
+      generarIntroNarrativa(_niv, dep, prov, dist, resumen) +
+      `<div class="am-cols">` +
+        `<div class="am-col am-col-saf">${generarNarrativaSAF(_niv, resumen)}</div>` +
+        `<div class="am-col am-col-scd">${generarNarrativaSCD(_niv, resumen)}</div>` +
+      `</div></div>`;
     // Tablas de cobertura según nivel consultado
     htmlSalida += generarTablaCobertura('departamento', dep, prov, dist);
     if (prov) htmlSalida += generarTablaCobertura('provincia',  dep, prov, dist);
@@ -957,35 +1111,83 @@ function renderKPIs(d, dep, prov, dist) {
     return `<span class="foc-badge" style="background:${foc.color};border-color:${foc.borde}">${foc.emoji} ${foc.texto}</span>`;
   }
 
+  // Periodo y ámbito, visibles en la esquina de cada tarjeta (y en la imagen)
+  const _periodo = `${mesNombre} ${año}`;
+  const _ambito  = (d.esNacional || (!dep && !prov && !dist))
+    ? 'NACIONAL' : String(dist || prov || dep).toUpperCase();
+  const meta = (serv, badge) => `
+      <div class="service-meta">
+        ${badge}
+        <span class="card-chip">${_periodo}</span>
+        <span class="card-chip card-chip-amb">${_ambito}</span>
+        <button class="card-dl" onclick="descargarTarjeta('${serv}')"
+                title="Descargar esta tarjeta como imagen" aria-label="Descargar imagen">⤓</button>
+      </div>`;
+
+  // ── Actores comunales: misma fuente que la narrativa (padrón deduplicado) ──
+  const _ac  = d.esNacional ? actoresNacional() : actoresDe(d.ubigeos);
+  const _det = _ac.cubiertos > 0;
+  const _n   = v => (v || 0).toLocaleString('es-PE');
+  const _sep = t => `<tr class="row-sep"><td colspan="2">${t}</td></tr>`;
+  const _fila = (ico, lbl, val) => val ? `<tr><td>${ico} ${lbl}</td><td>${_n(val)}</td></tr>` : '';
+  const _total = v => `<tr class="row-total"><td>🤝 Total actores comunales</td><td>${_n(v)}</td></tr>`;
+
   // ── SAF ──────────────────────────────────────────────────────────
+  const bS = _ac.saf, okS = _det && bS.total;
   const safRows = `
-    <tr><td>🤰 Gestantes</td><td>${d.gestantes_SAF.toLocaleString('es-PE')}</td></tr>
-    <tr><td>🧒 Niños SAF</td><td>${d.niños_saf.toLocaleString('es-PE')}</td></tr>
-    ${nivelDistrito  ? `<tr><td>🏛 Comités de Gestión</td><td>${d.CG_SAF}</td></tr>` : ''}
-    ${nivelDistrito  ? `<tr><td>👥 Facilitadoras</td><td>${d.FACILITADOR_SAF}</td></tr>` : ''}
-    ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${d.dist_saf}</td></tr>` : ''}
-    ${nivelDepto     ? `<tr><td>🗺 Provincias con atención</td><td>${d.prov_saf}</td></tr>` : ''}
+    <tr><td>🤰 Gestantes</td><td>${_n(d.gestantes_SAF)}</td></tr>
+    <tr><td>🧒 Niños SAF</td><td>${_n(d.niños_saf)}</td></tr>
+    ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${_n(d.dist_saf)}</td></tr>` : ''}
+    ${nivelDepto     ? `<tr><td>🗺 Provincias con atención</td><td>${_n(d.prov_saf)}</td></tr>` : ''}
+    ${(nivelDistrito || d.esNacional) ? (okS ? (
+        _sep('Actores comunales') +
+        _fila('🏛','Comités de Gestión',   bS.cg) +
+        _fila('👥','Facilitadoras',        bS.facilitadoras) +
+        _fila('🗂','Apoyo administrativo', bS.apoyo_admin) +
+        _fila('🧑‍💼','Junta directiva',      bS.junta_directiva) +
+        _fila('🔎','Consejo de vigilancia', bS.consejo_vigilancia) +
+        _total(bS.total)
+      ) : (
+        _fila('🏛','Comités de Gestión', d.CG_SAF) +
+        _fila('👥','Facilitadoras',      d.FACILITADOR_SAF)
+      )) : ''}
   `;
 
   // ── SCD ──────────────────────────────────────────────────────────
+  const bD = _ac.scd, okD = _det && bD.total;
   const scdRows = `
-    <tr><td>🏘 CIAI</td><td>${d.CIAI_SCD.toLocaleString('es-PE')}</td></tr>
-    ${nivelDistrito  ? `<tr><td>🏛 Comités de Gestión</td><td>${d.CG_SCD}</td></tr>` : ''}
-    ${nivelDistrito  ? `<tr><td>👩 Madres Cuidadoras</td><td>${d.MadresCuidadoras_SCD.toLocaleString('es-PE')}</td></tr>` : ''}
-    ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${d.dist_scd}</td></tr>` : ''}
-    ${nivelDepto     ? `<tr><td>🗺 Provincias con atención</td><td>${d.prov_scd}</td></tr>` : ''}
-    ${d.SA_SCD       ? `<tr><td>🏫 Servicios Adicionales</td><td>${d.SA_SCD}</td></tr>` : ''}
+    <tr><td>🏘 CIAI</td><td>${_n(d.CIAI_SCD)}</td></tr>
+    ${d.SA_SCD       ? `<tr><td>🏫 Servicios Adicionales</td><td>${_n(d.SA_SCD)}</td></tr>` : ''}
+    ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${_n(d.dist_scd)}</td></tr>` : ''}
+    ${nivelDepto     ? `<tr><td>🗺 Provincias con atención</td><td>${_n(d.prov_scd)}</td></tr>` : ''}
+    ${(nivelDistrito || d.esNacional) ? (okD ? (
+        _sep('Actores comunales') +
+        _fila('🏛','Comités de Gestión',       bD.cg) +
+        _fila('👩','Madres Cuidadoras',        bD.madres_cuidadoras) +
+        _fila('🧕','Madres Guía',              bD.madres_guia) +
+        _fila('🧑‍🏫','Guías de Familia',         bD.guias_familia) +
+        _fila('🍲','Socias de Cocina',         bD.socias_cocina) +
+        _fila('🧹','Apoyo limpieza y vigilancia', bD.apoyo_limpieza) +
+        _fila('🚚','Repartidores de alimentos', bD.repartidores) +
+        _fila('🗂','Apoyo administrativo',     bD.apoyo_admin) +
+        _fila('🧑‍💼','Junta directiva',          bD.junta_directiva) +
+        _fila('🔎','Consejo de vigilancia',    bD.consejo_vigilancia) +
+        _total(bD.total)
+      ) : (
+        _fila('🏛','Comités de Gestión', d.CG_SCD) +
+        _fila('👩','Madres Cuidadoras',  d.MadresCuidadoras_SCD)
+      )) : ''}
   `;
 
   return `
-  <div class="service-card saf-card">
+  <div class="service-card saf-card" data-serv="saf">
     <div class="service-header">
       <div class="service-title">
         <span class="service-dot saf-dot"></span>
         <h3>Servicio de Acompañamiento a Familias</h3>
         <span class="service-abbr">SAF</span>
       </div>
-      ${focBadge(focSAF)}
+      ${meta('saf', focBadge(focSAF))}
     </div>
     <div class="kpi-grid kpi-grid-2">
       <div class="kpi-block primary-kpi">
@@ -995,8 +1197,8 @@ function renderKPIs(d, dep, prov, dist) {
       </div>
       <div class="kpi-block">
         <div class="kpi-emoji">💰</div>
-        <div class="kpi-value" style="font-size:1.0rem">S/. ${d.ejec_saf.toLocaleString('es-PE',{minimumFractionDigits:2})}</div>
-        <div class="kpi-label">Ejecución</div>
+        <div class="kpi-value" style="font-size:1.0rem">S/. ${d.ejec_saf.toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div class="kpi-label">Ejecución acumulada</div>
       </div>
     </div>
     <div class="detail-section">
@@ -1004,14 +1206,14 @@ function renderKPIs(d, dep, prov, dist) {
     </div>
   </div>
 
-  <div class="service-card scd-card">
+  <div class="service-card scd-card" data-serv="scd">
     <div class="service-header">
       <div class="service-title">
         <span class="service-dot scd-dot"></span>
         <h3>Servicio de Cuidado Diurno</h3>
         <span class="service-abbr">SCD</span>
       </div>
-      ${focBadge(focSCD)}
+      ${meta('scd', focBadge(focSCD))}
     </div>
     <div class="kpi-grid kpi-grid-2">
       <div class="kpi-block primary-kpi">
@@ -1021,8 +1223,8 @@ function renderKPIs(d, dep, prov, dist) {
       </div>
       <div class="kpi-block">
         <div class="kpi-emoji">💰</div>
-        <div class="kpi-value" style="font-size:1.0rem">S/. ${d.ejec_scd.toLocaleString('es-PE',{minimumFractionDigits:2})}</div>
-        <div class="kpi-label">Ejecución</div>
+        <div class="kpi-value" style="font-size:1.0rem">S/. ${d.ejec_scd.toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div class="kpi-label">Ejecución acumulada</div>
       </div>
     </div>
     <div class="detail-section">
@@ -1042,10 +1244,34 @@ function compartirWhatsApp() {
   const prov = d.provincia;
   const dist = d.distrito;
   const nivelDistrito = !!dist;
-  const safCGLines = nivelDistrito ? `🏛 Comités de Gestión: ${d.CG_SAF}  \n👥 Facilitadoras: ${d.FACILITADOR_SAF}  \n` : '';
-  const scdCGLines = nivelDistrito ? `🏛 Comités de Gestión: ${d.CG_SCD}  \n👩 Madres Cuidadoras: ${d.MadresCuidadoras_SCD}  \n` : '';
+  // Actores comunales: detalle real por rol cuando hay dato del distrito
+  const _ac = actoresDe(d.ubigeos);
+  const _wa = (b, roles) => {
+    let t = `🏛 Comités de Gestión: ${b.cg}  \n`;
+    roles.forEach(([k, e, n]) => { if (b[k]) t += `${e} ${n}: ${b[k].toLocaleString('es-PE')}  \n`; });
+    return t + `🤝 Total actores comunales: ${b.total.toLocaleString('es-PE')}  \n`;
+  };
+  const safCGLines = !nivelDistrito ? ''
+    : (_ac.cubiertos && _ac.saf.total)
+      ? _wa(_ac.saf, [['facilitadoras','👥','Facilitadoras'],
+                      ['apoyo_admin','🗂','Apoyo administrativo'],
+                      ['junta_directiva','🧑‍💼','Junta directiva'],
+                      ['consejo_vigilancia','🔎','Consejo de vigilancia']])
+      : `🏛 Comités de Gestión: ${d.CG_SAF}  \n👥 Facilitadoras: ${d.FACILITADOR_SAF}  \n`;
+  const scdCGLines = !nivelDistrito ? ''
+    : (_ac.cubiertos && _ac.scd.total)
+      ? _wa(_ac.scd, [['madres_cuidadoras','👩','Madres Cuidadoras'],
+                      ['madres_guia','🧕','Madres Guía'],
+                      ['guias_familia','🧑‍🏫','Guías de Familia'],
+                      ['socias_cocina','🍲','Socias de Cocina'],
+                      ['apoyo_limpieza','🧹','Apoyo limpieza y vigilancia'],
+                      ['repartidores','🚚','Repartidores de alimentos'],
+                      ['apoyo_admin','🗂','Apoyo administrativo'],
+                      ['junta_directiva','🧑‍💼','Junta directiva'],
+                      ['consejo_vigilancia','🔎','Consejo de vigilancia']])
+      : `🏛 Comités de Gestión: ${d.CG_SCD}  \n👩 Madres Cuidadoras: ${d.MadresCuidadoras_SCD}  \n`;
 
-  const nombreUbicacion = [dep];
+  const nombreUbicacion = dep ? [dep] : ['NACIONAL'];
   if (prov) nombreUbicacion.push(prov);
   if (dist) nombreUbicacion.push(dist);
   const encabezadoUbicacion = `(${nombreUbicacion.join(' / ')})`;
@@ -1066,7 +1292,7 @@ ${encabezadoUbicacion}
 🧒 Niños: ${d.niños_saf}
 ${safCGLines}📌 Distritos con atención: ${d.dist_saf}
 📌 Provincias con atención: ${d.prov_saf}  
-💰 Ejecución: S/. ${d.ejec_saf.toLocaleString('es-PE', { minimumFractionDigits: 2 })}  
+💰 Ejecución acumulada: S/. ${d.ejec_saf.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}  
 
 
 *🟢 Servicio de Cuidado Diurno (SCD) -* ${dist && d.CUMPLE_SCD !== undefined ? `${getEtiquetaFocalizacion(d.CUMPLE_SCD).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SCD).texto}` : ''}  
@@ -1074,7 +1300,7 @@ ${safCGLines}📌 Distritos con atención: ${d.dist_saf}
 🏘 CIAI: ${d.CIAI_SCD}
 ${scdCGLines}📌 Distritos con atención: ${d.dist_scd}
 📌 Provincias con atención: ${d.prov_scd}  
-💰 Ejecución: S/. ${d.ejec_scd.toLocaleString('es-PE', { minimumFractionDigits: 2 })}  
+💰 Ejecución acumulada: S/. ${d.ejec_scd.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}  
 
 
 🕐 Generado: ${fecha}
@@ -1106,12 +1332,12 @@ function calcularResumen(dep, prov = null, dist = null) {
   const distritosSAF = new Set(dataset
     .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep && (!prov || d.provincia === prov))
     .filter(d => d.nfamilia_saf > 0)
-    .map(d => `${d.departamento}|${d.provincia}|${d.distrito}`));
+    .map(d => d.ubigeo));
 
   const distritosSCD = new Set(dataset
     .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep && (!prov || d.provincia === prov))
     .filter(d => d.nniños_scd > 0)
-    .map(d => `${d.departamento}|${d.provincia}|${d.distrito}`));
+    .map(d => d.ubigeo));
 
   const provinciasSAF = new Set(dataset
     .filter(d => d.fecha === ultimaFechaStr && d.departamento === dep)
@@ -1142,7 +1368,8 @@ function calcularResumen(dep, prov = null, dist = null) {
     prov_saf: provinciasSAF.size,
     prov_scd: provinciasSCD.size,
     CUMPLE_SAF: dist ? datosUltima[0]?.CUMPLE_SAF ?? null : null,
-    CUMPLE_SCD: dist ? datosUltima[0]?.CUMPLE_SCD ?? null : null
+    CUMPLE_SCD: dist ? datosUltima[0]?.CUMPLE_SCD ?? null : null,
+    ubigeos: [...new Set(datosUltima.map(d => d.ubigeo))]
   };
 }
 
@@ -1153,13 +1380,14 @@ function calcularResumenNacional() {
   const sumBy = (key) => datos.reduce((s, d) => s + (d[key] || 0), 0);
   const depsSAF = new Set(datos.filter(d => d.nfamilia_saf > 0).map(d => d.departamento));
   const depsSCD = new Set(datos.filter(d => d.nniños_scd   > 0).map(d => d.departamento));
-  const distSAF = new Set(datos.filter(d => d.nfamilia_saf > 0).map(d => d.departamento+'|'+d.provincia+'|'+d.distrito));
-  const distSCD = new Set(datos.filter(d => d.nniños_scd   > 0).map(d => d.departamento+'|'+d.provincia+'|'+d.distrito));
+  const distSAF = new Set(datos.filter(d => d.nfamilia_saf > 0).map(d => d.ubigeo));
+  const distSCD = new Set(datos.filter(d => d.nniños_scd   > 0).map(d => d.ubigeo));
   const provSAFnac = new Set(datos.filter(d => d.nfamilia_saf > 0).map(d => d.departamento+'|'+d.provincia));
   const provSCDnac = new Set(datos.filter(d => d.nniños_scd   > 0).map(d => d.departamento+'|'+d.provincia));
   // Unión de distritos con cobertura (SAF o SCD)
   const distUnion = new Set([...distSAF, ...distSCD]);
-  const TOTAL_DISTRITOS_PERU = 1874; // distritos oficiales según INEI
+  const TOTAL_DISTRITOS_PERU = 1891; // distritos oficiales según INEI
+  const _nac = actoresNacional();
   return {
     familias_2025: sumBy('nfamilia_saf'),
     gestantes_SAF: sumBy('ngestantes_saf'),
@@ -1178,7 +1406,11 @@ function calcularResumenNacional() {
     pct_saf: ((distSAF.size / TOTAL_DISTRITOS_PERU) * 100).toFixed(1),
     pct_scd: ((distSCD.size / TOTAL_DISTRITOS_PERU) * 100).toFixed(1),
     prov_saf: provSAFnac.size, prov_scd: provSCDnac.size,
-    CG_SAF: 0, FACILITADOR_SAF: 0, CG_SCD: 0, MadresCuidadoras_SCD: 0,
+    // actores reales del padrón (antes eran ceros fijos)
+    CG_SAF: _nac.saf.cg, FACILITADOR_SAF: _nac.saf.facilitadoras,
+    CG_SCD: _nac.scd.cg, MadresCuidadoras_SCD: _nac.scd.madres_cuidadoras,
+    ubigeos: [...new Set(datos.map(d => d.ubigeo))],
+    esNacional: true,
     familias_2024:0, niños_2024:0
   };
 }
@@ -1214,7 +1446,7 @@ function generarPrologo() {
       </p>
       <p style="font-size:7.5pt;color:#9ca3af;margin:6px 0 0 0;line-height:1.4;border-top:1px solid #e5e7eb;padding-top:5px;font-style:normal;">
         <sup>1</sup> Directiva "Modelo de Cogestión Comunal para la Implementación y Funcionamiento de los Servicios del
-        Programa Nacional Cuna Más", versión 9 — RDE N° 135-2024-MIDIS/PNCM.
+        Programa Nacional Cuna Más", versión 9 — RDE N° 2100-2025-MIDIS/PNCM.
       </p>
     </div>`;
 }
@@ -1278,7 +1510,7 @@ function generarResumenNacional(resNac) {
 
   return `
     <h2>COBERTURA NACIONAL — PNCM | ${mesNombre} ${año}</h2>
-    <p style="margin-bottom:14px;line-height:1.7;">Entre enero y ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó a nivel nacional un monto total de <strong>S/ ${fN(Math.round(tot))}</strong>, de los cuales <strong>S/ ${fN(Math.round(resNac.ejec_saf))} (${pSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fN(Math.round(resNac.ejec_scd))} (${pSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
+    <p style="margin-bottom:14px;line-height:1.7;">De enero a ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó a nivel nacional un monto total de <strong>S/ ${fN(Math.round(tot))}</strong>, de los cuales <strong>S/ ${fN(Math.round(resNac.ejec_saf))} (${pSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fN(Math.round(resNac.ejec_scd))} (${pSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
     <p style="margin-bottom:14px;line-height:1.7;">Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fN(resNac.familias_2025)} familias</strong>, conformadas por <strong>${fN(resNac.niños_saf)} niñas y niños</strong> y <strong>${fN(resNac.gestantes_SAF)} gestantes</strong>, con presencia en <strong>${fN(resNac.dist_saf)} distritos</strong> de los <strong>${depLabel}</strong>.</p>
     <p style="margin-bottom:14px;line-height:1.7;">Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> brinda atención a <strong>${fN(resNac.niños_2025)} niñas y niños</strong> en <strong>${fN(resNac.CIAI_SCD)} Centros Infantiles de Atención Integral (CIAI)</strong>, distribuidos en <strong>${fN(resNac.dist_scd)} distritos</strong> de los <strong>${depLabel}</strong>.</p>
 
@@ -1292,7 +1524,7 @@ function generarResumenNacional(resNac) {
         ${card('Departamento',     depLabel.startsWith('24')?'25':'25', '24 dep. + Callao')}
         ${card('Provincias',       fN(resNac.prov_saf),      'con cobertura SAF')}
         ${card('Distritos',        fN(resNac.dist_saf),      'con cobertura SAF')}
-        ${card('Ejecución',        fmtEjec(resNac.ejec_saf), 'enero–'+mesMin+' '+año, true)}
+        ${card('Ejecución acumulada', fmtEjec(resNac.ejec_saf), 'enero–'+mesMin+' '+año, true)}
       </tr>
     </table>
 
@@ -1304,7 +1536,7 @@ function generarResumenNacional(resNac) {
         ${card('Departamento',     '25',                      '24 dep. + Callao')}
         ${card('Provincias',       fN(resNac.prov_scd),      'con cobertura SCD')}
         ${card('Distritos',        fN(resNac.dist_scd),      'con cobertura SCD')}
-        ${card('Ejecución',        fmtEjec(resNac.ejec_scd), 'enero–'+mesMin+' '+año, true)}
+        ${card('Ejecución acumulada', fmtEjec(resNac.ejec_scd), 'enero–'+mesMin+' '+año, true)}
       </tr>
     </table>
   `;
@@ -1321,6 +1553,9 @@ function generarTablaSAF(d, encabezadoUbicacion, dist, prov) {
   const nivelDepto    = !dist && !prov;
   const fN = n => (n||0).toLocaleString('es-PE');
   const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const _ac  = d.esNacional ? actoresNacional() : actoresDe(d.ubigeos);
+  const _okS = _ac.cubiertos && _ac.saf.total;
+  const _okD = _ac.cubiertos && _ac.scd.total;
   return `
     <table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;margin:6px 0 0 0;font-family:'Segoe UI',sans-serif;">
       <thead>
@@ -1336,11 +1571,11 @@ function generarTablaSAF(d, encabezadoUbicacion, dist, prov) {
         <tr><td style="${_KL}">👨‍👩‍👧‍👦&nbsp; Familias</td><td style="${_KV}">${fN(d.familias_2025)}</td></tr>
         <tr><td style="${_KL}">🤰&nbsp; Gestantes</td><td style="${_KV}">${fN(d.gestantes_SAF)}</td></tr>
         <tr><td style="${_KL}">🧒&nbsp; Niñas y niños</td><td style="${_KV}">${fN(d.niños_saf)}</td></tr>
-        ${nivelDistrito?`<tr><td style="${_KL}">🏛&nbsp; Comités de Gestión</td><td style="${_KV}">${d.CG_SAF}</td></tr>`:''}
-        ${nivelDistrito?`<tr><td style="${_KL}">👥&nbsp; Facilitadoras</td><td style="${_KV}">${d.FACILITADOR_SAF}</td></tr>`:''}
+        ${nivelDistrito?`<tr><td style="${_KL}">🏛&nbsp; Comités de Gestión</td><td style="${_KV}">${_okS ? _ac.saf.cg : d.CG_SAF}</td></tr>`:''}
+        ${nivelDistrito?`<tr><td style="${_KL}">👥&nbsp; Facilitadoras</td><td style="${_KV}">${fN(_okS ? _ac.saf.facilitadoras : d.FACILITADOR_SAF)}</td></tr>`:''}
         ${!nivelDistrito?`<tr><td style="${_KL}">📌&nbsp; Distritos con atención</td><td style="${_KV}">${d.dist_saf}</td></tr>`:''}
         ${nivelDepto?`<tr><td style="${_KL}">📌&nbsp; Provincias con atención</td><td style="${_KV}">${d.prov_saf}</td></tr>`:''}
-        <tr><td style="${_KL}">💰&nbsp; Ejecución</td><td style="${_KE}">${fS(d.ejec_saf)}</td></tr>
+        <tr><td style="${_KL}">💰&nbsp; Ejecución acumulada</td><td style="${_KE}">${fS(d.ejec_saf)}</td></tr>
         ${nivelDistrito&&d.CUMPLE_SAF!=null?`<tr><td style="${_KL}">📍&nbsp; Estado de focalización</td><td style="${_KV}">${getEtiquetaFocalizacion(d.CUMPLE_SAF).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SAF).texto}</td></tr>`:''}
       </tbody>
     </table>`;
@@ -1351,6 +1586,9 @@ function generarTablaSCD(d, encabezadoUbicacion, dist, prov) {
   const nivelDepto    = !dist && !prov;
   const fN = n => (n||0).toLocaleString('es-PE');
   const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const _ac  = d.esNacional ? actoresNacional() : actoresDe(d.ubigeos);
+  const _okS = _ac.cubiertos && _ac.saf.total;
+  const _okD = _ac.cubiertos && _ac.scd.total;
   return `
     <table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;margin:6px 0 0 0;font-family:'Segoe UI',sans-serif;">
       <thead>
@@ -1365,11 +1603,11 @@ function generarTablaSCD(d, encabezadoUbicacion, dist, prov) {
       <tbody>
         <tr><td style="${_KL}">🧒&nbsp; Niñas y niños</td><td style="${_KV}">${fN(d.niños_2025)}</td></tr>
         <tr><td style="${_KL}">🏘&nbsp; CIAI</td><td style="${_KV}">${fN(d.CIAI_SCD)}</td></tr>
-        ${nivelDistrito?`<tr><td style="${_KL}">🏛&nbsp; Comités de Gestión</td><td style="${_KV}">${d.CG_SCD}</td></tr>`:''}
-        ${nivelDistrito?`<tr><td style="${_KL}">👩&nbsp; Madres Cuidadoras</td><td style="${_KV}">${fN(d.MadresCuidadoras_SCD)}</td></tr>`:''}
+        ${nivelDistrito?`<tr><td style="${_KL}">🏛&nbsp; Comités de Gestión</td><td style="${_KV}">${_okD ? _ac.scd.cg : d.CG_SCD}</td></tr>`:''}
+        ${nivelDistrito?`<tr><td style="${_KL}">👩&nbsp; Madres Cuidadoras</td><td style="${_KV}">${fN(_okD ? _ac.scd.madres_cuidadoras : d.MadresCuidadoras_SCD)}</td></tr>`:''}
         ${!nivelDistrito?`<tr><td style="${_KL}">📌&nbsp; Distritos con atención</td><td style="${_KV}">${d.dist_scd}</td></tr>`:''}
         ${nivelDepto?`<tr><td style="${_KL}">📌&nbsp; Provincias con atención</td><td style="${_KV}">${d.prov_scd}</td></tr>`:''}
-        <tr><td style="${_KL}">💰&nbsp; Ejecución</td><td style="${_KE}">${fS(d.ejec_scd)}</td></tr>
+        <tr><td style="${_KL}">💰&nbsp; Ejecución acumulada</td><td style="${_KE}">${fS(d.ejec_scd)}</td></tr>
         ${nivelDistrito&&d.CUMPLE_SCD!=null?`<tr><td style="${_KL}">📍&nbsp; Estado de focalización</td><td style="${_KV}">${getEtiquetaFocalizacion(d.CUMPLE_SCD).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SCD).texto}</td></tr>`:''}
       </tbody>
     </table>`;
@@ -1480,8 +1718,8 @@ function exportarExcel() {
     ]);
     aoa.push([
       '',
-      'FAMILIAS','NIÑAS/OS','GESTANTES','S/. EJECUCIÓN',
-      'USUARIOS','CIAI','S/. EJECUCIÓN'
+      'FAMILIAS','NIÑAS/OS','GESTANTES','S/. EJECUCIÓN ACUM.',
+      'USUARIOS','CIAI','S/. EJECUCIÓN ACUM.'
     ]);
     data.filas.forEach(f => {
       aoa.push([
@@ -1554,7 +1792,7 @@ function exportarExcel() {
     ['G4','H4'].forEach(a => setCell(ws, a, '', stHeadSCD));
 
     // Sub-cabecera fila 5 (índice 4)
-    const subH = [null,'FAMILIAS','NIÑAS/OS','GESTANTES','S/. EJECUCIÓN','USUARIOS','CIAI','S/. EJECUCIÓN'];
+    const subH = [null,'FAMILIAS','NIÑAS/OS','GESTANTES','S/. EJECUCIÓN ACUM.','USUARIOS','CIAI','S/. EJECUCIÓN ACUM.'];
     for (let c=1; c<=7; c++) {
       const addr = XLSX.utils.encode_cell({r:4, c});
       setCell(ws, addr, subH[c], c<=4 ? stHeadSAF : stHeadSCD);
@@ -1588,9 +1826,53 @@ function exportarExcel() {
     XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
   }
 
-  agregarHoja('departamento', 'Departamental', dep);
+  if (dep) agregarHoja('departamento', 'Departamental', dep);
   if (prov) agregarHoja('provincia', 'Provincia_' + prov.slice(0,20), prov);
   if (dist) agregarHoja('distrito',  'Distrito_'  + dist.slice(0,20), dist);
+
+  // Hoja de actores comunales — misma lógica que las tarjetas y la narrativa:
+  // si un servicio no tiene detalle en el padrón, se usan los valores de bd.js.
+  (function () {
+    const res = window.ultimoResultado; if (!res) return;
+    const ac  = res.esNacional ? actoresNacional() : actoresDe(res.ubigeos);
+    const okS = ac.cubiertos && ac.saf.total, okD = ac.cubiertos && ac.scd.total;
+    if (!okS && !okD) return;
+    const ROT = [['facilitadoras','Facilitadoras'], ['madres_cuidadoras','Madres Cuidadoras'],
+                 ['madres_guia','Madres Guía'], ['guias_familia','Guías de Familia'],
+                 ['socias_cocina','Socias de Cocina'],
+                 ['apoyo_limpieza','Apoyo de limpieza y vigilancia'],
+                 ['repartidores','Repartidores de alimentos'],
+                 ['apoyo_admin','Apoyo administrativo del Comité de Gestión'],
+                 ['junta_directiva','Junta directiva'], ['consejo_vigilancia','Consejo de vigilancia']];
+    const filas = [['ACTORES COMUNALES'], [],
+                   ['Ámbito', [dep, prov, dist].filter(Boolean).join(' / ') || 'Nacional'],
+                   ['Corte', `${mesNombre} ${año}`],
+                   ['Criterio', 'Cada persona se cuenta una sola vez (no hay doble conteo)'], [],
+                   ['Rol', 'SAF', 'SCD', 'Total']];
+    const vS = k => okS ? ac.saf[k] : 0;
+    const vD = k => okD ? ac.scd[k] : 0;
+    const cgS = okS ? ac.saf.cg : (res.CG_SAF || 0);
+    const cgD = okD ? ac.scd.cg : (res.CG_SCD || 0);
+    filas.push(['Comités de Gestión', cgS, cgD, cgS + cgD]);
+    ROT.forEach(([k, t]) => {
+      let a = vS(k), b = vD(k);
+      // sin padrón para un servicio: se muestran los valores de bd.js
+      if (!okS && k === 'facilitadoras')     a = res.FACILITADOR_SAF || 0;
+      if (!okD && k === 'madres_cuidadoras') b = res.MadresCuidadoras_SCD || 0;
+      if (a || b) filas.push([t, a, b, a + b]);
+    });
+    const totS = okS ? ac.saf.total : 0, totD = okD ? ac.scd.total : 0;
+    if (okS && okD) filas.push(['TOTAL ACTORES COMUNALES', totS, totD, totS + totD]);
+    if (!okS || !okD) {
+      filas.push([]);
+      filas.push(['Nota', 'El detalle por rol de ' + (!okS ? 'SAF' : 'SCD') +
+                  ' no está disponible: el comité que atiende este distrito tiene sede en otro. ' +
+                  'Se muestran las cifras del registro de cobertura.']);
+    }
+    const wsA = XLSX.utils.aoa_to_sheet(filas);
+    wsA['!cols'] = [{wch:46},{wch:12},{wch:12},{wch:12}];
+    XLSX.utils.book_append_sheet(wb, wsA, 'Actores comunales');
+  })();
 
   // Hoja de información con diseño
   const meta = [
@@ -1633,7 +1915,7 @@ function exportarExcel() {
   }
   XLSX.utils.book_append_sheet(wb, wsMeta, 'Información');
 
-  const nombreArchivo = `Cobertura_${dep.replace(/\s+/g,'_')}${prov?'_'+prov.replace(/\s+/g,'_'):''}${dist?'_'+dist.replace(/\s+/g,'_'):''}_${mesNombre}_${año}.xlsx`;
+  const nombreArchivo = `Cobertura_${(dep||'Nacional').replace(/\s+/g,'_')}${prov?'_'+prov.replace(/\s+/g,'_'):''}${dist?'_'+dist.replace(/\s+/g,'_'):''}_${mesNombre}_${año}.xlsx`;
   XLSX.writeFile(wb, nombreArchivo);
 }
 
@@ -1762,10 +2044,10 @@ function generarTablaCobertura(nivel, dep, prov, dist, opts) {
             <th style="${thSAF2}border:${brdSAF};padding:${padHead};text-align:center;font-size:${fzHead};">FAMILIAS</th>
             <th style="${thSAF2}border:${brdSAF};padding:${padHead};text-align:center;font-size:${fzHead};">NIÑAS/OS</th>
             <th style="${thSAF2}border:${brdSAF};padding:${padHead};text-align:center;font-size:${fzHead};">GESTANTES</th>
-            <th style="${thSAF2}border:${brdSAF};padding:${padHead};text-align:center;font-size:${fzHead};">S/. EJECUCIÓN</th>
+            <th style="${thSAF2}border:${brdSAF};padding:${padHead};text-align:center;font-size:${fzHead};">S/. EJECUCIÓN ACUM.</th>
             <th style="${thSCD2}border:${brdSCD};padding:${padHead};text-align:center;font-size:${fzHead};">USUARIOS</th>
             <th style="${thSCD2}border:${brdSCD};padding:${padHead};text-align:center;font-size:${fzHead};">CIAI</th>
-            <th style="${thSCD2}border:${brdSCD};padding:${padHead};text-align:center;font-size:${fzHead};">S/. EJECUCIÓN</th>
+            <th style="${thSCD2}border:${brdSCD};padding:${padHead};text-align:center;font-size:${fzHead};">S/. EJECUCIÓN ACUM.</th>
           </tr>
         </thead>
         <tbody>
@@ -1787,41 +2069,205 @@ function generarIntroNarrativa(nivel, dep, prov, dist, d) {
   const pctSCD = total > 0 ? ((d.ejec_scd / total) * 100).toFixed(1) : '0.0';
   const nombre = [dep, prov, dist].filter(Boolean).join(' / ');
 
-  let heading = `<h2>${nivel.toUpperCase()}: ${nombre.toUpperCase()}</h2>`;
+  let heading = nivel === 'nacional'
+    ? `<h2>RESUMEN NACIONAL</h2>`
+    : `<h2>${nivel.toUpperCase()}: ${nombre.toUpperCase()}</h2>`;
   let intro = '';
 
-  if (nivel === 'departamento') {
-    intro = `<p>Entre enero y ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó en <strong>${dep}</strong> un monto de <strong>S/ ${fmt(total)}</strong>, de los cuales <strong>S/ ${fmt(d.ejec_saf)} (${pctSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fmt(d.ejec_scd)} (${pctSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
+  if (nivel === 'nacional') {
+    intro = `<p>De enero a ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> acumuló a nivel nacional una ejecución de <strong>S/ ${fmt(total)}</strong>, de los cuales <strong>S/ ${fmt(d.ejec_saf)} (${pctSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fmt(d.ejec_scd)} (${pctSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
+    <p>La intervención alcanza <strong>${d.dist_union} de ${d.total_distritos} distritos</strong> del país (<strong>${d.pct_cobertura}%</strong>), considerando ambos servicios.</p>`;
+  } else if (nivel === 'departamento') {
+    intro = `<p>De enero a ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> acumuló en <strong>${dep}</strong> una ejecución de <strong>S/ ${fmt(total)}</strong>, de los cuales <strong>S/ ${fmt(d.ejec_saf)} (${pctSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fmt(d.ejec_scd)} (${pctSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
   } else if (nivel === 'provincia') {
-    intro = `<p>Entre enero y ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó en la provincia de <strong>${prov}</strong>, departamento de <strong>${dep}</strong>, un total de <strong>S/ ${fmt(total)}</strong>, de los cuales <strong>S/ ${fmt(d.ejec_saf)} (${pctSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fmt(d.ejec_scd)} (${pctSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
+    intro = `<p>De enero a ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> acumuló en la provincia de <strong>${prov}</strong>, departamento de <strong>${dep}</strong>, una ejecución de <strong>S/ ${fmt(total)}</strong>, de los cuales <strong>S/ ${fmt(d.ejec_saf)} (${pctSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fmt(d.ejec_scd)} (${pctSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
     <p>Esta inversión permitió financiar la prestación de ambos servicios, contribuyendo al desarrollo infantil temprano y al fortalecimiento de la atención brindada a niñas, niños y gestantes de la provincia.</p>`;
   } else {
-    // distrito
-    const introd2 = d.ejec_scd > 0
-      ? ''
-      : `<p>Durante este período, el distrito no registró ejecución presupuestal en el <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
-    intro = `<p>Entre enero y ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó en el distrito de <strong>${dist}</strong>, provincia de <strong>${prov} (${dep})</strong>, un total de <strong>S/ ${fmtD(d.ejec_saf)}</strong> en el <strong>Servicio de Acompañamiento a Familias (SAF)</strong>.</p>${introd2}`;
+    // distrito — se informan los dos servicios; nunca "S/ 0.00"
+    const haySAF = d.ejec_saf > 0, haySCD = d.ejec_scd > 0;
+    const ubic = `el distrito de <strong>${dist}</strong>, provincia de <strong>${prov} (${dep})</strong>`;
+    if (haySAF && haySCD) {
+      intro = `<p>De enero a ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> acumuló en ${ubic} una ejecución de <strong>S/ ${fmtD(total)}</strong>, de los cuales <strong>S/ ${fmtD(d.ejec_saf)} (${pctSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fmtD(d.ejec_scd)} (${pctSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
+    } else if (haySAF) {
+      intro = `<p>De enero a ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> acumuló en ${ubic} una ejecución de <strong>S/ ${fmtD(d.ejec_saf)}</strong>, correspondiente en su totalidad al <strong>Servicio de Acompañamiento a Familias (SAF)</strong>. Durante el período, el distrito no registró ejecución en el <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
+    } else if (haySCD) {
+      intro = `<p>De enero a ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> acumuló en ${ubic} una ejecución de <strong>S/ ${fmtD(d.ejec_scd)}</strong>, correspondiente en su totalidad al <strong>Servicio de Cuidado Diurno (SCD)</strong>. Durante el período, el distrito no registró ejecución en el <strong>Servicio de Acompañamiento a Familias (SAF)</strong>.</p>`;
+    } else {
+      intro = `<p>De enero a ${mesMin} de ${año}, ${ubic} no registró ejecución presupuestal acumulada del <strong>Programa Nacional Cuna Más (PNCM)</strong> en ninguno de sus dos servicios.</p>`;
+    }
   }
 
   return heading + intro;
 }
 
 // ── Genera los párrafos narrativos del SAF ─────────────────────────────────
+// ── ACTORES COMUNALES ──────────────────────────────────────────────────────
+// Padron a nivel de persona (actores_julio26.js). Los conteos de bd.js inflan
+// porque atribuyen cada comite a todos los distritos que atiende; aqui cada
+// persona se cuenta una sola vez.
+// OJO: el padron es de un solo corte. Si el usuario elige otro mes en el
+// selector, no se usa el detalle y se cae a los valores de bd.js.
+const _ROLES = ['facilitadoras','madres_cuidadoras','madres_guia','guias_familia',
+                'socias_cocina','apoyo_limpieza','repartidores','apoyo_admin',
+                'junta_directiva','consejo_vigilancia'];
+const _ROL_TXT = {
+  facilitadoras:      ['facilitadora',                              'facilitadoras'],
+  madres_cuidadoras:  ['Madre Cuidadora',                           'Madres Cuidadoras'],
+  madres_guia:        ['Madre Guía',                                'Madres Guía'],
+  guias_familia:      ['Guía de Familia',                           'Guías de Familia'],
+  socias_cocina:      ['Socia de Cocina',                           'Socias de Cocina'],
+  apoyo_limpieza:     ['persona de apoyo de limpieza y vigilancia', 'personas de apoyo de limpieza y vigilancia'],
+  repartidores:       ['repartidor de alimentos',                   'repartidores de alimentos'],
+  apoyo_admin:        ['apoyo administrativo del Comité de Gestión','apoyos administrativos del Comité de Gestión'],
+  junta_directiva:    ['miembro de la junta directiva',             'miembros de la junta directiva'],
+  consejo_vigilancia: ['miembro del consejo de vigilancia',         'miembros del consejo de vigilancia']
+};
+
+// Estado de focalizacion: los datos traen "1"/"2"/"0" (no la etiqueta)
+const _esFocalizado  = v => v === '1' || v === 1 || v === true || v === 'FOCALIZADO';
+const _esContinuidad = v => v === '2' || v === 2 || v === 'CONTINUIDAD';
+
+// ¿el corte elegido coincide con el periodo del padron?
+function _actVigente() {
+  if (!window.ACTORES) return false;
+  const f = ultimaFecha instanceof Date
+    ? ultimaFecha.toISOString().split('T')[0]
+    : String(ultimaFecha || '').split('T')[0];
+  return f === window.ACTORES.periodo;
+}
+
+let _ACT_IDX = null;
+function _actIndex() {
+  if (_ACT_IDX) return _ACT_IDX;
+  _ACT_IDX = {};
+  if (window.ACTORES && window.ACTORES.filas) {
+    const C = window.ACTORES.campos;
+    window.ACTORES.filas.forEach(f => {
+      const o = {}; C.forEach((k, i) => o[k] = f[i]);
+      _ACT_IDX[o.ubigeo] = o;
+    });
+  }
+  return _ACT_IDX;
+}
+
+// Suma los actores de una lista de ubigeos. `cubiertos` = cuantos de esos
+// distritos tienen detalle; si es 0 no se muestra desglose.
+function actoresDe(ubigeos) {
+  const r = { cubiertos: 0, total: 0, saf: { cg: 0, total: 0 }, scd: { cg: 0, total: 0 } };
+  _ROLES.forEach(k => { r.saf[k] = 0; r.scd[k] = 0; });
+  if (!_actVigente()) return r;
+  const idx = _actIndex();
+  (ubigeos || []).forEach(u => {
+    const o = idx[u];
+    if (!o) return;
+    r.cubiertos++;
+    r.saf.cg += o.saf_cg;  r.saf.total += o.saf_actores;
+    r.scd.cg += o.scd_cg;  r.scd.total += o.scd_actores;
+    _ROLES.forEach(k => { r.saf[k] += o['saf_' + k]; r.scd[k] += o['scd_' + k]; });
+  });
+  r.total = r.saf.total + r.scd.total;
+  return r;
+}
+
+// Redacta los actores agrupados por función, en frases cortas.
+// Evita el inventario de nueve elementos en una sola oración.
+function _fraseActores(b, serv) {
+  // [texto singular, texto plural, roles]
+  const GRUPOS = serv === 'saf'
+    ? [['El acompañamiento a las familias está a cargo de',
+        'El acompañamiento a las familias está a cargo de',  ['facilitadoras']],
+       ['La gestión comunal recae en',
+        'La gestión comunal recae en', ['junta_directiva','consejo_vigilancia','apoyo_admin']]]
+    : [['La atención cotidiana está a cargo de',
+        'La atención cotidiana está a cargo de', ['madres_cuidadoras','madres_guia','guias_familia']],
+       ['El soporte del servicio lo brinda',
+        'El soporte del servicio lo brindan', ['socias_cocina','apoyo_limpieza','repartidores']],
+       ['La gestión comunal recae en',
+        'La gestión comunal recae en', ['junta_directiva','consejo_vigilancia','apoyo_admin']]];
+
+  return GRUPOS.map(([sing, plur, roles]) => {
+    const lista = _listaRoles(b, roles);
+    if (!lista) return '';
+    const n = roles.reduce((t, k) => t + (b[k] || 0), 0);
+    return `${n === 1 ? sing : plur} ${lista}.`;
+  }).filter(Boolean).join(' ');
+}
+
+// Totales nacionales de actores: se toman del padrón ya deduplicado.
+// NO se suman los distritos: 559 personas trabajan en más de uno.
+function actoresNacional() {
+  const v = { cubiertos: 0, total: 0, saf: { cg: 0, total: 0 }, scd: { cg: 0, total: 0 } };
+  _ROLES.forEach(k => { v.saf[k] = 0; v.scd[k] = 0; });
+  if (!_actVigente() || !window.ACTORES.totales) return v;
+  const t = window.ACTORES.totales;
+  ['saf', 'scd'].forEach(sv => {
+    v[sv].cg = t[sv].cg; v[sv].total = t[sv].actores;
+    _ROLES.forEach(k => { v[sv][k] = t[sv][k] || 0; });
+  });
+  v.cubiertos = 1;
+  v.total = t.personas_unicas;
+  return v;
+}
+
+// "3 facilitadoras, 2 Madres Guía y 1 Socia de Cocina"
+function _listaRoles(bloque, roles) {
+  const presentes = roles.filter(k => bloque[k] > 0);
+  // evita repetir "miembros de..." dos veces seguidas
+  const juntaAntes = presentes.includes('junta_directiva');
+  const partes = presentes.map(k => {
+    const n = bloque[k];
+    let t = _ROL_TXT[k][n === 1 ? 0 : 1];
+    if (k === 'consejo_vigilancia' && juntaAntes) t = t.replace(/^miembros? /, '');
+    return '<strong>' + n.toLocaleString('es-PE') + ' ' + t + '</strong>';
+  });
+  if (!partes.length) return '';
+  if (partes.length === 1) return partes[0];
+  return partes.slice(0, -1).join(', ') + ' y ' + partes[partes.length - 1];
+}
+
 function generarNarrativaSAF(nivel, d) {
   const fmt = n => (n || 0).toLocaleString('es-PE', { maximumFractionDigits: 0 });
   const mesMin = (mesNombre || '').toLowerCase();
   let p1 = '', p2 = '';
 
-  if (nivel === 'departamento') {
+  if (nivel === 'nacional') {
+    const b = actoresNacional().saf;
+    p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> atiende a <strong>${fmt(d.familias_2025)} familias</strong> en todo el país, conformadas por <strong>${fmt(d.niños_saf)} niñas y niños</strong> y <strong>${fmt(d.gestantes_SAF)} gestantes</strong>. La cobertura llega a <strong>${fmt(d.dist_saf)} distritos</strong> (<strong>${d.pct_saf}%</strong> del país) en <strong>${fmt(d.prov_saf)} provincias</strong> de <strong>${d.dep_saf} departamentos</strong>.</p>`;
+    p2 = b.total
+      ? `<p>El servicio se sostiene con <strong>${fmt(b.cg)} Comités de Gestión</strong>. ` + _fraseActores(b, 'saf') +
+        ` En conjunto, <strong>${fmt(b.total)} actores comunales</strong> participan en la prestación del servicio.</p>`
+      : '';
+  } else if (nivel === 'departamento') {
     p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fmt(d.familias_2025)} familias</strong>. Entre sus integrantes se encuentran <strong>${fmt(d.niños_saf)} niñas y niños</strong> y <strong>${fmt(d.gestantes_SAF)} gestantes</strong>, quienes reciben atención y acompañamiento a través de la intervención del programa.</p>`;
     p2 = `<p>Esta cobertura se extiende a <strong>${d.dist_saf} distritos</strong>, distribuidos en <strong>${d.prov_saf} provincias</strong>, reflejando el alcance territorial del servicio y su contribución al desarrollo integral de la primera infancia y la atención de gestantes en los ámbitos de intervención.</p>`;
   } else if (nivel === 'provincia') {
     p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fmt(d.familias_2025)} familias</strong> en la provincia. Esta población está conformada por <strong>${fmt(d.niños_saf)} niñas y niños</strong> y <strong>${fmt(d.gestantes_SAF)} gestantes</strong>, quienes reciben atención y acompañamiento a través de la intervención del programa.</p>`;
     p2 = `<p>La prestación del servicio tiene presencia en los <strong>${d.dist_saf} distritos de la provincia</strong>, contribuyendo al fortalecimiento del desarrollo infantil temprano y a la atención integral de las familias usuarias.</p>`;
+  } else if ((d.familias_2025 || 0) === 0) {
+    // distrito sin cobertura SAF — no enumerar ceros
+    p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el distrito no registra atención ni cobertura a través del <strong>Servicio de Acompañamiento a Familias (SAF)</strong>. En consecuencia, no cuenta con familias usuarias, <strong>Comités de Gestión</strong> ni <strong>facilitadoras</strong> vinculados a este servicio.</p>`;
+    const haySCD = (d.niños_2025 || 0) > 0 || (d.CIAI_SCD || 0) > 0;
+    const focSAF = _esFocalizado(d.CUMPLE_SAF);
+    if (haySCD) {
+      p2 = `<p>${focSAF ? 'Si bien el distrito se encuentra focalizado para la implementación del SAF, durante' : 'Durante'} el período evaluado no se ha iniciado la prestación de este servicio, por lo que la intervención del <strong>Programa Nacional Cuna Más (PNCM)</strong> se desarrolla exclusivamente a través del <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
+    } else if (focSAF) {
+      p2 = `<p>El distrito se encuentra focalizado para la implementación del SAF; durante el período evaluado aún no se ha iniciado la prestación del servicio.</p>`;
+    }
   } else {
     // distrito
-    p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fmt(d.familias_2025)} familias</strong> en el distrito. Esta población está conformada por <strong>${fmt(d.niños_saf)} niñas y niños</strong> y <strong>${fmt(d.gestantes_SAF)} gestantes</strong>, quienes reciben atención y acompañamiento a través de la intervención del programa.</p>`;
-    p2 = `<p>La prestación del servicio se desarrolla con la participación de <strong>${d.CG_SAF} Comités de Gestión</strong> y <strong>${d.FACILITADOR_SAF} facilitadoras</strong>, actores clave que contribuyen a la implementación de las actividades y al acompañamiento de las familias usuarias en el territorio.</p>`;
+    const _g = d.gestantes_SAF || 0;
+    const _comp = _g > 0
+      ? `<strong>${fmt(d.niños_saf)} ${d.niños_saf === 1 ? 'niña o niño' : 'niñas y niños'}</strong> y <strong>${fmt(_g)} ${_g === 1 ? 'gestante' : 'gestantes'}</strong>`
+      : `<strong>${fmt(d.niños_saf)} ${d.niños_saf === 1 ? 'niña o niño' : 'niñas y niños'}</strong>, sin gestantes registradas en el período`;
+    p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fmt(d.familias_2025)} ${d.familias_2025 === 1 ? 'familia' : 'familias'}</strong> en el distrito. Esta población está conformada por ${_comp}, quienes reciben atención y acompañamiento a través de la intervención del programa.</p>`;
+    const ac = actoresDe(d.ubigeos), b = ac.saf;
+    if (ac.cubiertos && b.total) {
+      p2 = `<p>La prestación del servicio se organiza en torno a <strong>${b.cg} ${b.cg === 1 ? 'Comité de Gestión' : 'Comités de Gestión'}</strong>. ` +
+           _fraseActores(b, 'saf') +
+           ` En conjunto, <strong>${fmt(b.total)} ${b.total === 1 ? 'actor comunal sostiene' : 'actores comunales sostienen'}</strong> el acompañamiento a las familias usuarias del distrito.</p>`;
+    } else {
+      p2 = `<p>La prestación del servicio se desarrolla con la participación de <strong>${d.CG_SAF} ${d.CG_SAF === 1 ? 'Comité' : 'Comités'} de Gestión</strong> y <strong>${d.FACILITADOR_SAF} ${d.FACILITADOR_SAF === 1 ? 'facilitadora' : 'facilitadoras'}</strong>, actores clave que contribuyen a la implementación de las actividades y al acompañamiento de las familias usuarias en el territorio.</p>`;
+    }
   }
 
   return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🔴 Servicio de Acompañamiento a Familias (SAF)</h3>${p1}${p2}`;
@@ -1835,7 +2281,14 @@ function generarNarrativaSCD(nivel, d) {
 
   const sinCobertura = d.niños_2025 === 0 && d.CIAI_SCD === 0;
 
-  if (nivel === 'departamento') {
+  if (nivel === 'nacional') {
+    const b = actoresNacional().scd;
+    p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> atiende a <strong>${fmt(d.niños_2025)} niñas y niños</strong> en <strong>${fmt(d.CIAI_SCD)} Centros Infantiles de Atención Integral (CIAI)</strong>, con presencia en <strong>${fmt(d.dist_scd)} distritos</strong> (<strong>${d.pct_scd}%</strong> del país) de <strong>${fmt(d.prov_scd)} provincias</strong> en <strong>${d.dep_scd} departamentos</strong>.</p>`;
+    p2 = b.total
+      ? `<p>El servicio se sostiene con <strong>${fmt(b.cg)} Comités de Gestión</strong>. ` + _fraseActores(b, 'scd') +
+        ` En conjunto, <strong>${fmt(b.total)} actores comunales</strong> participan en la prestación del servicio.</p>`
+      : '';
+  } else if (nivel === 'departamento') {
     p1 = `<p>Por su parte, al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> alcanza una cobertura de <strong>${fmt(d.niños_2025)} niñas y niños</strong>, quienes reciben atención integral en espacios especialmente acondicionados para promover su desarrollo y bienestar.</p>`;
     p2 = `<p>Para la prestación de este servicio, se cuenta con <strong>${d.CIAI_SCD} Centros Infantiles de Atención Integral (CIAI)</strong>, con presencia en <strong>${d.dist_scd} distritos</strong> distribuidos en <strong>${d.prov_scd} provincias</strong>, lo que permite acercar la atención a las familias de los ámbitos de intervención del programa.</p>`;
   } else if (nivel === 'provincia') {
@@ -1844,14 +2297,31 @@ function generarNarrativaSCD(nivel, d) {
   } else {
     // distrito
     if (sinCobertura) {
-      const focSCD = d.CUMPLE_SCD === 'FOCALIZADO' || d.CUMPLE_SCD === true;
+      const focSCD  = _esFocalizado(d.CUMPLE_SCD);
+      const contSCD = _esContinuidad(d.CUMPLE_SCD);
+      const haySAF  = (d.familias_2025 || 0) > 0;
       p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el distrito no registra atención ni cobertura a través del <strong>Servicio de Cuidado Diurno (SCD)</strong>. En consecuencia, no cuenta con niñas y niños usuarios, <strong>Centros Infantiles de Atención Integral (CIAI)</strong>, <strong>Comités de Gestión</strong> ni <strong>Madres Cuidadoras</strong> vinculados a este servicio.</p>`;
-      p2 = focSCD
-        ? `<p>Si bien el distrito se encuentra focalizado para la implementación del SCD, durante el período evaluado no se ha iniciado la prestación de este servicio, por lo que la intervención del <strong>Programa Nacional Cuna Más (PNCM)</strong> se desarrolla exclusivamente a través del <strong>Servicio de Acompañamiento a Familias (SAF)</strong>.</p>`
-        : '';
+      const estado = focSCD  ? 'Si bien el distrito se encuentra focalizado para la implementación del SCD, durante'
+                   : contSCD ? 'Si bien el distrito se encuentra en continuidad para el SCD, durante'
+                   :           'Durante';
+      // solo se afirma "exclusivamente a través del SAF" si el SAF realmente opera
+      if (haySAF) {
+        p2 = `<p>${estado} el período evaluado no se ha iniciado la prestación de este servicio, por lo que la intervención del <strong>Programa Nacional Cuna Más (PNCM)</strong> se desarrolla exclusivamente a través del <strong>Servicio de Acompañamiento a Familias (SAF)</strong>.</p>`;
+      } else if (focSCD || contSCD) {
+        p2 = `<p>${estado} el período evaluado aún no se ha iniciado la prestación del servicio en el distrito.</p>`;
+      } else {
+        p2 = '';
+      }
     } else {
       p1 = `<p>Al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> brinda atención a <strong>${fmt(d.niños_2025)} niñas y niños</strong> en el distrito, a través de espacios orientados a promover su cuidado, aprendizaje y desarrollo integral.</p>`;
-      p2 = `<p>Para la prestación de este servicio, se cuenta con <strong>${d.CIAI_SCD} Centros Infantiles de Atención Integral (CIAI)</strong> y <strong>${d.CG_SCD} Comités de Gestión</strong>, con el apoyo de <strong>${d.MadresCuidadoras_SCD} Madres Cuidadoras</strong> que garantizan la atención cotidiana de los niñas y niños usuarios.</p>`;
+      const ac = actoresDe(d.ubigeos), b = ac.scd;
+      if (ac.cubiertos && b.total) {
+        p2 = `<p>Para la prestación de este servicio se cuenta con <strong>${d.CIAI_SCD} ${d.CIAI_SCD === 1 ? 'Centro Infantil' : 'Centros Infantiles'} de Atención Integral (CIAI)</strong> y <strong>${b.cg} ${b.cg === 1 ? 'Comité de Gestión' : 'Comités de Gestión'}</strong>. ` +
+             _fraseActores(b, 'scd') +
+             ` En conjunto, <strong>${fmt(b.total)} ${b.total === 1 ? 'actor comunal sostiene' : 'actores comunales sostienen'}</strong> la atención cotidiana de las niñas y los niños usuarios.</p>`;
+      } else {
+        p2 = `<p>Para la prestación de este servicio, se cuenta con <strong>${d.CIAI_SCD} ${d.CIAI_SCD === 1 ? 'Centro Infantil' : 'Centros Infantiles'} de Atención Integral (CIAI)</strong> y <strong>${d.CG_SCD} ${d.CG_SCD === 1 ? 'Comité' : 'Comités'} de Gestión</strong>, con el apoyo de <strong>${d.MadresCuidadoras_SCD} ${d.MadresCuidadoras_SCD === 1 ? 'Madre Cuidadora' : 'Madres Cuidadoras'}</strong> que garantizan la atención cotidiana de las niñas y los niños usuarios.</p>`;
+      }
     }
   }
 
@@ -1877,11 +2347,11 @@ function generarBloqueTerritorioNivel(nivel, dep, prov, resumen) {
   // Total distritos en el ámbito
   let totalDistAmbito, labelAmbito;
   if (nivel === 'departamento') {
-    const allDist = new Set(datos.filter(d => d.departamento === dep).map(d => d.departamento+'|'+d.provincia+'|'+d.distrito));
+    const allDist = new Set(datos.filter(d => d.departamento === dep).map(d => d.ubigeo));
     totalDistAmbito = allDist.size;
     labelAmbito = dep;
   } else {
-    const allDist = new Set(datos.filter(d => d.departamento === dep && d.provincia === prov).map(d => d.departamento+'|'+d.provincia+'|'+d.distrito));
+    const allDist = new Set(datos.filter(d => d.departamento === dep && d.provincia === prov).map(d => d.ubigeo));
     totalDistAmbito = allDist.size;
     labelAmbito = prov;
   }
@@ -1938,13 +2408,18 @@ function generarTarjetasKPI(d, nivel, servicio) {
   const card = (lbl, val, sub='', exec=false) =>
     `<td style="${W}"><div style="${K}"><div style="${KL}">${lbl}</div><div style="${exec?KE:KV}">${val}</div>${sub?`<div style="${KS}">${sub}</div>`:''}</div></td>`;
 
+  // mismos actores que la narrativa y las tarjetas de pantalla
+  const _ac  = d.esNacional ? actoresNacional() : actoresDe(d.ubigeos);
+  const _okS = _ac.cubiertos && _ac.saf.total;
+  const _okD = _ac.cubiertos && _ac.scd.total;
+
   if (servicio === 'SAF') {
     const cols = nivelDist
       ? [card('Familias', fN(d.familias_2025), 'beneficiarias'),
          card('Niñas/os', fN(d.niños_saf)),
          card('Gestantes', fN(d.gestantes_SAF)),
-         card('Com. Gestión', String(d.CG_SAF)),
-         card('Facilitadoras', String(d.FACILITADOR_SAF)),
+         card('Com. Gestión', String(_okS ? _ac.saf.cg : d.CG_SAF)),
+         card('Facilitadoras', fN(_okS ? _ac.saf.facilitadoras : d.FACILITADOR_SAF)),
          card('Ejecución', fS(d.ejec_saf), 'ene–'+mesMin+' '+año, true)]
       : [card('Familias', fN(d.familias_2025), 'beneficiarias'),
          card('Niñas/os', fN(d.niños_saf)),
@@ -1960,8 +2435,8 @@ function generarTarjetasKPI(d, nivel, servicio) {
     const cols = nivelDist
       ? [card('Niñas/os', fN(d.niños_2025), 'usuarios'),
          card('CIAI', fN(d.CIAI_SCD)),
-         card('Com. Gestión', String(d.CG_SCD)),
-         card('Madres Cuid.', fN(d.MadresCuidadoras_SCD)),
+         card('Com. Gestión', String(_okD ? _ac.scd.cg : d.CG_SCD)),
+         card('Madres Cuid.', fN(_okD ? _ac.scd.madres_cuidadoras : d.MadresCuidadoras_SCD)),
          card('Ejecución', fS(d.ejec_scd), 'ene–'+mesMin+' '+año, true),
          focRow]
       : [card('Niñas/os', fN(d.niños_2025), 'usuarios'),
@@ -2203,7 +2678,7 @@ async function exportarWord() {
   const hoy = new Date();
   const fechaFormateada = `${hoy.getDate().toString().padStart(2, '0')}/${(hoy.getMonth() + 1).toString().padStart(2, '0')}/${hoy.getFullYear()}`;
 
-  const nombreUbicacion = [dep];
+  const nombreUbicacion = dep ? [dep] : ['NACIONAL'];
   if (prov) nombreUbicacion.push(prov);
   if (dist) nombreUbicacion.push(dist);
   const encabezadoUbicacion = `(${nombreUbicacion.join(' / ')})`;
@@ -2323,7 +2798,7 @@ async function exportarWord() {
     contenido += `
       <h2>${ambito} — ÁMBITO ESPECIAL PNCM</h2>
       <p><em style="color:#6b7280;font-size:8.5pt;">${ambitoLbl}</em></p>
-      <p>Entre enero y ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó en el ámbito del <strong>${ambito}</strong> un monto total de <strong>S/ ${fN(Math.round(tot))}</strong>, de los cuales <strong>S/ ${fN(Math.round(d.ejec_saf))} (${pSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fN(Math.round(d.ejec_scd))} (${pSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
+      <p>De enero a ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó en el ámbito del <strong>${ambito}</strong> un monto total de <strong>S/ ${fN(Math.round(tot))}</strong>, de los cuales <strong>S/ ${fN(Math.round(d.ejec_saf))} (${pSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fN(Math.round(d.ejec_scd))} (${pSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
       <p>Al mes de <strong>${mesMin} de ${año}</strong>, la intervención abarca <strong>${fN(d.dist_saf + d.dist_scd)} distritos</strong> en <strong>${d.dep_saf || d.dep_scd} departamentos</strong> del ámbito focalizado.</p>`;
 
     // Bloque territorial
@@ -2435,7 +2910,7 @@ async function exportarWord() {
     </html>
   `;
 
-  const nombreArchivo = `AM_${dep.replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}_${mesNombre}_${año}.doc`;
+  const nombreArchivo = `AM_${(dep||'Nacional').replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}_${mesNombre}_${año}.doc`;
 
   const blob = new Blob([contenido], {    type: 'application/msword'
   });
@@ -2541,21 +3016,46 @@ async function exportarPDF() {
     filaKV(saf,'Familias',           resumen.familias_2025.toLocaleString('es-PE'));
     filaKV(saf,'Niños',              resumen.niños_saf.toLocaleString('es-PE'));
     filaKV(saf,'Gestantes',          resumen.gestantes_SAF.toLocaleString('es-PE'));
-    if (nivelDistrito) filaKV(saf,'Comités de Gestión', resumen.CG_SAF);
-    if (nivelDistrito) filaKV(saf,'Facilitadoras',      resumen.FACILITADOR_SAF);
+    const _ac  = actoresDe(resumen.ubigeos);
+    const _det = _ac.cubiertos > 0;
+    if (nivelDistrito) {
+      const b = _ac.saf, ok = _det && b.total;
+      filaKV(saf,'Comités de Gestión', ok ? b.cg : resumen.CG_SAF);
+      filaKV(saf,'Facilitadoras',      ok ? b.facilitadoras : resumen.FACILITADOR_SAF);
+      if (ok) {
+        if (b.apoyo_admin)        filaKV(saf,'Apoyo administrativo',  b.apoyo_admin);
+        if (b.junta_directiva)    filaKV(saf,'Junta directiva',       b.junta_directiva);
+        if (b.consejo_vigilancia) filaKV(saf,'Consejo de vigilancia', b.consejo_vigilancia);
+        filaKV(saf,'Total actores comunales', b.total.toLocaleString('es-PE'));
+      }
+    }
     if (!nivelDistrito) filaKV(saf,'Distritos con atención',  resumen.dist_saf);
     if (nivelDepto)     filaKV(saf,'Provincias con atención', resumen.prov_saf);
-    filaKV(saf,'Ejecución', 'S/. ' + resumen.ejec_saf.toLocaleString('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}));
+    filaKV(saf,'Ejecución acumulada', 'S/. ' + resumen.ejec_saf.toLocaleString('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}));
 
     const scd = [];
     filaKV(scd,'Niños',              resumen.niños_2025.toLocaleString('es-PE'));
     filaKV(scd,'CIAI',               resumen.CIAI_SCD.toLocaleString('es-PE'));
-    if (nivelDistrito) filaKV(scd,'Comités de Gestión', resumen.CG_SCD);
-    if (nivelDistrito) filaKV(scd,'Madres Cuidadoras',  resumen.MadresCuidadoras_SCD.toLocaleString('es-PE'));
+    if (nivelDistrito) {
+      const b = _ac.scd, ok = _det && b.total;
+      filaKV(scd,'Comités de Gestión', ok ? b.cg : resumen.CG_SCD);
+      filaKV(scd,'Madres Cuidadoras',  (ok ? b.madres_cuidadoras : resumen.MadresCuidadoras_SCD).toLocaleString('es-PE'));
+      if (ok) {
+        if (b.madres_guia)        filaKV(scd,'Madres Guía',                 b.madres_guia);
+        if (b.guias_familia)      filaKV(scd,'Guías de Familia',            b.guias_familia);
+        if (b.socias_cocina)      filaKV(scd,'Socias de Cocina',            b.socias_cocina);
+        if (b.apoyo_limpieza)     filaKV(scd,'Apoyo limpieza y vigilancia', b.apoyo_limpieza);
+        if (b.repartidores)       filaKV(scd,'Repartidores de alimentos',   b.repartidores);
+        if (b.apoyo_admin)        filaKV(scd,'Apoyo administrativo',        b.apoyo_admin);
+        if (b.junta_directiva)    filaKV(scd,'Junta directiva',             b.junta_directiva);
+        if (b.consejo_vigilancia) filaKV(scd,'Consejo de vigilancia',       b.consejo_vigilancia);
+        filaKV(scd,'Total actores comunales', b.total.toLocaleString('es-PE'));
+      }
+    }
     if (!nivelDistrito) filaKV(scd,'Distritos con atención',  resumen.dist_scd);
     if (nivelDepto)     filaKV(scd,'Provincias con atención', resumen.prov_scd);
     if (resumen.SA_SCD) filaKV(scd,'Servicios Adicionales',   resumen.SA_SCD);
-    filaKV(scd,'Ejecución', 'S/. ' + resumen.ejec_scd.toLocaleString('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}));
+    filaKV(scd,'Ejecución acumulada', 'S/. ' + resumen.ejec_scd.toLocaleString('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}));
     return { saf, scd };
   }
 
@@ -2583,7 +3083,7 @@ async function exportarPDF() {
     const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
     const mesMin = (mesNombre||'').toLowerCase();
     const narrativaTxt =
-      `Entre enero y ${mesMin} de ${año}, el Programa Nacional Cuna Más (PNCM) ejecutó un monto total de ` +
+      `De enero a ${mesMin} de ${año}, el Programa Nacional Cuna Más (PNCM) ejecutó un monto total de ` +
       `S/. ${fN(Math.round(tot))}, de los cuales S/. ${fN(Math.round(resumen.ejec_saf))} (${pSAF}%) corresponden al SAF y ` +
       `S/. ${fN(Math.round(resumen.ejec_scd))} (${pSCD}%) al SCD. ` +
       `Cobertura SAF: ${fN(resumen.familias_2025)} familias — ${fN(resumen.niños_saf)} niñas/os y ${fN(resumen.gestantes_SAF)} gestantes. ` +
@@ -2653,10 +3153,10 @@ async function exportarPDF() {
         { content:'FAMILIAS',      styles:{ fillColor: COL.saf_soft, textColor: COL.ink } },
         { content:'NIÑAS/OS',      styles:{ fillColor: COL.saf_soft, textColor: COL.ink } },
         { content:'GESTANTES',     styles:{ fillColor: COL.saf_soft, textColor: COL.ink } },
-        { content:'S/. EJECUCIÓN', styles:{ fillColor: COL.saf_soft, textColor: COL.ink } },
+        { content:'S/. EJECUCIÓN ACUM.', styles:{ fillColor: COL.saf_soft, textColor: COL.ink } },
         { content:'USUARIOS',      styles:{ fillColor: COL.scd_soft, textColor: COL.ink } },
         { content:'CIAI',          styles:{ fillColor: COL.scd_soft, textColor: COL.ink } },
-        { content:'S/. EJECUCIÓN', styles:{ fillColor: COL.scd_soft, textColor: COL.ink } }
+        { content:'S/. EJECUCIÓN ACUM.', styles:{ fillColor: COL.scd_soft, textColor: COL.ink } }
       ]
     ];
     const fmt = n => Math.round(n).toLocaleString('es-PE');
@@ -2711,7 +3211,7 @@ async function exportarPDF() {
     const yH = MARGIN.top + 12;
 
     const txt =
-      `Entre enero y ${mesMin} de ${año}, el PNCM ejecutó a nivel nacional ` +
+      `De enero a ${mesMin} de ${año}, el PNCM ejecutó a nivel nacional ` +
       `S/. ${fN(Math.round(tot))} — SAF: S/. ${fN(Math.round(rN.ejec_saf))} (${pSAF}%), ` +
       `SCD: S/. ${fN(Math.round(rN.ejec_scd))} (${pSCD}%). ` +
       `SAF: ${fN(rN.familias_2025)} familias, ${fN(rN.niños_saf)} niñas/os y ${fN(rN.gestantes_SAF)} gestantes ` +
@@ -2726,13 +3226,13 @@ async function exportarPDF() {
       ['Familias', fN(rN.familias_2025)], ['Niñas y niños SAF', fN(rN.niños_saf)],
       ['Gestantes', fN(rN.gestantes_SAF)], ['Departamentos con SAF', String(rN.dep_saf)],
       ['Distritos con atención', String(rN.dist_saf)],
-      ['Ejecución SAF', 'S/. ' + Math.round(rN.ejec_saf).toLocaleString('es-PE')]
+      ['Ejecución acumulada SAF', 'S/. ' + Math.round(rN.ejec_saf).toLocaleString('es-PE')]
     ];
     const scdRows = [
       ['Niñas y niños SCD', fN(rN.niños_2025)], ['CIAI', String(rN.CIAI_SCD)],
       ['Departamentos con SCD', String(rN.dep_scd)],
       ['Distritos con atención', String(rN.dist_scd)],
-      ['Ejecución SCD', 'S/. ' + Math.round(rN.ejec_scd).toLocaleString('es-PE')]
+      ['Ejecución acumulada SCD', 'S/. ' + Math.round(rN.ejec_scd).toLocaleString('es-PE')]
     ];
     doc.autoTable({
       startY: yN + 2,
@@ -2763,13 +3263,15 @@ async function exportarPDF() {
   drawHeaderFooter();
   doc.lastAutoTable = { finalY: MARGIN.top };
   renderResumenNacionalPDF();
-  renderCobertura('departamento', `Cobertura a nivel Departamental — ${dep}`, dep);
+  if (dep) renderCobertura('departamento', `Cobertura a nivel Departamental — ${dep}`, dep);
 
+  if (dep) {
   doc.addPage('a4', 'p');
   drawHeaderFooter();
   doc.lastAutoTable = { finalY: MARGIN.top };
   renderResumenNivel('departamento', dep, calcularResumen(dep));
   renderCobertura('departamento', `Cobertura — ${dep}`, dep);
+  }
 
   if (prov) {
     doc.addPage('a4', 'p');
@@ -2800,9 +3302,12 @@ async function exportarPDF() {
   }
 
   const fechaA = `${mesNombre}_${año}`;
-  const nomPDF = `AM_${dep.replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}_${fechaA}.pdf`;
+  const nomPDF = `AM_${(dep||'Nacional').replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}_${fechaA}.pdf`;
   doc.save(nomPDF);
 }
+
+// ── Arranque: panorama nacional apenas carga la página ──
+try { mostrarResumenNacional(); } catch (e) { console.warn('Resumen nacional:', e.message); }
 </script>
 </body>
 </html>
