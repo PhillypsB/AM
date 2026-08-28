@@ -3,310 +3,293 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta name="theme-color" content="#070708">
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Ayuda Memoria · BRAV[O]</title>
+<title>Ayuda Memoria PNCM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════════════════
-   AYUDA MEMORIA PNCM · edición BRAV[O]
-   Negro Expediente dominante, Magenta Voltaje concentrado en lo que
-   importa. Editorial, oscuro, cinematográfico. Primero el celular.
+   AYUDA MEMORIA PNCM — DATA STORY FRAMEWORK v1.0
+   Fondo blanco. Cuatro colores. Un solo énfasis. Mucho aire.
+   Debe entenderse en menos de 20 segundos.
    ═══════════════════════════════════════════════════════════════════ */
 :root{
-  --bg:#070708;        /* Negro Expediente */
-  --ink:#FDF7FA;       /* Papel */
-  --muted:#9A8F95;     /* Gris Archivo */
-  --mag:#FF0A6C;       /* Magenta Voltaje */
-  --rosa:#FF4D94;      /* Rosa Destello */
-  --ciruela:#5C0029;   /* Ciruela Sombra */
-  --display:'Archivo Black',system-ui,sans-serif;
-  --body:'Manrope',system-ui,sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --charcoal:#23252B;      /* primario */
+  --gris:#6E7078;          /* secundario */
+  --borde:#E8E8EC;         /* bordes */
+  --enfasis:#D800A6;       /* único color de énfasis */
+  --blanco:#fff;
+  --titulo:'Space Grotesk',system-ui,sans-serif;
+  --texto:'Manrope',system-ui,sans-serif;
   --ease:cubic-bezier(.16,1,.3,1);
-  --linea:rgba(253,247,250,.10);
-  --capa:rgba(253,247,250,.035);
-  --capa2:rgba(253,247,250,.06);
-  --barra:78px;
+  --r:24px;                /* radio de card */
+  --sh:0 1px 2px rgba(35,37,43,.04),0 8px 24px rgba(35,37,43,.05);
+  --barra:74px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{
-  font-family:var(--body);background:var(--bg);color:var(--ink);
-  min-height:100vh;line-height:1.65;-webkit-font-smoothing:antialiased;
+  font-family:var(--texto);background:var(--blanco);color:var(--charcoal);
+  min-height:100vh;line-height:1.7;-webkit-font-smoothing:antialiased;
   padding-bottom:calc(var(--barra) + env(safe-area-inset-bottom));
 }
-/* halo de marca: luz, no degradado de relleno */
-body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(120% 60% at 50% -10%, rgba(255,10,108,.13), transparent 62%);
-}
-.page-wrapper,.app-header{position:relative;z-index:1}
 
-/* ── CABECERA ──────────────────────────────────────────────────── */
+/* ① LÍNEA SUPERIOR ─────────────────────────────────────────────── */
 .app-header{
-  position:sticky;top:0;z-index:60;
-  background:rgba(7,7,8,.82);backdrop-filter:blur(16px) saturate(140%);
-  border-bottom:1px solid var(--linea);
-  padding:calc(13px + env(safe-area-inset-top)) 16px 13px;
-  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:60;background:var(--blanco);
+  border-bottom:1px solid var(--borde);
+  padding:calc(14px + env(safe-area-inset-top)) 20px 14px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
 }
-.header-brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1 1 auto}
+.header-brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 auto}
 .brand-logo{
-  font-family:var(--display);font-size:.6rem;letter-spacing:.06em;
-  color:var(--ink);border:1px solid var(--linea);border-radius:8px;
-  padding:7px 9px;white-space:nowrap;flex-shrink:0;background:var(--capa);
+  font-family:var(--titulo);font-weight:800;font-size:.6rem;letter-spacing:.16em;
+  color:var(--charcoal);border:1px solid var(--borde);border-radius:7px;
+  padding:7px 10px;white-space:nowrap;flex-shrink:0;text-transform:uppercase;
 }
 .brand-info{min-width:0}
 .brand-info h1{
-  font-family:var(--display);font-size:.92rem;line-height:1.12;letter-spacing:-.02em;
-  color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-family:var(--titulo);font-weight:800;font-size:.9rem;line-height:1.15;
+  letter-spacing:-.02em;color:var(--charcoal);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .brand-info p{
-  font-family:var(--mono);font-size:.58rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.14em;margin-top:4px;
+  font-size:.6rem;color:var(--gris);text-transform:uppercase;
+  letter-spacing:.18em;margin-top:5px;font-weight:600;
 }
-.corte-pill{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.corte-pill{display:flex;align-items:center;gap:9px;flex-shrink:0}
 .corte-label{
-  font-family:var(--mono);font-size:.55rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.14em;
+  font-size:.57rem;color:var(--gris);text-transform:uppercase;
+  letter-spacing:.18em;font-weight:600;
 }
 .corte-select{
-  font-family:var(--mono);font-size:16px;font-weight:700;color:var(--ink);
-  background:var(--capa);border:1px solid var(--linea);border-radius:10px;
-  padding:10px 11px;min-height:44px;cursor:pointer;
-  transition:border-color .2s var(--ease),background .2s var(--ease);
+  font-family:var(--texto);font-size:16px;font-weight:700;color:var(--charcoal);
+  background:var(--blanco);border:1px solid var(--borde);border-radius:10px;
+  padding:10px 12px;min-height:44px;cursor:pointer;
+  transition:border-color .2s var(--ease);
 }
-.corte-select:focus-visible{outline:2px solid var(--mag);outline-offset:2px}
-.corte-select:hover{border-color:rgba(255,10,108,.5)}
-.corte-select option{background:#141416;color:var(--ink)}
+.corte-select:hover{border-color:var(--enfasis)}
+.corte-select:focus-visible{outline:2px solid var(--enfasis);outline-offset:2px}
 
-.page-wrapper{padding:20px 14px 30px;max-width:1200px;margin:0 auto}
+.page-wrapper{padding:26px 20px 40px;max-width:1180px;margin:0 auto}
 
-/* ── CONSULTA ──────────────────────────────────────────────────── */
+/* CONSULTA ─────────────────────────────────────────────────────── */
 .filter-card{
-  background:var(--capa);border:1px solid var(--linea);border-radius:18px;
-  padding:20px 16px;margin-bottom:20px;
+  background:var(--blanco);border:1px solid var(--borde);border-radius:var(--r);
+  padding:24px 20px;margin-bottom:34px;box-shadow:var(--sh);
 }
-.filter-card-title{display:flex;align-items:center;gap:9px;margin-bottom:16px}
-.filter-icon{font-size:.95rem;opacity:.9}
+.filter-card-title{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.filter-icon{display:none}
 .filter-card-title h2{
-  font-family:var(--mono);font-size:.6rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.16em;font-weight:700;
+  font-size:.6rem;color:var(--gris);text-transform:uppercase;
+  letter-spacing:.2em;font-weight:700;
 }
-.filter-row{display:flex;flex-direction:column;gap:13px}
-.select-group{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1}
+.filter-row{display:flex;flex-direction:column;gap:14px}
+.select-group{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1}
 .select-group label{
-  font-family:var(--mono);font-size:.57rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.14em;
+  font-size:.57rem;color:var(--gris);text-transform:uppercase;
+  letter-spacing:.18em;font-weight:700;
 }
 .select-group select{
-  width:100%;font-family:var(--body);font-size:16px;font-weight:600;color:var(--ink);
-  background:var(--capa2);border:1px solid var(--linea);border-radius:12px;
-  padding:13px;min-height:50px;cursor:pointer;
-  transition:border-color .2s var(--ease),box-shadow .2s var(--ease);
+  width:100%;font-family:var(--texto);font-size:16px;font-weight:600;color:var(--charcoal);
+  background:var(--blanco);border:1px solid var(--borde);border-radius:12px;
+  padding:13px 14px;min-height:50px;cursor:pointer;
+  transition:border-color .2s var(--ease);
 }
-.select-group select:hover{border-color:rgba(255,10,108,.45)}
-.select-group select:focus-visible{outline:none;border-color:var(--mag);box-shadow:0 0 0 3px rgba(255,10,108,.18)}
-.select-group select option{background:#141416;color:var(--ink)}
+.select-group select:hover{border-color:var(--enfasis)}
+.select-group select:focus-visible{outline:none;border-color:var(--enfasis);box-shadow:0 0 0 3px rgba(216,0,166,.1)}
 
-/* ── TÍTULO DEL ÁMBITO ─────────────────────────────────────────── */
-.results-header{margin:26px 0 18px}
+/* ② GRAN TÍTULO + ③ SUBTÍTULO ─────────────────────────────────── */
+.results-header{margin:0 0 26px}
 .results-header h2{
-  font-family:var(--display);font-size:1.75rem;line-height:1.02;
-  letter-spacing:-.035em;color:var(--ink);
+  font-family:var(--titulo);font-weight:800;
+  font-size:2.5rem;line-height:.98;letter-spacing:-.04em;color:var(--charcoal);
 }
 .results-header p{
-  font-family:var(--mono);font-size:.6rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.16em;margin-top:9px;
+  font-size:.62rem;color:var(--gris);text-transform:uppercase;
+  letter-spacing:.22em;font-weight:700;margin-top:12px;
 }
 
-/* ── TARJETAS DE SERVICIO ──────────────────────────────────────── */
-.kpi-container{display:grid;grid-template-columns:1fr;gap:16px}
+/* ⑤ KPI — siempre enormes ─────────────────────────────────────── */
+.kpi-container{display:grid;grid-template-columns:1fr;gap:20px}
 .service-card{
-  background:var(--capa);border:1px solid var(--linea);border-radius:20px;
-  overflow:hidden;position:relative;
-  transition:border-color .3s var(--ease);
+  background:var(--blanco);border:1px solid var(--borde);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;
 }
-.service-card::before{content:'';position:absolute;inset:0 0 auto 0;height:1px}
-.saf-card::before{background:linear-gradient(90deg,transparent,var(--mag),transparent)}
-.scd-card::before{background:linear-gradient(90deg,transparent,var(--rosa),transparent)}
-.service-header{padding:20px 18px 15px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
-.service-title{display:flex;align-items:center;gap:9px;flex:1 1 auto;min-width:0}
-.service-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.saf-dot{background:var(--mag);box-shadow:0 0 12px var(--mag)}
-.scd-dot{background:var(--rosa);box-shadow:0 0 12px var(--rosa)}
+.service-header{padding:24px 22px 4px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.service-title{display:flex;align-items:center;gap:10px;flex:1 1 auto;min-width:0}
+.service-dot{display:none}
 .service-title h3{
-  font-family:var(--display);font-size:.8rem;line-height:1.3;
-  letter-spacing:-.01em;color:var(--ink);
+  font-family:var(--titulo);font-weight:800;font-size:.72rem;line-height:1.3;
+  text-transform:uppercase;letter-spacing:.14em;color:var(--gris);
 }
 .service-abbr{
-  font-family:var(--mono);font-size:.54rem;font-weight:700;letter-spacing:.14em;
-  color:var(--muted);border:1px solid var(--linea);
-  padding:3px 7px;border-radius:6px;flex-shrink:0;
+  font-size:.55rem;font-weight:700;letter-spacing:.16em;color:var(--enfasis);
+  border:1px solid var(--borde);padding:4px 8px;border-radius:6px;flex-shrink:0;
 }
-.service-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto}
+.service-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-left:auto}
 .card-chip{
-  font-family:var(--mono);font-size:.53rem;font-weight:700;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--muted);
-  border:1px solid var(--linea);padding:4px 9px;border-radius:6px;white-space:nowrap;
+  font-size:.53rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--gris);border:1px solid var(--borde);padding:5px 9px;border-radius:6px;
+  white-space:nowrap;
 }
-.card-chip-amb{color:var(--ink);border-color:rgba(253,247,250,.2)}
+.card-chip-amb{color:var(--charcoal)}
 .card-dl{
   width:44px;height:44px;flex-shrink:0;cursor:pointer;
-  border:1px solid var(--linea);border-radius:11px;background:transparent;
-  color:var(--muted);font-size:1.05rem;line-height:1;font-family:inherit;
+  border:1px solid var(--borde);border-radius:10px;background:var(--blanco);
+  color:var(--gris);font-size:1rem;line-height:1;font-family:inherit;
   display:inline-flex;align-items:center;justify-content:center;
   transition:all .2s var(--ease);
 }
-.card-dl:hover,.card-dl:active{background:var(--mag);color:var(--bg);border-color:var(--mag)}
-.card-dl:focus-visible{outline:2px solid var(--mag);outline-offset:2px}
+.card-dl:hover,.card-dl:active{background:var(--enfasis);color:#fff;border-color:var(--enfasis)}
+.card-dl:focus-visible{outline:2px solid var(--enfasis);outline-offset:2px}
 .foc-badge{
-  font-family:var(--mono);font-size:.55rem;font-weight:700;letter-spacing:.11em;
-  padding:6px 11px;border-radius:6px;border:1px solid var(--linea);
-  white-space:nowrap;background:var(--capa);color:var(--ink)!important;
+  font-size:.55rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  padding:5px 10px;border-radius:6px;border:1px solid var(--borde)!important;
+  background:var(--blanco)!important;color:var(--gris)!important;white-space:nowrap;
 }
 
-/* ── LA CIFRA: el momento de la transformación ─────────────────── */
-.kpi-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--linea)}
-.kpi-block{padding:22px 14px;text-align:center;position:relative}
-.kpi-block+.kpi-block{border-left:1px solid var(--linea)}
-.kpi-emoji{display:none}                      /* el número habla solo */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr}
+.kpi-block{padding:22px;text-align:left;position:relative}
+.kpi-block+.kpi-block{border-left:1px solid var(--borde)}
+.kpi-emoji{display:none}
 .kpi-value{
-  font-family:var(--display);font-size:2.05rem;line-height:.92;
-  letter-spacing:-.045em;color:var(--ink);
-  font-variant-numeric:tabular-nums;
+  font-family:var(--titulo);font-weight:800;
+  font-size:2.9rem;line-height:.9;letter-spacing:-.05em;
+  color:var(--enfasis);font-variant-numeric:tabular-nums;
 }
-.saf-card .primary-kpi .kpi-value{color:var(--mag);text-shadow:0 0 28px rgba(255,10,108,.45)}
-.scd-card .primary-kpi .kpi-value{color:var(--rosa);text-shadow:0 0 28px rgba(255,77,148,.4)}
-.kpi-block:not(.primary-kpi) .kpi-value{font-size:1.15rem;color:var(--ink);opacity:.92}
+.kpi-block:not(.primary-kpi) .kpi-value{font-size:1.35rem;color:var(--charcoal)}
 .kpi-label{
-  font-family:var(--mono);font-size:.53rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.16em;margin-top:11px;line-height:1.4;
+  font-size:.55rem;color:var(--gris);text-transform:uppercase;
+  letter-spacing:.2em;font-weight:700;margin-top:14px;line-height:1.5;
 }
 
-/* ── DETALLE ───────────────────────────────────────────────────── */
-.detail-section{padding:6px 18px 20px}
-.detail-table{width:100%;border-collapse:collapse;font-size:.83rem}
-.detail-table tr{border-bottom:1px solid rgba(253,247,250,.05)}
+/* ⑦ RESUMEN — tabla de detalle, grid casi invisible ───────────── */
+.detail-section{padding:2px 22px 24px}
+.detail-table{width:100%;border-collapse:collapse;font-size:.84rem}
+.detail-table tr{border-bottom:1px solid var(--borde)}
 .detail-table tr:last-child{border-bottom:none}
-.detail-table td{padding:12px 2px;color:var(--muted)}
+.detail-table td{padding:13px 0;color:var(--gris)}
 .detail-table td:last-child{
-  text-align:right;font-weight:700;color:var(--ink);
+  text-align:right;font-weight:800;color:var(--charcoal);
   font-variant-numeric:tabular-nums;white-space:nowrap;
 }
 .detail-table tr.row-sep td{
-  padding:20px 2px 8px;font-family:var(--mono);font-size:.53rem;
-  color:var(--muted);text-transform:uppercase;letter-spacing:.16em;
+  padding:24px 0 9px;font-size:.53rem;color:var(--gris);
+  text-transform:uppercase;letter-spacing:.2em;font-weight:700;
 }
-.detail-table tr.row-sep{border-bottom:1px solid var(--linea)}
-.detail-table tr.row-total{border-top:1px solid var(--linea);border-bottom:none}
-.detail-table tr.row-total td{padding-top:14px;color:var(--ink);font-weight:800}
-.detail-table tr.row-total td:last-child{color:var(--mag)}
+.detail-table tr.row-sep{border-bottom:1px solid var(--borde)}
+.detail-table tr.row-total{border-top:1px solid var(--charcoal);border-bottom:none}
+.detail-table tr.row-total td{padding-top:15px;font-weight:800;color:var(--charcoal)}
+.detail-table tr.row-total td:last-child{color:var(--enfasis)}
 
-/* ── NARRATIVA ─────────────────────────────────────────────────── */
+/* ④ INSIGHT + ⑦ RESUMEN ───────────────────────────────────────── */
 .am-narrativa{
-  grid-column:1 / -1;background:var(--capa);
-  border:1px solid var(--linea);border-radius:20px;
-  padding:22px 17px 24px;margin-top:2px;
-  font-size:.91rem;line-height:1.8;color:rgba(253,247,250,.78);
+  grid-column:1 / -1;background:var(--blanco);
+  border:1px solid var(--borde);border-radius:var(--r);box-shadow:var(--sh);
+  padding:26px 22px 28px;
+  font-size:.92rem;line-height:1.85;color:var(--gris);
 }
 .am-narrativa-lbl{
-  font-family:var(--mono);font-size:.53rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.18em;
-  padding-bottom:14px;margin-bottom:18px;border-bottom:1px solid var(--linea);
+  font-size:.55rem;color:var(--gris);text-transform:uppercase;letter-spacing:.22em;
+  font-weight:700;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--borde);
 }
 .am-narrativa h2{display:none}
 .am-narrativa h3{
-  font-family:var(--display);font-size:.76rem;line-height:1.35;letter-spacing:-.01em;
-  color:var(--ink);margin:0 0 12px;padding-left:12px;border-left:2px solid var(--linea);
+  font-family:var(--titulo);font-weight:800;font-size:.68rem;line-height:1.4;
+  text-transform:uppercase;letter-spacing:.16em;color:var(--charcoal);
+  margin:0 0 14px;padding:0;border:none;
 }
-.am-narrativa p{margin:0 0 13px}
+.am-narrativa p{margin:0 0 14px}
 .am-narrativa p:last-child{margin-bottom:0}
-.am-narrativa strong{color:var(--ink);font-weight:700}
-.am-cols{display:grid;grid-template-columns:1fr;margin-top:20px;padding-top:20px;border-top:1px solid var(--linea)}
-.am-col-saf h3{border-left-color:var(--mag)}
-.am-col-scd h3{border-left-color:var(--rosa)}
-.am-col-scd{border-top:1px solid rgba(253,247,250,.05);padding-top:24px;margin-top:24px}
+.am-narrativa strong{color:var(--charcoal);font-weight:800}
+.am-cols{display:grid;grid-template-columns:1fr;margin-top:22px;padding-top:22px;border-top:1px solid var(--borde)}
+.am-col-scd{border-top:1px solid var(--borde);padding-top:26px;margin-top:26px}
 
 .cobertura-card{
-  background:var(--capa);border:1px solid var(--linea);border-radius:20px;
-  overflow:hidden;margin-top:16px;
+  background:var(--blanco);border:1px solid var(--borde);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin-top:20px;
 }
 
-/* ── ACCIONES ──────────────────────────────────────────────────── */
+/* ACCIONES ────────────────────────────────────────────────────── */
 .export-bar{
   position:fixed;left:0;right:0;bottom:0;z-index:70;
   display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
-  padding:11px 12px calc(11px + env(safe-area-inset-bottom));
-  background:rgba(7,7,8,.9);backdrop-filter:blur(16px);
-  border-top:1px solid var(--linea);
+  padding:11px 14px calc(11px + env(safe-area-inset-bottom));
+  background:var(--blanco);border-top:1px solid var(--borde);
 }
 .btn{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-  min-height:52px;padding:9px 4px;border-radius:13px;cursor:pointer;
-  font-family:var(--mono);font-size:.51rem;font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;line-height:1.25;
-  background:var(--capa2);border:1px solid var(--linea);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  min-height:50px;padding:9px 4px;border-radius:11px;cursor:pointer;
+  font-family:var(--texto);font-size:.55rem;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;line-height:1.3;
+  background:var(--blanco);border:1px solid var(--borde);color:var(--charcoal);
   transition:all .2s var(--ease);
 }
 .btn:hover:not(:disabled),.btn:active:not(:disabled){
-  background:var(--mag);border-color:var(--mag);color:var(--bg);
+  background:var(--enfasis);border-color:var(--enfasis);color:#fff;
 }
-.btn:active:not(:disabled){transform:scale(.96)}
-.btn:focus-visible{outline:2px solid var(--mag);outline-offset:2px}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:focus-visible{outline:2px solid var(--enfasis);outline-offset:2px}
 .btn:disabled{opacity:.3;cursor:not-allowed}
 
-/* ── CARGANDO ──────────────────────────────────────────────────── */
-.loading-wrap{text-align:center;padding:48px 16px;color:var(--muted)}
+.loading-wrap{text-align:center;padding:52px 20px;color:var(--gris)}
 .spinner{
-  width:32px;height:32px;margin:0 auto 14px;border-radius:50%;
-  border:2px solid rgba(255,10,108,.2);border-top-color:var(--mag);
+  width:30px;height:30px;margin:0 auto 16px;border-radius:50%;
+  border:2px solid var(--borde);border-top-color:var(--enfasis);
   animation:am-spin .7s linear infinite;
 }
 @keyframes am-spin{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
 .page-break{display:none}
 
-/* aparición serena de los resultados */
-#resultadosArea:not(.hidden){animation:am-entra .6s var(--ease) both}
-@keyframes am-entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* ⑧ FUENTE — la firma, siempre igual ──────────────────────────── */
+#appFooter{
+  margin-top:44px;padding:22px 0 0;border-top:1px solid var(--borde);
+  text-align:center;
+}
+#appFooterText{font-size:.62rem;color:var(--gris);line-height:1.9}
+.ds-firma{
+  margin-top:16px;padding-top:16px;border-top:1px solid var(--borde);
+  font-size:.56rem;color:var(--gris);text-transform:uppercase;letter-spacing:.16em;
+  font-weight:700;line-height:2;
+}
+.ds-firma b{color:var(--charcoal);font-weight:800}
+.ds-firma .sep{color:var(--enfasis);margin:0 9px}
 
-/* ── ESCRITORIO ────────────────────────────────────────────────── */
+#resultadosArea:not(.hidden){animation:ds-entra .5s var(--ease) both}
+@keyframes ds-entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ESCRITORIO ──────────────────────────────────────────────────── */
 @media (min-width:768px){
   body{padding-bottom:0}
-  .app-header{padding:16px 30px}
-  .brand-info h1{font-size:1.05rem}
-  .page-wrapper{padding:28px 30px 48px}
-  .filter-card{padding:24px 26px}
-  .filter-row{flex-direction:row;gap:18px}
-  .results-header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px}
-  .results-header h2{font-size:2.3rem}
-  .kpi-container{grid-template-columns:1fr 1fr;gap:20px}
-  .kpi-value{font-size:2.5rem}
-  .kpi-block:not(.primary-kpi) .kpi-value{font-size:1.3rem}
-  .detail-section{padding:6px 22px 22px}
-  .am-narrativa{padding:28px 32px 30px}
-  .am-cols{grid-template-columns:1fr 1fr;gap:32px}
-  .am-col-scd{border-top:none;border-left:1px solid rgba(253,247,250,.05);padding-top:0;margin-top:0;padding-left:32px}
-  .export-bar{
-    position:static;display:flex;flex-wrap:wrap;gap:9px;padding:0;
-    background:none;backdrop-filter:none;border-top:none;
-  }
-  .btn{flex-direction:row;gap:8px;min-height:44px;padding:12px 18px;font-size:.62rem}
-  .card-dl{width:36px;height:36px;font-size:.92rem;border-radius:9px}
+  .app-header{padding:18px 40px}
+  .brand-info h1{font-size:1rem}
+  .page-wrapper{padding:36px 40px 56px}
+  .filter-card{padding:28px 30px;margin-bottom:44px}
+  .filter-row{flex-direction:row;gap:20px}
+  .results-header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+  .results-header h2{font-size:3.4rem}
+  .kpi-container{grid-template-columns:1fr 1fr;gap:24px}
+  .kpi-value{font-size:3.6rem}
+  .kpi-block:not(.primary-kpi) .kpi-value{font-size:1.6rem}
+  .detail-section{padding:2px 26px 28px}
+  .am-narrativa{padding:34px 38px 36px}
+  .am-cols{grid-template-columns:1fr 1fr;gap:40px}
+  .am-col-scd{border-top:none;border-left:1px solid var(--borde);padding-top:0;margin-top:0;padding-left:40px}
+  .export-bar{position:static;display:flex;flex-wrap:wrap;gap:10px;padding:0;border-top:none}
+  .btn{min-height:44px;padding:12px 20px;font-size:.6rem}
+  .card-dl{width:36px;height:36px;font-size:.9rem;border-radius:9px}
 }
 @media (min-width:1100px){
-  .results-header h2{font-size:2.7rem}
-  .kpi-value{font-size:2.9rem}
+  .results-header h2{font-size:4rem}
+  .kpi-value{font-size:4.2rem}
 }
-
-/* ── quien pide menos movimiento, recibe menos ─────────────────── */
 @media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
 </style>
 </head>
@@ -322,7 +305,7 @@ body::before{
     </div>
   </div>
   <div class="corte-pill">
-    <span class="corte-label">📅&nbsp;Corte:</span>
+    <span class="corte-label">&nbsp;Corte:</span>
     <select id="selectCorte" class="corte-select"></select>
   </div>
 </header>
@@ -333,7 +316,7 @@ body::before{
   <section>
     <div class="filter-card">
       <div class="filter-card-title">
-        <span class="filter-icon">📍</span>
+        <span class="filter-icon"></span>
         <h2>Búsqueda por Ubicación</h2>
       </div>
       <div class="filter-row">
@@ -358,8 +341,8 @@ body::before{
           </label>
           <select id="selectEspecial" onchange="if(this.value) filtrarEspecial();">
             <option value="">— Ninguno —</option>
-            <option value="VRAEM">🌿 VRAEM</option>
-            <option value="NOR-VRAEM">🌿 NOR-VRAEM</option>
+            <option value="VRAEM">VRAEM</option>
+            <option value="NOR-VRAEM">NOR-VRAEM</option>
           </select>
         </div>
 
@@ -384,10 +367,10 @@ body::before{
         <p id="resultadosSubtitulo"></p>
       </div>
       <div class="export-bar">
-        <button id="btnPDF"   class="btn btn-pdf"   onclick="exportarPDF()"         disabled>📄 Exportar PDF</button>
-        <button id="btnWord"  class="btn btn-word"  onclick="exportarWord()"        disabled>📘 Exportar Word</button>
-        <button id="btnExcel" class="btn btn-excel" onclick="exportarExcel()"       disabled>📊 Exportar Excel</button>
-        <button id="btnWA"    class="btn btn-wa"    onclick="compartirWhatsApp()"   disabled>💬 WhatsApp</button>
+        <button id="btnPDF"   class="btn btn-pdf"   onclick="exportarPDF()"         disabled>Exportar PDF</button>
+        <button id="btnWord"  class="btn btn-word"  onclick="exportarWord()"        disabled>Exportar Word</button>
+        <button id="btnExcel" class="btn btn-excel" onclick="exportarExcel()"       disabled>Exportar Excel</button>
+        <button id="btnWA"    class="btn btn-wa"    onclick="compartirWhatsApp()"   disabled>WhatsApp</button>
       </div>
     </div>
     <div id="resultados" class="kpi-container" style="margin-top:20px"></div>
@@ -396,6 +379,7 @@ body::before{
   <!-- FOOTER DE LA APP -->
   <footer id="appFooter" style="margin-top:28px;padding:16px 16px;border-top:1px solid #e2e8f0;color:#6b7280;font-size:.78rem;line-height:1.6;text-align:center;font-family:'Inter','Segoe UI',Roboto,sans-serif;">
     <div id="appFooterText" style="max-width:1200px;margin:0 auto;"></div>
+      <div class="ds-firma">SOURCE: <b>SISTEMA INTEGRADO PNCM</b><span class="sep">&#10022;</span>IA:<b>[assisted]</b><span class="sep">&#10022;</span>H-i-L: <b>Phillyps BRAV[O]</b></div>
   </footer>
 
 </div><!-- /page-wrapper -->
@@ -489,39 +473,39 @@ const APP_VERSION = "v" + _pubDate.getFullYear() + "." + String(_pubDate.getMont
 
 // Helpers de footer (reutilizados para pantalla y Word)
 function _fmtFechaHora(d = new Date()) {
-  const pad = n => String(n).padStart(2, '0');
+  const pad = n =>String(n).padStart(2, '0');
   return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 // Tiempo transcurrido desde que se pidió la página hasta que la app quedó lista
 function _tiempoCarga() {
   const ms = Math.round(performance.now());
-  return ms < 1000 ? ms + ' ms' : (ms / 1000).toFixed(1).replace('.', ',') + ' s';
+  return ms < 1000 ? ms + 'ms' : (ms / 1000).toFixed(1).replace('.', ',') + 's';
 }
 
 function buildFooterLine(fechaHora) {
   const fh = fechaHora || _fmtFechaHora();
   const sep = '<span style="color:#d1d5db;margin:0 5px;">|</span>';
   const linea1 =
-    `📅 <span style="color:#9ca3af;font-style:italic;">Datos actualizados a:</span> ` +
+    ` <span style="color:#9ca3af;font-style:italic;">Datos actualizados a:</span> ` +
     `<strong style="color:#374151;">${DATOS_CORTE_LABEL_CORTO}</strong>` +
     `${sep}` +
-    `🔄 <span style="color:#9ca3af;font-style:italic;">Próxima actualización:</span> ` +
+    ` <span style="color:#9ca3af;font-style:italic;">Próxima actualización:</span> ` +
     `<strong style="color:#374151;">${PROX_ACTUALIZACION_CORTO}</strong> ` +
     `<span style="color:#9ca3af;">(incluye ${PROX_DATOS_LABEL_CORTO})</span>`;
   const linea2 =
-    `🗄️ <span style="color:#9ca3af;font-style:italic;">Fuente:</span> ` +
+    ` <span style="color:#9ca3af;font-style:italic;">Fuente:</span> ` +
     `<strong style="color:#374151;">SISTEMA INTEGRADO</strong>` +
     `${sep}` +
     (fechaHora
-      ? `🕒 <span style="color:#9ca3af;font-style:italic;">Fecha y hora:</span> ` +
+      ? ` <span style="color:#9ca3af;font-style:italic;">Fecha y hora:</span> ` +
         `<strong style="color:#374151;">${fh}</strong>`
-      : `⚡ <span style="color:#9ca3af;font-style:italic;">Tiempo de carga:</span> ` +
+      : ` <span style="color:#9ca3af;font-style:italic;">Tiempo de carga:</span> ` +
         `<strong style="color:#374151;">${_tiempoCarga()}</strong>`);
   const linea3 =
-    `📊 <span style="color:#9ca3af;font-style:italic;">Versión:</span> ` +
+    ` <span style="color:#9ca3af;font-style:italic;">Versión:</span> ` +
     `<strong style="color:#374151;">${APP_VERSION}</strong>` +
     `${sep}` +
-    `⚙️ <span style="color:#9ca3af;font-style:italic;">Generado por:</span> ` +
+    ` <span style="color:#9ca3af;font-style:italic;">Generado por:</span> ` +
     `<strong style="color:#374151;">UPPM–PNCM–MIDIS</strong>`;
   return `<div style="margin-bottom:1px;">${linea1}</div>` +
          `<div style="margin-bottom:1px;">${linea2}</div>` +
@@ -676,9 +660,9 @@ selectDist.addEventListener('change', () => {
 //  HELPERS
 // ══════════════════════════════════════════════════
 function getEtiquetaFocalizacion(valor) {
-  if (valor === '1') return { emoji: '✅', texto: 'FOCALIZADO',    color: '#d4edda', borde: '#28a745' };
-  if (valor === '2') return { emoji: '🔁', texto: 'CONTINUIDAD',   color: '#fff3cd', borde: '#ffc107' };
-  return                    { emoji: '❌', texto: 'NO FOCALIZADO', color: '#f8d7da', borde: '#dc3545' };
+  if (valor === '1') return { emoji: '', texto: 'FOCALIZADO',    color: '#d4edda', borde: '#28a745' };
+  if (valor === '2') return { emoji: '', texto: 'CONTINUIDAD',   color: '#fff3cd', borde: '#ffc107' };
+  return                    { emoji: '', texto: 'NO FOCALIZADO', color: '#f8d7da', borde: '#dc3545' };
 }
 
 // ── Descarga de una tarjeta como imagen ────────────────────────────────────
@@ -692,17 +676,17 @@ async function descargarTarjeta(serv) {
   if (!card) return;
   try { await asegurarLibs(['html2canvas', 'filesaver']); }
   catch (e) { alert('No se pudo cargar la librería de captura. Verifique la conexión.'); return; }
-  const FONDO  = '#070708';                                   // Negro Expediente
-  const BORDE  = serv === 'saf' ? '#FF0A6C' : '#FF4D94';      // Magenta / Rosa Destello
+  const FONDO  = '#F4F4F6';                                   // aire, no blanco puro
+  const BORDE  = '#D800A6';                                   // único color de énfasis
   const ancho  = Math.round(card.getBoundingClientRect().width);
 
   const marco = document.createElement('div');
   marco.style.cssText = `position:fixed;left:-10000px;top:0;padding:26px;background:${FONDO};` +
                         `width:${ancho + 52}px;font-family:'Inter','Segoe UI',Roboto,sans-serif;`;
   const copia = document.createElement('div');
-  copia.style.cssText = `width:${ancho}px;background:#0E0E11;` +
-                        `border:1px solid rgba(253,247,250,.12);` +
-                        `border-top:3px solid ${BORDE};border-radius:20px;color:#FDF7FA;`;
+  copia.style.cssText = `width:${ancho}px;background:#fff;` +
+                        `border:1px solid #E8E8EC;` +
+                        `border-top:3px solid ${BORDE};border-radius:24px;color:#23252B;`;
   copia.innerHTML = card.innerHTML;
   copia.querySelectorAll('.card-dl').forEach(b => b.remove());
   marco.appendChild(copia);
@@ -926,7 +910,7 @@ function generarTablaCoberturaEspecial(datosAm, titulo) {
     mapa[k].eScd += r.ejecucion_scd ||0;
   });
   const deps = Object.keys(mapa).sort((a,b)=>a.localeCompare(b,'es'));
-  const fmt  = n => Math.round(n).toLocaleString('es-PE');
+  const fmt  = n =>Math.round(n).toLocaleString('es-PE');
   const fmtS = n => n>0?'S/. '+Math.round(n).toLocaleString('es-PE'):'S/ 0';
 
   let tot = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
@@ -949,8 +933,7 @@ function generarTablaCoberturaEspecial(datosAm, titulo) {
 
   return `<div class="cobertura-card" style="margin-top:24px;background:#fff;padding:18px;border-radius:12px;
     box-shadow:0 2px 16px rgba(0,0,0,.07);border:1px solid #e2e8f0;overflow-x:auto;grid-column:1 / -1;">
-    <h3 style="font-size:1rem;font-weight:700;color:#1e293b;margin-bottom:12px;">
-      COBERTURA ${titulo} — Por Departamento
+    <h3 style="font-size:1rem;font-weight:700;color:#1e293b;margin-bottom:12px;">COBERTURA ${titulo} — Por Departamento
     </h3>
     <table style="width:100%;border-collapse:collapse;font-size:.83rem;">
       <thead>
@@ -1120,53 +1103,53 @@ function renderKPIs(d, dep, prov, dist) {
   const _det = _ac.cubiertos > 0;
   const _n   = v => (v || 0).toLocaleString('es-PE');
   const _sep = t => `<tr class="row-sep"><td colspan="2">${t}</td></tr>`;
-  const _fila = (ico, lbl, val) => val ? `<tr><td>${ico} ${lbl}</td><td>${_n(val)}</td></tr>` : '';
-  const _total = v => `<tr class="row-total"><td>🤝 Total actores comunales</td><td>${_n(v)}</td></tr>`;
+  const _fila = (lbl, val) => val ? `<tr><td>${lbl}</td><td>${_n(val)}</td></tr>` : '';
+  const _total = v => `<tr class="row-total"><td>Total actores comunales</td><td>${_n(v)}</td></tr>`;
 
   // ── SAF ──────────────────────────────────────────────────────────
   const bS = _ac.saf, okS = _det && bS.total;
   const safRows = `
-    <tr><td>🤰 Gestantes</td><td>${_n(d.gestantes_SAF)}</td></tr>
-    <tr><td>🧒 Niños SAF</td><td>${_n(d.niños_saf)}</td></tr>
-    ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${_n(d.dist_saf)}</td></tr>` : ''}
-    ${nivelDepto     ? `<tr><td>🗺 Provincias con atención</td><td>${_n(d.prov_saf)}</td></tr>` : ''}
+    <tr><td>Gestantes</td><td>${_n(d.gestantes_SAF)}</td></tr>
+    <tr><td>Niños SAF</td><td>${_n(d.niños_saf)}</td></tr>
+    ${!nivelDistrito ? `<tr><td>Distritos con atención</td><td>${_n(d.dist_saf)}</td></tr>` : ''}
+    ${nivelDepto     ? `<tr><td>Provincias con atención</td><td>${_n(d.prov_saf)}</td></tr>` : ''}
     ${(nivelDistrito || d.esNacional) ? (okS ? (
         _sep('Actores comunales') +
-        _fila('🏛','Comités de Gestión',   bS.cg) +
-        _fila('👥','Facilitadoras',        bS.facilitadoras) +
-        _fila('🗂','Apoyo administrativo', bS.apoyo_admin) +
-        _fila('🧑‍💼','Junta directiva',      bS.junta_directiva) +
-        _fila('🔎','Consejo de vigilancia', bS.consejo_vigilancia) +
+        _fila('Comités de Gestión',   bS.cg) +
+        _fila('Facilitadoras',        bS.facilitadoras) +
+        _fila('Apoyo administrativo', bS.apoyo_admin) +
+        _fila('Junta directiva',      bS.junta_directiva) +
+        _fila('Consejo de vigilancia', bS.consejo_vigilancia) +
         _total(bS.total)
       ) : (
-        _fila('🏛','Comités de Gestión', d.CG_SAF) +
-        _fila('👥','Facilitadoras',      d.FACILITADOR_SAF)
+        _fila('Comités de Gestión', d.CG_SAF) +
+        _fila('Facilitadoras',      d.FACILITADOR_SAF)
       )) : ''}
   `;
 
   // ── SCD ──────────────────────────────────────────────────────────
   const bD = _ac.scd, okD = _det && bD.total;
   const scdRows = `
-    <tr><td>🏘 CIAI</td><td>${_n(d.CIAI_SCD)}</td></tr>
-    ${d.SA_SCD       ? `<tr><td>🏫 Servicios Adicionales</td><td>${_n(d.SA_SCD)}</td></tr>` : ''}
-    ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${_n(d.dist_scd)}</td></tr>` : ''}
-    ${nivelDepto     ? `<tr><td>🗺 Provincias con atención</td><td>${_n(d.prov_scd)}</td></tr>` : ''}
+    <tr><td>CIAI</td><td>${_n(d.CIAI_SCD)}</td></tr>
+    ${d.SA_SCD       ? `<tr><td>Servicios Adicionales</td><td>${_n(d.SA_SCD)}</td></tr>` : ''}
+    ${!nivelDistrito ? `<tr><td>Distritos con atención</td><td>${_n(d.dist_scd)}</td></tr>` : ''}
+    ${nivelDepto     ? `<tr><td>Provincias con atención</td><td>${_n(d.prov_scd)}</td></tr>` : ''}
     ${(nivelDistrito || d.esNacional) ? (okD ? (
         _sep('Actores comunales') +
-        _fila('🏛','Comités de Gestión',       bD.cg) +
-        _fila('👩','Madres Cuidadoras',        bD.madres_cuidadoras) +
-        _fila('🧕','Madres Guía',              bD.madres_guia) +
-        _fila('🧑‍🏫','Guías de Familia',         bD.guias_familia) +
-        _fila('🍲','Socias de Cocina',         bD.socias_cocina) +
-        _fila('🧹','Apoyo limpieza y vigilancia', bD.apoyo_limpieza) +
-        _fila('🚚','Repartidores de alimentos', bD.repartidores) +
-        _fila('🗂','Apoyo administrativo',     bD.apoyo_admin) +
-        _fila('🧑‍💼','Junta directiva',          bD.junta_directiva) +
-        _fila('🔎','Consejo de vigilancia',    bD.consejo_vigilancia) +
+        _fila('Comités de Gestión',       bD.cg) +
+        _fila('Madres Cuidadoras',        bD.madres_cuidadoras) +
+        _fila('Madres Guía',              bD.madres_guia) +
+        _fila('Guías de Familia',         bD.guias_familia) +
+        _fila('Socias de Cocina',         bD.socias_cocina) +
+        _fila('Apoyo limpieza y vigilancia', bD.apoyo_limpieza) +
+        _fila('Repartidores de alimentos', bD.repartidores) +
+        _fila('Apoyo administrativo',     bD.apoyo_admin) +
+        _fila('Junta directiva',          bD.junta_directiva) +
+        _fila('Consejo de vigilancia',    bD.consejo_vigilancia) +
         _total(bD.total)
       ) : (
-        _fila('🏛','Comités de Gestión', d.CG_SCD) +
-        _fila('👩','Madres Cuidadoras',  d.MadresCuidadoras_SCD)
+        _fila('Comités de Gestión', d.CG_SCD) +
+        _fila('Madres Cuidadoras',  d.MadresCuidadoras_SCD)
       )) : ''}
   `;
 
@@ -1182,12 +1165,12 @@ function renderKPIs(d, dep, prov, dist) {
     </div>
     <div class="kpi-grid kpi-grid-2">
       <div class="kpi-block primary-kpi">
-        <div class="kpi-emoji">👨‍👩‍👧‍👦</div>
+        <div class="kpi-emoji"></div>
         <div class="kpi-value">${d.familias_2025.toLocaleString('es-PE')}</div>
         <div class="kpi-label">Familias</div>
       </div>
       <div class="kpi-block">
-        <div class="kpi-emoji">💰</div>
+        <div class="kpi-emoji"></div>
         <div class="kpi-value" style="font-size:1.0rem">S/. ${d.ejec_saf.toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
         <div class="kpi-label">Ejecución acumulada</div>
       </div>
@@ -1208,12 +1191,12 @@ function renderKPIs(d, dep, prov, dist) {
     </div>
     <div class="kpi-grid kpi-grid-2">
       <div class="kpi-block primary-kpi">
-        <div class="kpi-emoji">🧒</div>
+        <div class="kpi-emoji"></div>
         <div class="kpi-value">${d.niños_2025.toLocaleString('es-PE')}</div>
         <div class="kpi-label">Niños SCD</div>
       </div>
       <div class="kpi-block">
-        <div class="kpi-emoji">💰</div>
+        <div class="kpi-emoji"></div>
         <div class="kpi-value" style="font-size:1.0rem">S/. ${d.ejec_scd.toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
         <div class="kpi-label">Ejecución acumulada</div>
       </div>
@@ -1402,8 +1385,7 @@ function calcularResumenNacional() {
 function generarPrologo() {
   return `
     <div style="margin:10px 0 14px 0;padding:10px 14px 8px 14px;border-left:4px solid #9ca3af;background:#f9fafb;font-family:'Segoe UI',sans-serif;">
-      <p style="font-size:8.5pt;font-style:italic;color:#374151;margin:0 0 8px 0;line-height:1.65;text-align:justify;">
-        El <strong style="font-style:normal;">Programa Nacional Cuna Más (PNCM)</strong> es un programa social focalizado adscrito al
+      <p style="font-size:8.5pt;font-style:italic;color:#374151;margin:0 0 8px 0;line-height:1.65;text-align:justify;">El <strong style="font-style:normal;">Programa Nacional Cuna Más (PNCM)</strong> es un programa social focalizado adscrito al
         <strong style="font-style:normal;">Ministerio de Desarrollo e Inclusión Social (MIDIS)</strong>, cuyo objetivo es mejorar el
         desarrollo infantil de niñas, niños y madres gestantes. El PNCM opera a través de dos servicios complementarios:
       </p>
@@ -1420,14 +1402,13 @@ function generarPrologo() {
           principales y favorecer el desarrollo integral de la primera infancia.
         </p>
       </div>
-      <p style="font-size:8.5pt;font-style:italic;color:#374151;margin:0 0 6px 0;line-height:1.65;text-align:justify;">
-        Ambos servicios se implementan bajo el modelo de <strong style="font-style:normal;">cogestión comunitaria</strong><sup>1</sup>,
+      <p style="font-size:8.5pt;font-style:italic;color:#374151;margin:0 0 6px 0;line-height:1.65;text-align:justify;">Ambos servicios se implementan bajo el modelo de <strong style="font-style:normal;">cogestión comunitaria</strong><sup>1</sup>,
         una estrategia de corresponsabilidad entre el Estado y la comunidad organizada. El PNCM brinda capacitación,
         asistencia técnica y recursos financieros; la comunidad, a través de sus <strong style="font-style:normal;">Comités de Gestión</strong>,
         participa activamente en la administración y operación de los servicios.
       </p>
       <p style="font-size:7.5pt;color:#9ca3af;margin:6px 0 0 0;line-height:1.4;border-top:1px solid #e5e7eb;padding-top:5px;font-style:normal;">
-        <sup>1</sup> Directiva "Modelo de Cogestión Comunal para la Implementación y Funcionamiento de los Servicios del
+        <sup>1</sup>Directiva "Modelo de Cogestión Comunal para la Implementación y Funcionamiento de los Servicios del
         Programa Nacional Cuna Más", versión 9 — RDE N° 2100-2025-MIDIS/PNCM.
       </p>
     </div>`;
@@ -1783,7 +1764,7 @@ async function exportarExcel() {
     if (!okS || !okD) {
       filas.push([]);
       filas.push(['Nota', 'El detalle por rol de ' + (!okS ? 'SAF' : 'SCD') +
-                  ' no está disponible: el comité que atiende este distrito tiene sede en otro. ' +
+                  'no está disponible: el comité que atiende este distrito tiene sede en otro. ' +
                   'Se muestran las cifras del registro de cobertura.']);
     }
     const wsA = XLSX.utils.aoa_to_sheet(filas);
@@ -1801,7 +1782,7 @@ async function exportarExcel() {
     ['Mes del corte', `${mesNombre} ${año}`],
     ['Generado',     _fmtFechaHora()],
     ['Versión',      APP_VERSION],
-    ['Fuente',       'UPPM–PNCM–MIDIS 🇵🇪']
+    ['Fuente',       'UPPM–PNCM–MIDIS ']
   ];
   const wsMeta = XLSX.utils.aoa_to_sheet(meta);
   wsMeta['!cols'] = [{wch:22},{wch:46}];
@@ -2139,7 +2120,7 @@ function _listaRoles(bloque, roles) {
   });
   if (!partes.length) return '';
   if (partes.length === 1) return partes[0];
-  return partes.slice(0, -1).join(', ') + ' y ' + partes[partes.length - 1];
+  return partes.slice(0, -1).join(', ') + 'y ' + partes[partes.length - 1];
 }
 
 function generarNarrativaSAF(nivel, d) {
@@ -2187,7 +2168,7 @@ function generarNarrativaSAF(nivel, d) {
     }
   }
 
-  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🔴 Servicio de Acompañamiento a Familias (SAF)</h3>${p1}${p2}`;
+  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">Servicio de Acompañamiento a Familias (SAF)</h3>${p1}${p2}`;
 }
 
 // ── Genera los párrafos narrativos del SCD ─────────────────────────────────
@@ -2242,7 +2223,7 @@ function generarNarrativaSCD(nivel, d) {
     }
   }
 
-  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🟢 Servicio de Cuidado Diurno (SCD)</h3>${p1}${p2}`;
+  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">Servicio de Cuidado Diurno (SCD)</h3>${p1}${p2}`;
 }
 
 // ── Bloque cobertura territorial para un nivel (dep/prov) ─────────────────
@@ -2360,7 +2341,7 @@ function generarTarjetasKPI(d, nivel, servicio) {
 function generarNarrativaEspecialSAF(d, ambitoLabel) {
   const fmt = n => (n||0).toLocaleString('es-PE', {maximumFractionDigits:0});
   const mesMin = (mesNombre||'').toLowerCase();
-  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🔴 Servicio de Acompañamiento a Familias (SAF)</h3>
+  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">Servicio de Acompañamiento a Familias (SAF)</h3>
     <p>Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> en el ámbito del <strong>${ambitoLabel}</strong> alcanza una cobertura de <strong>${fmt(d.familias_2025)} familias</strong>, conformadas por <strong>${fmt(d.niños_saf)} niñas y niños</strong> y <strong>${fmt(d.gestantes_SAF)} gestantes</strong>, quienes reciben atención y acompañamiento a través de la intervención del programa.</p>
     <p>La prestación del servicio se extiende a <strong>${fmt(d.dist_saf)} distritos</strong> distribuidos en <strong>${d.prov_saf} provincias</strong> de <strong>${d.dep_saf} departamentos</strong> que conforman el ámbito, contribuyendo al desarrollo integral de la primera infancia.</p>`;
 }
@@ -2369,10 +2350,10 @@ function generarNarrativaEspecialSCD(d, ambitoLabel) {
   const fmt = n => (n||0).toLocaleString('es-PE', {maximumFractionDigits:0});
   const mesMin = (mesNombre||'').toLowerCase();
   if (d.niños_2025 === 0 && d.CIAI_SCD === 0) {
-    return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🟢 Servicio de Cuidado Diurno (SCD)</h3>
+    return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">Servicio de Cuidado Diurno (SCD)</h3>
       <p>Al mes de <strong>${mesMin} de ${año}</strong>, el ámbito del <strong>${ambitoLabel}</strong> no registra cobertura a través del <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
   }
-  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🟢 Servicio de Cuidado Diurno (SCD)</h3>
+  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">Servicio de Cuidado Diurno (SCD)</h3>
     <p>Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> en el ámbito del <strong>${ambitoLabel}</strong> brinda atención a <strong>${fmt(d.niños_2025)} niñas y niños</strong> a través de <strong>${fmt(d.CIAI_SCD)} Centros Infantiles de Atención Integral (CIAI)</strong>.</p>
     <p>El servicio tiene presencia en <strong>${fmt(d.dist_scd)} distritos</strong> de <strong>${d.dep_scd} departamentos</strong> del ámbito, contribuyendo al cuidado integral de la primera infancia en zonas focalizadas.</p>`;
 }
@@ -2429,7 +2410,7 @@ function generarTablaCoberturaEspecialWord(datosAm, ambito) {
     mapa[k].eScd += r.ejecucion_scd ||0;
   });
   const deps = Object.keys(mapa).sort((a,b)=>a.localeCompare(b,'es'));
-  const fmt  = n => Math.round(n).toLocaleString('es-PE');
+  const fmt  = n =>Math.round(n).toLocaleString('es-PE');
   const fmtS = n => n>0?'S/. '+Math.round(n).toLocaleString('es-PE'):'S/ 0';
   let tot = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
   let filas = '';
@@ -2503,7 +2484,7 @@ function generarTablaDistritosEspecialWord(datosAm, ambito) {
   });
   const rows = Object.values(mapa)
     .sort((a,b) => a.dep.localeCompare(b.dep,'es') || a.prov.localeCompare(b.prov,'es') || a.dist.localeCompare(b.dist,'es'));
-  const fmt  = n => Math.round(n).toLocaleString('es-PE');
+  const fmt  = n =>Math.round(n).toLocaleString('es-PE');
   const fmtS = n => n>0 ? 'S/. '+Math.round(n).toLocaleString('es-PE') : 'S/ 0';
   const brd  = '1px solid #374151';
   const brdL = '1px solid #d1d5db';
@@ -2736,8 +2717,7 @@ async function exportarWord() {
                 ${buildFooterLine(_fmtFechaHora())}
               </td>
               <td style="width:4%;border:none;"></td>
-              <td style="padding:6px 14px 6px 0;font-size:9pt;font-weight:700;color:#374151;text-align:right;white-space:nowrap;vertical-align:middle;width:20%;border:none;letter-spacing:.01em;">
-                Página <span style="mso-field-code:'PAGE \* MERGEFORMAT'">1</span>
+              <td style="padding:6px 14px 6px 0;font-size:9pt;font-weight:700;color:#374151;text-align:right;white-space:nowrap;vertical-align:middle;width:20%;border:none;letter-spacing:.01em;">Página <span style="mso-field-code:'PAGE \* MERGEFORMAT'">1</span>
                 de <span style="mso-field-code:'NUMPAGES \* MERGEFORMAT'">1</span>
               </td>
             </tr>
@@ -2808,8 +2788,7 @@ async function exportarWord() {
               ${buildFooterLine(_fmtFechaHora())}
             </td>
             <td style="width:4%;border:none;"></td>
-            <td style="padding:6px 14px 6px 0;font-size:9pt;font-weight:700;color:#374151;text-align:right;white-space:nowrap;vertical-align:middle;width:20%;border:none;letter-spacing:.01em;">
-              Página&nbsp;<span style="mso-field-code:'PAGE \* MERGEFORMAT'">1</span>&nbsp;de&nbsp;<span style="mso-field-code:'NUMPAGES \* MERGEFORMAT'">1</span>
+            <td style="padding:6px 14px 6px 0;font-size:9pt;font-weight:700;color:#374151;text-align:right;white-space:nowrap;vertical-align:middle;width:20%;border:none;letter-spacing:.01em;">Página&nbsp;<span style="mso-field-code:'PAGE \* MERGEFORMAT'">1</span>&nbsp;de&nbsp;<span style="mso-field-code:'NUMPAGES \* MERGEFORMAT'">1</span>
             </td>
           </tr>
         </table>
@@ -3015,7 +2994,7 @@ async function exportarPDF() {
     // Tabla SAF izquierda
     doc.autoTable({
       startY: yTablas,
-      head: [[{ content:'🔴  Servicio de Acompañamiento a Familias (SAF)', colSpan:2 }]],
+      head: [[{ content:'Servicio de Acompañamiento a Familias (SAF)', colSpan:2 }]],
       body: saf,
       theme: 'striped',
       margin: { left: MARGIN.left, right: pw - MARGIN.left - half, bottom: MARGIN.bottom },
@@ -3031,7 +3010,7 @@ async function exportarPDF() {
     // Tabla SCD derecha
     doc.autoTable({
       startY: yTablas,
-      head: [[{ content:'🟢  Servicio de Cuidado Diurno (SCD)', colSpan:2 }]],
+      head: [[{ content:'Servicio de Cuidado Diurno (SCD)', colSpan:2 }]],
       body: scd,
       theme: 'striped',
       margin: { left: MARGIN.left + half + 6, right: MARGIN.right, bottom: MARGIN.bottom },
@@ -3068,7 +3047,7 @@ async function exportarPDF() {
         { content:'S/. EJECUCIÓN ACUM.', styles:{ fillColor: COL.scd_soft, textColor: COL.ink } }
       ]
     ];
-    const fmt = n => Math.round(n).toLocaleString('es-PE');
+    const fmt = n =>Math.round(n).toLocaleString('es-PE');
     const fmtS = n => n > 0 ? 'S/. ' + Math.round(n).toLocaleString('es-PE') : 'S/ 0';
     const body = data.filas.map(f => [f.nombre, fmt(f.familias), fmt(f.ninos_saf), fmt(f.gestantes), fmtS(f.ejec_saf), fmt(f.usuarios), fmt(f.ciai), fmtS(f.ejec_scd)]);
     const total = ['Total general', fmt(data.tot.familias), fmt(data.tot.ninos_saf), fmt(data.tot.gestantes), fmtS(data.tot.ejec_saf), fmt(data.tot.usuarios), fmt(data.tot.ciai), fmtS(data.tot.ejec_scd)];
@@ -3145,7 +3124,7 @@ async function exportarPDF() {
     ];
     doc.autoTable({
       startY: yN + 2,
-      head: [[{ content: '🔴  SAF — Nacional', colSpan: 2 }]],
+      head: [[{ content: 'SAF — Nacional', colSpan: 2 }]],
       body: safRows, theme: 'striped',
       margin: { left: MARGIN.left, right: pw2 - MARGIN.left - half2, bottom: MARGIN.bottom },
       tableWidth: half2, styles: shSt,
@@ -3156,7 +3135,7 @@ async function exportarPDF() {
     const ySAFend = doc.lastAutoTable.finalY;
     doc.autoTable({
       startY: yN + 2,
-      head: [[{ content: '🟢  SCD — Nacional', colSpan: 2 }]],
+      head: [[{ content: 'SCD — Nacional', colSpan: 2 }]],
       body: scdRows, theme: 'striped',
       margin: { left: MARGIN.left + half2 + 6, right: MARGIN.right, bottom: MARGIN.bottom },
       tableWidth: half2, styles: shSt,
