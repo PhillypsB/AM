@@ -12,284 +12,333 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════════════════
-   AYUDA MEMORIA PNCM — DATA STORY FRAMEWORK v1.0
-   Fondo blanco. Cuatro colores. Un solo énfasis. Mucho aire.
-   Debe entenderse en menos de 20 segundos.
+   AYUDA MEMORIA PNCM · Data Story Framework v1.0 — edición premium
+   Blanco, cuatro colores, un solo énfasis. Jerarquía de revista de
+   negocios. Primero el celular.
    ═══════════════════════════════════════════════════════════════════ */
 :root{
-  --charcoal:#23252B;      /* primario */
-  --gris:#6E7078;          /* secundario */
-  --borde:#E8E8EC;         /* bordes */
-  --enfasis:#D800A6;       /* único color de énfasis */
-  --blanco:#fff;
+  --tinta:#23252B; --gris:#6E7078; --linea:#E8E8EC; --enfasis:#D800A6;
+  --papel:#fff; --nieve:#FAFAFB;
   --titulo:'Space Grotesk',system-ui,sans-serif;
   --texto:'Manrope',system-ui,sans-serif;
   --ease:cubic-bezier(.16,1,.3,1);
-  --r:24px;                /* radio de card */
-  --sh:0 1px 2px rgba(35,37,43,.04),0 8px 24px rgba(35,37,43,.05);
-  --barra:74px;
+  --r:24px;
+  --sh:0 1px 2px rgba(35,37,43,.03),0 10px 30px -12px rgba(35,37,43,.14);
+  --sh-alta:0 2px 4px rgba(35,37,43,.04),0 24px 48px -16px rgba(35,37,43,.22);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{
-  font-family:var(--texto);background:var(--blanco);color:var(--charcoal);
+  font-family:var(--texto);background:var(--nieve);color:var(--tinta);
   min-height:100vh;line-height:1.7;-webkit-font-smoothing:antialiased;
-  padding-bottom:calc(var(--barra) + env(safe-area-inset-bottom));
+  font-feature-settings:'tnum' 1;
 }
 
-/* ① LÍNEA SUPERIOR ─────────────────────────────────────────────── */
+/* ── MASTHEAD ──────────────────────────────────────────────────── */
 .app-header{
-  position:sticky;top:0;z-index:60;background:var(--blanco);
-  border-bottom:1px solid var(--borde);
-  padding:calc(14px + env(safe-area-inset-top)) 20px 14px;
-  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:60;background:var(--papel);
+  border-bottom:1px solid var(--linea);
+  padding:calc(15px + env(safe-area-inset-top)) 20px 15px;
+  display:flex;align-items:center;gap:14px;
 }
-.header-brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 auto}
+.app-header::before{           /* filete superior: firma de revista */
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--enfasis);
+}
+.header-brand{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1 1 auto}
 .brand-logo{
-  font-family:var(--titulo);font-weight:800;font-size:.6rem;letter-spacing:.16em;
-  color:var(--charcoal);border:1px solid var(--borde);border-radius:7px;
-  padding:7px 10px;white-space:nowrap;flex-shrink:0;text-transform:uppercase;
+  font-family:var(--titulo);font-weight:700;font-size:.53rem;letter-spacing:.28em;
+  color:var(--gris);text-transform:uppercase;border:none;padding:0;
+  white-space:nowrap;
 }
 .brand-info{min-width:0}
 .brand-info h1{
-  font-family:var(--titulo);font-weight:800;font-size:.9rem;line-height:1.15;
-  letter-spacing:-.02em;color:var(--charcoal);
+  font-family:var(--titulo);font-weight:700;font-size:1.02rem;line-height:1.1;
+  letter-spacing:-.035em;color:var(--tinta);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.brand-info p{
-  font-size:.6rem;color:var(--gris);text-transform:uppercase;
-  letter-spacing:.18em;margin-top:5px;font-weight:600;
-}
-.corte-pill{display:flex;align-items:center;gap:9px;flex-shrink:0}
-.corte-label{
-  font-size:.57rem;color:var(--gris);text-transform:uppercase;
-  letter-spacing:.18em;font-weight:600;
-}
+.brand-info h1::after{content:'';display:inline-block;width:5px;height:5px;
+  border-radius:50%;background:var(--enfasis);margin-left:7px;vertical-align:middle}
+.brand-info p{display:none}
+.corte-pill{display:flex;align-items:center;gap:0;flex-shrink:0}
+.corte-label{display:none}
 .corte-select{
-  font-family:var(--texto);font-size:16px;font-weight:700;color:var(--charcoal);
-  background:var(--blanco);border:1px solid var(--borde);border-radius:10px;
-  padding:10px 12px;min-height:44px;cursor:pointer;
-  transition:border-color .2s var(--ease);
+  font-family:var(--texto);font-size:16px;font-weight:800;color:var(--tinta);
+  background:var(--papel);border:1px solid var(--linea);border-radius:12px;
+  padding:11px 12px;min-height:46px;cursor:pointer;letter-spacing:-.01em;
+  transition:border-color .2s var(--ease),box-shadow .2s var(--ease);
 }
 .corte-select:hover{border-color:var(--enfasis)}
-.corte-select:focus-visible{outline:2px solid var(--enfasis);outline-offset:2px}
+.corte-select:focus-visible{outline:none;border-color:var(--enfasis);box-shadow:0 0 0 3px rgba(216,0,166,.12)}
 
-.page-wrapper{padding:26px 20px 40px;max-width:1180px;margin:0 auto}
+.page-wrapper{padding:0 0 40px;max-width:1200px;margin:0 auto}
 
-/* CONSULTA ─────────────────────────────────────────────────────── */
+/* ── DISPARADOR DE ÁMBITO (abre la hoja) ───────────────────────── */
 .filter-card{
-  background:var(--blanco);border:1px solid var(--borde);border-radius:var(--r);
-  padding:24px 20px;margin-bottom:34px;box-shadow:var(--sh);
+  position:sticky;top:76px;z-index:50;
+  background:var(--papel);border-bottom:1px solid var(--linea);
+  padding:11px 20px;margin:0;border-radius:0;box-shadow:none;
 }
-.filter-card-title{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-.filter-icon{display:none}
-.filter-card-title h2{
-  font-size:.6rem;color:var(--gris);text-transform:uppercase;
-  letter-spacing:.2em;font-weight:700;
+.filter-card-title{display:none}
+.filter-row{display:block}
+.ds-ambito{
+  width:100%;display:flex;align-items:center;gap:11px;
+  background:var(--papel);border:1px solid var(--linea);border-radius:14px;
+  padding:12px 14px;min-height:52px;cursor:pointer;font-family:inherit;
+  text-align:left;color:var(--tinta);transition:all .2s var(--ease);
 }
-.filter-row{display:flex;flex-direction:column;gap:14px}
-.select-group{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1}
-.select-group label{
-  font-size:.57rem;color:var(--gris);text-transform:uppercase;
-  letter-spacing:.18em;font-weight:700;
+.ds-ambito:hover{border-color:var(--enfasis)}
+.ds-ambito:active{transform:scale(.99)}
+.ds-ambito .et{
+  font-size:.5rem;font-weight:800;letter-spacing:.2em;color:var(--gris);
+  text-transform:uppercase;display:block;margin-bottom:3px;
 }
-.select-group select{
-  width:100%;font-family:var(--texto);font-size:16px;font-weight:600;color:var(--charcoal);
-  background:var(--blanco);border:1px solid var(--borde);border-radius:12px;
-  padding:13px 14px;min-height:50px;cursor:pointer;
-  transition:border-color .2s var(--ease);
+.ds-ambito .vl{
+  font-family:var(--titulo);font-weight:700;font-size:.86rem;letter-spacing:-.02em;
+  display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.select-group select:hover{border-color:var(--enfasis)}
-.select-group select:focus-visible{outline:none;border-color:var(--enfasis);box-shadow:0 0 0 3px rgba(216,0,166,.1)}
+.ds-ambito svg{flex-shrink:0;stroke:var(--gris)}
+.ds-ambito-txt{min-width:0;flex:1}
 
-/* ② GRAN TÍTULO + ③ SUBTÍTULO ─────────────────────────────────── */
-.results-header{margin:0 0 26px}
+/* ── HOJA MODAL ────────────────────────────────────────────────── */
+.ds-sheet-bg{
+  position:fixed;inset:0;z-index:200;background:rgba(35,37,43,.4);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;
+  transition:opacity .3s var(--ease);
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.ds-sheet-bg.abierta{opacity:1;pointer-events:auto}
+.ds-sheet{
+  width:100%;max-width:560px;background:var(--papel);
+  border-radius:28px 28px 0 0;box-shadow:var(--sh-alta);
+  transform:translateY(100%);transition:transform .38s var(--ease);
+  max-height:88vh;display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.ds-sheet-bg.abierta .ds-sheet{transform:none}
+.ds-sheet-asa{
+  width:36px;height:4px;border-radius:50px;background:var(--linea);
+  margin:11px auto 0;flex-shrink:0;
+}
+.ds-sheet-cab{
+  padding:18px 22px 14px;display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--linea);flex-shrink:0;
+}
+.ds-sheet-cab h3{
+  font-family:var(--titulo);font-weight:700;font-size:1.05rem;letter-spacing:-.03em;flex:1;
+}
+.ds-sheet-x{
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--linea);
+  background:var(--papel);cursor:pointer;color:var(--gris);font-size:1rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;transition:all .2s var(--ease);
+}
+.ds-sheet-x:hover{background:var(--tinta);color:#fff;border-color:var(--tinta)}
+.ds-sheet-cuerpo{padding:18px 22px 26px;overflow-y:auto}
+
+/* opciones de descarga como filas, no como botones de colores */
+.ds-opcion{
+  width:100%;display:flex;align-items:center;gap:14px;
+  padding:16px 4px;background:none;border:none;border-bottom:1px solid var(--linea);
+  cursor:pointer;font-family:inherit;text-align:left;color:var(--tinta);
+  transition:padding-left .2s var(--ease);
+}
+.ds-opcion:last-child{border-bottom:none}
+.ds-opcion:hover{padding-left:8px}
+.ds-opcion:disabled{opacity:.34;cursor:not-allowed}
+.ds-opcion .ic{
+  width:40px;height:40px;border-radius:11px;border:1px solid var(--linea);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .2s var(--ease);
+}
+.ds-opcion:hover .ic{border-color:var(--enfasis);background:rgba(216,0,166,.05)}
+.ds-opcion .ic svg{stroke:var(--enfasis)}
+.ds-opcion .tx{flex:1;min-width:0}
+.ds-opcion .tt{font-weight:800;font-size:.9rem;letter-spacing:-.01em;display:block}
+.ds-opcion .sb{font-size:.72rem;color:var(--gris);display:block;margin-top:1px}
+.ds-opcion .fl{stroke:var(--linea);flex-shrink:0}
+
+/* ── LA HISTORIA ───────────────────────────────────────────────── */
+.results-header{padding:34px 20px 0;margin:0}
 .results-header h2{
-  font-family:var(--titulo);font-weight:800;
-  font-size:2.5rem;line-height:.98;letter-spacing:-.04em;color:var(--charcoal);
+  font-family:var(--titulo);font-weight:700;
+  font-size:2.6rem;line-height:.96;letter-spacing:-.05em;color:var(--tinta);
 }
 .results-header p{
-  font-size:.62rem;color:var(--gris);text-transform:uppercase;
-  letter-spacing:.22em;font-weight:700;margin-top:12px;
+  font-size:.58rem;color:var(--enfasis);text-transform:uppercase;
+  letter-spacing:.24em;font-weight:800;margin-bottom:14px;order:-1;
 }
+.results-header > div:first-child{display:flex;flex-direction:column}
 
-/* ⑤ KPI — siempre enormes ─────────────────────────────────────── */
-.kpi-container{display:grid;grid-template-columns:1fr;gap:20px}
+.kpi-container{display:grid;grid-template-columns:1fr;gap:18px;padding:26px 20px 0}
 .service-card{
-  background:var(--blanco);border:1px solid var(--borde);border-radius:var(--r);
+  background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);
   box-shadow:var(--sh);overflow:hidden;
+  transition:box-shadow .3s var(--ease),transform .3s var(--ease);
 }
-.service-header{padding:24px 22px 4px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
-.service-title{display:flex;align-items:center;gap:10px;flex:1 1 auto;min-width:0}
+.service-card:hover{box-shadow:var(--sh-alta);transform:translateY(-2px)}
+.service-header{padding:22px 22px 0;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.service-title{display:flex;align-items:center;gap:9px;flex:1 1 auto;min-width:0}
 .service-dot{display:none}
 .service-title h3{
-  font-family:var(--titulo);font-weight:800;font-size:.72rem;line-height:1.3;
-  text-transform:uppercase;letter-spacing:.14em;color:var(--gris);
+  font-size:.55rem;font-weight:800;line-height:1.5;
+  text-transform:uppercase;letter-spacing:.22em;color:var(--gris);
 }
 .service-abbr{
-  font-size:.55rem;font-weight:700;letter-spacing:.16em;color:var(--enfasis);
-  border:1px solid var(--borde);padding:4px 8px;border-radius:6px;flex-shrink:0;
+  font-family:var(--titulo);font-weight:700;font-size:.6rem;letter-spacing:.06em;
+  color:var(--papel);background:var(--enfasis);padding:4px 9px;border-radius:6px;flex-shrink:0;
 }
 .service-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-left:auto}
 .card-chip{
-  font-size:.53rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--gris);border:1px solid var(--borde);padding:5px 9px;border-radius:6px;
-  white-space:nowrap;
+  font-size:.5rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gris);border:1px solid var(--linea);padding:4px 8px;border-radius:5px;white-space:nowrap;
 }
-.card-chip-amb{color:var(--charcoal)}
+.card-chip-amb{color:var(--tinta)}
 .card-dl{
-  width:44px;height:44px;flex-shrink:0;cursor:pointer;
-  border:1px solid var(--borde);border-radius:10px;background:var(--blanco);
-  color:var(--gris);font-size:1rem;line-height:1;font-family:inherit;
-  display:inline-flex;align-items:center;justify-content:center;
-  transition:all .2s var(--ease);
+  width:40px;height:40px;flex-shrink:0;cursor:pointer;
+  border:1px solid var(--linea);border-radius:11px;background:var(--papel);
+  color:var(--gris);font-size:.95rem;line-height:1;font-family:inherit;
+  display:inline-flex;align-items:center;justify-content:center;transition:all .2s var(--ease);
 }
 .card-dl:hover,.card-dl:active{background:var(--enfasis);color:#fff;border-color:var(--enfasis)}
-.card-dl:focus-visible{outline:2px solid var(--enfasis);outline-offset:2px}
 .foc-badge{
-  font-size:.55rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  padding:5px 10px;border-radius:6px;border:1px solid var(--borde)!important;
-  background:var(--blanco)!important;color:var(--gris)!important;white-space:nowrap;
+  font-size:.5rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  padding:4px 9px;border-radius:5px;border:1px solid var(--linea)!important;
+  background:var(--papel)!important;color:var(--gris)!important;white-space:nowrap;
 }
 
-.kpi-grid{display:grid;grid-template-columns:1fr 1fr}
-.kpi-block{padding:22px;text-align:left;position:relative}
-.kpi-block+.kpi-block{border-left:1px solid var(--borde)}
+/* la cifra es el titular */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;padding:20px 0 0}
+.kpi-block{padding:0 22px 24px;text-align:left;position:relative}
+.kpi-block::before{
+  content:'';position:absolute;top:0;left:22px;width:26px;height:2px;background:var(--linea);
+}
+.primary-kpi::before{background:var(--enfasis);width:38px}
+.kpi-block+.kpi-block::before{left:22px}
+.kpi-block+.kpi-block{border-left:1px solid var(--linea)}
 .kpi-emoji{display:none}
 .kpi-value{
-  font-family:var(--titulo);font-weight:800;
-  font-size:2.9rem;line-height:.9;letter-spacing:-.05em;
-  color:var(--enfasis);font-variant-numeric:tabular-nums;
+  font-family:var(--titulo);font-weight:700;
+  font-size:2.5rem;line-height:.92;letter-spacing:-.055em;
+  color:var(--tinta);font-variant-numeric:tabular-nums;margin-top:16px;
 }
-.kpi-block:not(.primary-kpi) .kpi-value{font-size:1.35rem;color:var(--charcoal)}
+.primary-kpi .kpi-value{color:var(--enfasis)}
+.kpi-block:not(.primary-kpi) .kpi-value{font-size:1.25rem;letter-spacing:-.03em}
 .kpi-label{
-  font-size:.55rem;color:var(--gris);text-transform:uppercase;
-  letter-spacing:.2em;font-weight:700;margin-top:14px;line-height:1.5;
+  font-size:.5rem;color:var(--gris);text-transform:uppercase;
+  letter-spacing:.2em;font-weight:800;margin-top:10px;line-height:1.6;
 }
 
-/* ⑦ RESUMEN — tabla de detalle, grid casi invisible ───────────── */
-.detail-section{padding:2px 22px 24px}
-.detail-table{width:100%;border-collapse:collapse;font-size:.84rem}
-.detail-table tr{border-bottom:1px solid var(--borde)}
+.detail-section{padding:0 22px 22px}
+.detail-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.detail-table tr{border-bottom:1px solid var(--linea)}
 .detail-table tr:last-child{border-bottom:none}
 .detail-table td{padding:13px 0;color:var(--gris)}
-.detail-table td:last-child{
-  text-align:right;font-weight:800;color:var(--charcoal);
-  font-variant-numeric:tabular-nums;white-space:nowrap;
-}
+.detail-table td:last-child{text-align:right;font-weight:800;color:var(--tinta);font-variant-numeric:tabular-nums}
 .detail-table tr.row-sep td{
-  padding:24px 0 9px;font-size:.53rem;color:var(--gris);
-  text-transform:uppercase;letter-spacing:.2em;font-weight:700;
+  padding:26px 0 9px;font-size:.5rem;color:var(--gris);
+  text-transform:uppercase;letter-spacing:.22em;font-weight:800;
 }
-.detail-table tr.row-sep{border-bottom:1px solid var(--borde)}
-.detail-table tr.row-total{border-top:1px solid var(--charcoal);border-bottom:none}
-.detail-table tr.row-total td{padding-top:15px;font-weight:800;color:var(--charcoal)}
-.detail-table tr.row-total td:last-child{color:var(--enfasis)}
+.detail-table tr.row-total{border-top:2px solid var(--tinta);border-bottom:none}
+.detail-table tr.row-total td{padding-top:15px;font-weight:800;color:var(--tinta)}
+.detail-table tr.row-total td:last-child{color:var(--enfasis);font-size:1rem}
 
-/* ④ INSIGHT + ⑦ RESUMEN ───────────────────────────────────────── */
+/* ── EL RELATO ─────────────────────────────────────────────────── */
 .am-narrativa{
-  grid-column:1 / -1;background:var(--blanco);
-  border:1px solid var(--borde);border-radius:var(--r);box-shadow:var(--sh);
-  padding:26px 22px 28px;
-  font-size:.92rem;line-height:1.85;color:var(--gris);
+  grid-column:1 / -1;background:var(--papel);
+  border:1px solid var(--linea);border-radius:var(--r);box-shadow:var(--sh);
+  padding:28px 22px 30px;font-size:.93rem;line-height:1.9;color:var(--gris);
 }
 .am-narrativa-lbl{
-  font-size:.55rem;color:var(--gris);text-transform:uppercase;letter-spacing:.22em;
-  font-weight:700;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--borde);
+  font-size:.5rem;color:var(--enfasis);text-transform:uppercase;letter-spacing:.26em;
+  font-weight:800;padding-bottom:18px;margin-bottom:22px;border-bottom:1px solid var(--linea);
 }
 .am-narrativa h2{display:none}
 .am-narrativa h3{
-  font-family:var(--titulo);font-weight:800;font-size:.68rem;line-height:1.4;
-  text-transform:uppercase;letter-spacing:.16em;color:var(--charcoal);
-  margin:0 0 14px;padding:0;border:none;
+  font-size:.52rem;font-weight:800;line-height:1.6;text-transform:uppercase;
+  letter-spacing:.22em;color:var(--tinta);margin:0 0 14px;padding:0;border:none;
 }
-.am-narrativa p{margin:0 0 14px}
+.am-narrativa p{margin:0 0 15px}
+.am-narrativa p:first-of-type{
+  font-size:1.06rem;line-height:1.65;color:var(--tinta);font-weight:500;
+  letter-spacing:-.015em;margin-bottom:22px;
+}
 .am-narrativa p:last-child{margin-bottom:0}
-.am-narrativa strong{color:var(--charcoal);font-weight:800}
-.am-cols{display:grid;grid-template-columns:1fr;margin-top:22px;padding-top:22px;border-top:1px solid var(--borde)}
-.am-col-scd{border-top:1px solid var(--borde);padding-top:26px;margin-top:26px}
-
+.am-narrativa strong{color:var(--tinta);font-weight:800}
+.am-cols{display:grid;grid-template-columns:1fr;margin-top:24px;padding-top:24px;border-top:1px solid var(--linea)}
+.am-col-scd{border-top:1px solid var(--linea);padding-top:26px;margin-top:26px}
 .cobertura-card{
-  background:var(--blanco);border:1px solid var(--borde);border-radius:var(--r);
-  box-shadow:var(--sh);overflow:hidden;margin-top:20px;
+  background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;margin:18px 20px 0;
 }
 
-/* ACCIONES ────────────────────────────────────────────────────── */
-.export-bar{
-  position:fixed;left:0;right:0;bottom:0;z-index:70;
-  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
-  padding:11px 14px calc(11px + env(safe-area-inset-bottom));
-  background:var(--blanco);border-top:1px solid var(--borde);
+/* ── ACCIÓN PRINCIPAL ──────────────────────────────────────────── */
+.export-bar{display:block;padding:0 20px;margin-top:22px}
+.export-bar .btn{display:none}
+.ds-cta{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+  min-height:54px;border-radius:15px;border:none;cursor:pointer;
+  background:var(--tinta);color:var(--papel);font-family:var(--texto);
+  font-size:.72rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  transition:all .25s var(--ease);box-shadow:var(--sh);
 }
-.btn{
-  display:flex;align-items:center;justify-content:center;
-  min-height:50px;padding:9px 4px;border-radius:11px;cursor:pointer;
-  font-family:var(--texto);font-size:.55rem;font-weight:800;
-  letter-spacing:.14em;text-transform:uppercase;line-height:1.3;
-  background:var(--blanco);border:1px solid var(--borde);color:var(--charcoal);
-  transition:all .2s var(--ease);
-}
-.btn:hover:not(:disabled),.btn:active:not(:disabled){
-  background:var(--enfasis);border-color:var(--enfasis);color:#fff;
-}
-.btn:active:not(:disabled){transform:scale(.97)}
-.btn:focus-visible{outline:2px solid var(--enfasis);outline-offset:2px}
-.btn:disabled{opacity:.3;cursor:not-allowed}
+.ds-cta:hover:not(:disabled){background:var(--enfasis);box-shadow:var(--sh-alta);transform:translateY(-2px)}
+.ds-cta:active:not(:disabled){transform:translateY(0) scale(.99)}
+.ds-cta:disabled{opacity:.3;cursor:not-allowed}
+.ds-cta svg{stroke:currentColor}
 
-.loading-wrap{text-align:center;padding:52px 20px;color:var(--gris)}
+.loading-wrap{text-align:center;padding:56px 20px;color:var(--gris)}
 .spinner{
-  width:30px;height:30px;margin:0 auto 16px;border-radius:50%;
-  border:2px solid var(--borde);border-top-color:var(--enfasis);
-  animation:am-spin .7s linear infinite;
+  width:28px;height:28px;margin:0 auto 16px;border-radius:50%;
+  border:2px solid var(--linea);border-top-color:var(--enfasis);
+  animation:ds-spin .7s linear infinite;
 }
-@keyframes am-spin{to{transform:rotate(360deg)}}
+@keyframes ds-spin{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
 .page-break{display:none}
 
-/* ⑧ FUENTE — la firma, siempre igual ──────────────────────────── */
-#appFooter{
-  margin-top:44px;padding:22px 0 0;border-top:1px solid var(--borde);
-  text-align:center;
-}
-#appFooterText{font-size:.62rem;color:var(--gris);line-height:1.9}
+/* ── FIRMA ─────────────────────────────────────────────────────── */
+#appFooter{margin:48px 20px 0;padding:24px 0 0;border-top:1px solid var(--linea);text-align:center}
+#appFooterText{font-size:.6rem;color:var(--gris);line-height:1.9}
 .ds-firma{
-  margin-top:16px;padding-top:16px;border-top:1px solid var(--borde);
-  font-size:.56rem;color:var(--gris);text-transform:uppercase;letter-spacing:.16em;
-  font-weight:700;line-height:2;
+  margin-top:18px;padding-top:18px;border-top:1px solid var(--linea);
+  font-size:.53rem;color:var(--gris);text-transform:uppercase;letter-spacing:.2em;
+  font-weight:800;line-height:2.1;
 }
-.ds-firma b{color:var(--charcoal);font-weight:800}
-.ds-firma .sep{color:var(--enfasis);margin:0 9px}
+.ds-firma b{color:var(--tinta)}
+.ds-firma .sep{color:var(--enfasis);margin:0 10px}
 
-#resultadosArea:not(.hidden){animation:ds-entra .5s var(--ease) both}
-@keyframes ds-entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#resultadosArea:not(.hidden){animation:ds-entra .6s var(--ease) both}
+@keyframes ds-entra{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
-/* ESCRITORIO ──────────────────────────────────────────────────── */
+/* ── ESCRITORIO ────────────────────────────────────────────────── */
 @media (min-width:768px){
-  body{padding-bottom:0}
   .app-header{padding:18px 40px}
-  .brand-info h1{font-size:1rem}
-  .page-wrapper{padding:36px 40px 56px}
-  .filter-card{padding:28px 30px;margin-bottom:44px}
-  .filter-row{flex-direction:row;gap:20px}
-  .results-header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
-  .results-header h2{font-size:3.4rem}
-  .kpi-container{grid-template-columns:1fr 1fr;gap:24px}
-  .kpi-value{font-size:3.6rem}
-  .kpi-block:not(.primary-kpi) .kpi-value{font-size:1.6rem}
-  .detail-section{padding:2px 26px 28px}
-  .am-narrativa{padding:34px 38px 36px}
-  .am-cols{grid-template-columns:1fr 1fr;gap:40px}
-  .am-col-scd{border-top:none;border-left:1px solid var(--borde);padding-top:0;margin-top:0;padding-left:40px}
-  .export-bar{position:static;display:flex;flex-wrap:wrap;gap:10px;padding:0;border-top:none}
-  .btn{min-height:44px;padding:12px 20px;font-size:.6rem}
-  .card-dl{width:36px;height:36px;font-size:.9rem;border-radius:9px}
+  .brand-info h1{font-size:1.15rem}
+  .filter-card{top:82px;padding:13px 40px}
+  .ds-ambito{max-width:520px}
+  .results-header{padding:46px 40px 0;flex-direction:row;align-items:flex-end;justify-content:space-between;gap:26px}
+  .results-header h2{font-size:3.6rem}
+  .kpi-container{grid-template-columns:1fr 1fr;gap:22px;padding:32px 40px 0}
+  .kpi-value{font-size:3.2rem}
+  .kpi-block:not(.primary-kpi) .kpi-value{font-size:1.5rem}
+  .am-narrativa{padding:36px 40px 38px}
+  .am-narrativa p:first-of-type{font-size:1.18rem}
+  .am-cols{grid-template-columns:1fr 1fr;gap:42px}
+  .am-col-scd{border-top:none;border-left:1px solid var(--linea);padding-top:0;margin-top:0;padding-left:42px}
+  .cobertura-card{margin:22px 40px 0}
+  .export-bar{padding:0 40px;margin-top:26px}
+  .ds-cta{max-width:320px}
+  #appFooter{margin:56px 40px 0}
+  .ds-sheet{border-radius:28px;margin-bottom:5vh}
+  .ds-sheet-bg{align-items:center}
 }
 @media (min-width:1100px){
-  .results-header h2{font-size:4rem}
-  .kpi-value{font-size:4.2rem}
+  .results-header h2{font-size:4.2rem}
+  .kpi-value{font-size:3.8rem}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
 }
 </style>
 </head>
@@ -315,11 +364,11 @@ body{
   <!-- FILTROS -->
   <section>
     <div class="filter-card">
-      <div class="filter-card-title">
-        <span class="filter-icon"></span>
-        <h2>Búsqueda por Ubicación</h2>
-      </div>
-      <div class="filter-row">
+      <button type="button" class="ds-ambito" onclick="abrirHoja('hojaAmbito')">
+        <span class="ds-ambito-txt"><span class="et">Ámbito consultado</span><span class="vl" id="ambitoActual">Todo el país</span></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <div id="camposAmbito" hidden><div class="filter-row">
         <div class="select-group">
           <label for="selectDepartamento">Departamento</label>
           <select id="selectDepartamento"></select>
@@ -372,6 +421,7 @@ body{
         <button id="btnExcel" class="btn btn-excel" onclick="exportarExcel()"       disabled>Exportar Excel</button>
         <button id="btnWA"    class="btn btn-wa"    onclick="compartirWhatsApp()"   disabled>WhatsApp</button>
       </div>
+      <button class="ds-cta" id="ctaExportar" onclick="abrirHoja('hojaExportar')" disabled><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0 4-4m-4 4-4-4M4 21h16"/></svg> Descargar reporte</button>
     </div>
     <div id="resultados" class="kpi-container" style="margin-top:20px"></div>
   </section>
@@ -714,9 +764,45 @@ async function descargarTarjeta(serv) {
 }
 
 function setExportButtons(enabled) {
+  const cta = document.getElementById('ctaExportar');
+  if (cta) cta.disabled = !enabled;
   ['btnPDF','btnWord','btnExcel','btnWA'].forEach(id => {
     document.getElementById(id).disabled = !enabled;
   });
+}
+
+
+// ── Hojas modales ──────────────────────────────────────────────────────────
+// Los filtros y las descargas viven en hojas inferiores: no roban pantalla
+// al contenido y se manejan con el pulgar.
+function abrirHoja(id) {
+  if (id === 'hojaAmbito') {
+    const cuerpo = document.getElementById('cuerpoAmbito');
+    const campos = document.getElementById('camposAmbito');
+    if (campos && cuerpo && !cuerpo.contains(campos)) { campos.hidden = false; cuerpo.appendChild(campos); }
+  }
+  const h = document.getElementById(id);
+  if (!h) return;
+  h.classList.add('abierta');
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', _escHoja);
+}
+function cerrarHoja(id) {
+  const h = document.getElementById(id);
+  if (h) h.classList.remove('abierta');
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', _escHoja);
+}
+function _escHoja(e) {
+  if (e.key !== 'Escape') return;
+  document.querySelectorAll('.ds-sheet-bg.abierta').forEach(h => cerrarHoja(h.id));
+}
+// El botón de ámbito refleja lo consultado
+function pintarAmbito() {
+  const v = i => (document.getElementById(i) || {}).value || '';
+  const p = [v('selectDepartamento'), v('selectProvincia'), v('selectDistrito')].filter(Boolean);
+  const el = document.getElementById('ambitoActual');
+  if (el) el.textContent = p.length ? p.join(' · ') : 'Todo el país';
 }
 
 function limpiar() {
@@ -724,7 +810,8 @@ function limpiar() {
   selectProv.innerHTML = '<option value="">— Todas —</option>';
   selectDist.innerHTML = '<option value="">— Todas —</option>';
   document.getElementById('loadingState').classList.add('hidden');
-  mostrarResumenNacional();   // se vuelve al panorama nacional, no a una pantalla vacía
+  pintarAmbito();
+  mostrarResumenNacional();   // se vuelve al panorama nacional
 }
 
 // ══════════════════════════════════════════════════
@@ -885,6 +972,7 @@ function filtrarEspecial() {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('resultadosArea').classList.remove('hidden');
     setExportButtons(true);
+    pintarAmbito(); cerrarHoja('hojaAmbito');
   }, 40);
 }
 
@@ -1065,6 +1153,7 @@ function filtrar() {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('resultadosArea').classList.remove('hidden');
     setExportButtons(true);
+    pintarAmbito(); cerrarHoja('hojaAmbito');
   }, 40);
 }
 
@@ -2723,7 +2812,51 @@ async function exportarWord() {
             </tr>
           </table>
         </div>
-      </body>
+      
+<!-- HOJAS MODALES -->
+<div class="ds-sheet-bg" id="hojaAmbito" onclick="if(event.target===this)cerrarHoja('hojaAmbito')">
+  <div class="ds-sheet" role="dialog" aria-modal="true" aria-labelledby="tituloAmbito">
+    <div class="ds-sheet-asa"></div>
+    <div class="ds-sheet-cab">
+      <h3 id="tituloAmbito">Elegir ámbito</h3>
+      <button class="ds-sheet-x" onclick="cerrarHoja('hojaAmbito')" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="ds-sheet-cuerpo" id="cuerpoAmbito"></div>
+  </div>
+</div>
+
+<div class="ds-sheet-bg" id="hojaExportar" onclick="if(event.target===this)cerrarHoja('hojaExportar')">
+  <div class="ds-sheet" role="dialog" aria-modal="true" aria-labelledby="tituloExportar">
+    <div class="ds-sheet-asa"></div>
+    <div class="ds-sheet-cab">
+      <h3 id="tituloExportar">Descargar reporte</h3>
+      <button class="ds-sheet-x" onclick="cerrarHoja('hojaExportar')" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="ds-sheet-cuerpo">
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');exportarPDF()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+        <span class="tx"><span class="tt">PDF</span><span class="sb">Informe completo, listo para imprimir</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');exportarWord()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg></span>
+        <span class="tx"><span class="tt">Word</span><span class="sb">Editable, para adjuntar o ajustar</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');exportarExcel()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg></span>
+        <span class="tx"><span class="tt">Excel</span><span class="sb">Datos y actores por hoja</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');compartirWhatsApp()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.5 8.5 0 0 1-3.9-.9L3 21l2-4.9A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></svg></span>
+        <span class="tx"><span class="tt">WhatsApp</span><span class="sb">Resumen en texto, listo para enviar</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+</body>
       </html>`;
 
     const nomArchivo = `AM_${ambito}_${mesNombre}_${año}.doc`;
@@ -2793,7 +2926,51 @@ async function exportarWord() {
           </tr>
         </table>
       </div>
-    </body>
+    
+<!-- HOJAS MODALES -->
+<div class="ds-sheet-bg" id="hojaAmbito" onclick="if(event.target===this)cerrarHoja('hojaAmbito')">
+  <div class="ds-sheet" role="dialog" aria-modal="true" aria-labelledby="tituloAmbito">
+    <div class="ds-sheet-asa"></div>
+    <div class="ds-sheet-cab">
+      <h3 id="tituloAmbito">Elegir ámbito</h3>
+      <button class="ds-sheet-x" onclick="cerrarHoja('hojaAmbito')" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="ds-sheet-cuerpo" id="cuerpoAmbito"></div>
+  </div>
+</div>
+
+<div class="ds-sheet-bg" id="hojaExportar" onclick="if(event.target===this)cerrarHoja('hojaExportar')">
+  <div class="ds-sheet" role="dialog" aria-modal="true" aria-labelledby="tituloExportar">
+    <div class="ds-sheet-asa"></div>
+    <div class="ds-sheet-cab">
+      <h3 id="tituloExportar">Descargar reporte</h3>
+      <button class="ds-sheet-x" onclick="cerrarHoja('hojaExportar')" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="ds-sheet-cuerpo">
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');exportarPDF()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+        <span class="tx"><span class="tt">PDF</span><span class="sb">Informe completo, listo para imprimir</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');exportarWord()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg></span>
+        <span class="tx"><span class="tt">Word</span><span class="sb">Editable, para adjuntar o ajustar</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');exportarExcel()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg></span>
+        <span class="tx"><span class="tt">Excel</span><span class="sb">Datos y actores por hoja</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');compartirWhatsApp()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.5 8.5 0 0 1-3.9-.9L3 21l2-4.9A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></svg></span>
+        <span class="tx"><span class="tt">WhatsApp</span><span class="sb">Resumen en texto, listo para enviar</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+</body>
     </html>
   `;
 
@@ -3204,5 +3381,49 @@ if (typeof precargarCortes === 'function') {
   else setTimeout(arranca, 1200);
 }
 </script>
+
+<!-- HOJAS MODALES -->
+<div class="ds-sheet-bg" id="hojaAmbito" onclick="if(event.target===this)cerrarHoja('hojaAmbito')">
+  <div class="ds-sheet" role="dialog" aria-modal="true" aria-labelledby="tituloAmbito">
+    <div class="ds-sheet-asa"></div>
+    <div class="ds-sheet-cab">
+      <h3 id="tituloAmbito">Elegir ámbito</h3>
+      <button class="ds-sheet-x" onclick="cerrarHoja('hojaAmbito')" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="ds-sheet-cuerpo" id="cuerpoAmbito"></div>
+  </div>
+</div>
+
+<div class="ds-sheet-bg" id="hojaExportar" onclick="if(event.target===this)cerrarHoja('hojaExportar')">
+  <div class="ds-sheet" role="dialog" aria-modal="true" aria-labelledby="tituloExportar">
+    <div class="ds-sheet-asa"></div>
+    <div class="ds-sheet-cab">
+      <h3 id="tituloExportar">Descargar reporte</h3>
+      <button class="ds-sheet-x" onclick="cerrarHoja('hojaExportar')" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="ds-sheet-cuerpo">
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');exportarPDF()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+        <span class="tx"><span class="tt">PDF</span><span class="sb">Informe completo, listo para imprimir</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');exportarWord()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg></span>
+        <span class="tx"><span class="tt">Word</span><span class="sb">Editable, para adjuntar o ajustar</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');exportarExcel()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg></span>
+        <span class="tx"><span class="tt">Excel</span><span class="sb">Datos y actores por hoja</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="ds-opcion" onclick="cerrarHoja('hojaExportar');compartirWhatsApp()">
+        <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.5 8.5 0 0 1-3.9-.9L3 21l2-4.9A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></svg></span>
+        <span class="tx"><span class="tt">WhatsApp</span><span class="sb">Resumen en texto, listo para enviar</span></span>
+        <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
