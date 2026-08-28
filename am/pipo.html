@@ -395,51 +395,6 @@ body{
 }
 #camposAmbito .filter-row[style]{border-top:1px solid var(--linea)!important;padding-top:18px!important}
 
-/* ═══════ ⑥ GRÁFICO PRINCIPAL ═══════ */
-.ds-grafico{
-  background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);
-  box-shadow:var(--sh);margin:18px 20px 0;padding:24px 22px 20px;
-}
-.ds-grafico-cab{margin-bottom:22px}
-.ds-grafico-cab .et{
-  font-size:.5rem;font-weight:800;letter-spacing:.24em;text-transform:uppercase;
-  color:var(--enfasis);display:block;margin-bottom:8px;
-}
-.ds-grafico-cab h3{
-  font-family:var(--titulo);font-weight:700;font-size:1.15rem;
-  letter-spacing:-.035em;color:var(--tinta);line-height:1.2;
-}
-.ds-leyenda{display:flex;gap:18px;margin-top:14px;flex-wrap:wrap}
-.ds-leyenda span{
-  display:flex;align-items:center;gap:7px;
-  font-size:.52rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gris);
-}
-.ds-leyenda i{width:14px;height:2px;border-radius:2px;display:block}
-.ds-svg{width:100%;height:auto;display:block;overflow:visible}
-.ds-svg .rejilla{stroke:var(--linea);stroke-width:1}
-.ds-svg .eje{fill:var(--gris);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.ds-svg .valor{fill:var(--tinta);font-size:11px;font-weight:800}
-.ds-svg .valor-e{fill:var(--enfasis)}
-
-/* ④ INSIGHT */
-.ds-insight{
-  margin:18px 20px 0;padding:20px 22px;
-  background:var(--papel);border:1px solid var(--linea);border-left:3px solid var(--enfasis);
-  border-radius:var(--r);box-shadow:var(--sh);
-}
-.ds-insight .et{
-  font-size:.5rem;font-weight:800;letter-spacing:.24em;text-transform:uppercase;
-  color:var(--enfasis);display:block;margin-bottom:10px;
-}
-.ds-insight p{font-size:1.02rem;line-height:1.6;color:var(--tinta);font-weight:500;letter-spacing:-.015em}
-.ds-insight b{font-weight:800}
-
-@media (min-width:768px){
-  .ds-grafico{margin:22px 40px 0;padding:30px 34px 24px}
-  .ds-grafico-cab h3{font-size:1.4rem}
-  .ds-insight{margin:22px 40px 0;padding:24px 30px}
-  .ds-insight p{font-size:1.15rem}
-}
 
 </style>
 </head>
@@ -524,7 +479,6 @@ body{
       </div>
       <button class="ds-cta" id="ctaExportar" onclick="abrirHoja('hojaExportar')" disabled><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13m0 0 4-4m-4 4-4-4M4 21h16"/></svg> Descargar reporte</button>
     </div>
-    <div id="dsHistoria"></div>
     <div id="resultados" class="kpi-container" style="margin-top:20px"></div>
   </section>
 
@@ -723,7 +677,6 @@ function precargarCortes() {
     if (i >= orden.length) return;
     _traerCorte(orden[i++].f).catch(() => {}).then(() => {
       _IDX_AMB = null;
-      if (window.ultimoResultado) { try { pintarHistoria(); } catch (e) {} }
       setTimeout(siguiente, 80);
     });
   };
@@ -870,7 +823,6 @@ async function descargarTarjeta(serv) {
 }
 
 function setExportButtons(enabled) {
-  if (enabled) { try { pintarHistoria(); } catch (e) { console.warn('historia:', e); } }
   const cta = document.getElementById('ctaExportar');
   if (cta) cta.disabled = !enabled;
   ['btnPDF','btnWord','btnExcel','btnWA'].forEach(id => {
@@ -968,131 +920,6 @@ document.addEventListener('click', e => {
   const o = _indiceAmbitos()[+b.dataset.i];
   if (o) irAmbito(o.d, o.p, o.t);
 });
-
-// ══════════════════════════════════════════════════════════════════════════
-//  ⑥ GRÁFICO PRINCIPAL + ④ INSIGHT
-//  La cifra del mes no dice si sube o baja. La serie del año sí.
-// ══════════════════════════════════════════════════════════════════════════
-const _MES3 = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SET','OCT','NOV','DIC'];
-
-// Totales mes a mes del año en curso, para el ámbito consultado.
-// Solo usa los cortes ya descargados: el gráfico crece con la precarga.
-function _serieAnual() {
-  const r = window.ultimoResultado;
-  if (!r || typeof dataset === 'undefined') return null;
-  const anio = String(FECHA_CORTE).slice(0, 4);
-  const hasta = String(ultimaFecha instanceof Date
-    ? ultimaFecha.toISOString().split('T')[0] : FECHA_CORTE);
-
-  let coincide;
-  if (r._esEspecial && AMBITOS_ESPECIALES[r._ambito]) {
-    const ub = AMBITOS_ESPECIALES[r._ambito].ubigeos;
-    coincide = d => ub.has(d.ubigeo);
-  } else {
-    const dep = r.departamento, prov = r.provincia, dist = r.distrito;
-    coincide = d => (!dep || d.departamento === dep)
-                 && (!prov || d.provincia === prov)
-                 && (!dist || d.distrito === dist);
-  }
-
-  const acc = new Map();
-  dataset.forEach(d => {
-    if (!d.fecha || d.fecha.slice(0, 4) !== anio || d.fecha > hasta) return;
-    if (!coincide(d)) return;
-    let o = acc.get(d.fecha);
-    if (!o) { o = { f: d.fecha, saf: 0, scd: 0 }; acc.set(d.fecha, o); }
-    o.saf += d.nfamilia_saf || 0;
-    o.scd += d.nniños_scd  || 0;
-  });
-  const pts = [...acc.values()].sort((a, b) => a.f.localeCompare(b.f));
-  return pts.length >= 2 ? pts : null;
-}
-
-function _panel(pts, campo, y0, alto, color, etiqueta, unidad) {
-  const X0 = 34, X1 = 606;
-  const vals = pts.map(p => p[campo]);
-  const max  = Math.max(...vals), min = Math.min(...vals);
-  const rango = (max - min) || 1;
-  // El eje no arranca en cero a propósito: con series planas de cobertura,
-  // el cero aplasta la variación real. El rótulo indica el rango mostrado.
-  const px = i => pts.length === 1 ? X0 : X0 + (X1 - X0) * i / (pts.length - 1);
-  const py = v => y0 + alto - ((v - min) / rango) * (alto - 26) - 8;
-
-  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${px(i).toFixed(1)} ${py(p[campo]).toFixed(1)}`).join(' ');
-  const area = `${d} L${px(pts.length - 1).toFixed(1)} ${(y0 + alto).toFixed(1)} L${X0} ${(y0 + alto).toFixed(1)} Z`;
-  const ult = pts.length - 1;
-  const fin = _MES3[+pts[ult].f.slice(5, 7) - 1];
-
-  let s = '';
-  s += `<line class="rejilla" x1="${X0}" y1="${y0 + alto}" x2="${X1}" y2="${y0 + alto}"/>`;
-  s += `<path d="${area}" fill="${color}" opacity=".07"/>`;
-  s += `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
-  pts.forEach((p, i) => {
-    if (i !== ult) s += `<circle cx="${px(i).toFixed(1)}" cy="${py(p[campo]).toFixed(1)}" r="2.6" fill="#fff" stroke="${color}" stroke-width="1.6"/>`;
-  });
-  s += `<circle cx="${px(ult).toFixed(1)}" cy="${py(pts[ult][campo]).toFixed(1)}" r="4.6" fill="${color}"/>`;
-  s += `<text class="eje" x="${X0}" y="${y0 - 6}">${etiqueta}</text>`;
-  s += `<text class="valor" x="${X1}" y="${y0 - 6}" text-anchor="end" fill="${color}">${pts[ult][campo].toLocaleString('es-PE')} <tspan class="eje" fill="#6E7078">${unidad} · ${fin}</tspan></text>`;
-  return s;
-}
-
-function _svgEvolucion(pts) {
-  const X0 = 34, X1 = 606, ALTO = 96;
-  let s = `<svg class="ds-svg" viewBox="0 0 640 268" role="img" aria-label="Evolución mensual de la cobertura">`;
-  s += _panel(pts, 'saf', 30,  ALTO, '#D800A6', 'SAF · FAMILIAS', 'familias');
-  s += _panel(pts, 'scd', 168, ALTO, '#23252B', 'SCD · NIÑAS Y NIÑOS', 'niñas y niños');
-  // eje de meses, compartido
-  pts.forEach((p, i) => {
-    const x = pts.length === 1 ? X0 : X0 + (X1 - X0) * i / (pts.length - 1);
-    const anchor = i === 0 ? 'start' : (i === pts.length - 1 ? 'end' : 'middle');
-    s += `<text class="eje" x="${x.toFixed(1)}" y="278" text-anchor="${anchor}">${_MES3[+p.f.slice(5, 7) - 1]}</text>`;
-  });
-  return s + '</svg>';
-}
-
-function _insight(pts) {
-  const a = pts[0], z = pts[pts.length - 1];
-  const m0 = _MES3[+a.f.slice(5, 7) - 1], m1 = _MES3[+z.f.slice(5, 7) - 1];
-  const frase = (ini, fin, sing, plur) => {
-    if (!ini) return null;
-    const dif = fin - ini, pct = (dif / ini) * 100;
-    const verbo = Math.abs(pct) < 0.05 ? 'se mantuvo en'
-                : (dif > 0 ? 'creció hasta' : 'se redujo a');
-    const cola = Math.abs(pct) < 0.05 ? ''
-      : ` <b>(${dif > 0 ? '+' : '−'}${Math.abs(pct).toFixed(1)} %)</b>`;
-    return `${sing} ${verbo} <b>${fin.toLocaleString('es-PE')}</b> ${plur}${cola}`;
-  };
-  const partes = [
-    frase(a.saf, z.saf, 'el SAF', 'familias'),
-    frase(a.scd, z.scd, 'el SCD', 'niñas y niños')
-  ].filter(Boolean);
-  if (!partes.length) return '';
-  return `De ${m0} a ${m1} de ${String(z.f).slice(0, 4)}, ${partes.join(' y ')}.`;
-}
-
-function pintarHistoria() {
-  const cont = document.getElementById('dsHistoria');
-  if (!cont) return;
-  const pts = _serieAnual();
-  if (!pts) { cont.innerHTML = ''; return; }
-  const txt = _insight(pts);
-  const r   = window.ultimoResultado || {};
-  const donde = r._ambitoLabel || [r.distrito, r.provincia, r.departamento].filter(Boolean).join(', ') || 'Todo el país';
-
-  cont.innerHTML =
-    (txt ? `<div class="ds-insight"><span class="et">Lo que muestran los datos</span><p>${txt}</p></div>` : '') +
-    `<div class="ds-grafico">
-       <div class="ds-grafico-cab">
-         <span class="et">Evolución ${String(pts[pts.length - 1].f).slice(0, 4)}</span>
-         <h3>Cómo se movió la cobertura en ${donde}</h3>
-         <div class="ds-leyenda">
-           <span><i style="background:#D800A6"></i>SAF · Familias</span>
-           <span><i style="background:#23252B"></i>SCD · Niñas y niños</span>
-         </div>
-       </div>
-       ${_svgEvolucion(pts)}
-     </div>`;
-}
 
 // El botón de ámbito refleja lo consultado
 function pintarAmbito() {
