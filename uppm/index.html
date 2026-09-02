@@ -2774,13 +2774,20 @@ window.ARCHIVOS_MENSUALES = [
 // ═══════════════════════════════════════════════════════════
 //  PARÁMETROS ANUALES CENTRALIZADOS
 // ═══════════════════════════════════════════════════════════
-// Poblacion objetivo corregida el 02-sep-2026 (antes: SAF 601 141, SCD 281 334).
-// Ojo: data/poblacion_objetivo.js sigue siendo el archivo distrital de 2025 y sus
-// 1891 filas suman los valores viejos, asi que el tab Poblacion Objetivo todavia
-// muestra ese total. Para que coincidan hace falta el xlsx distrital actualizado.
+// ── Poblacion objetivo por anio ──────────────────────────────────────────
+// La estimacion 2025 es la que trae el archivo distrital
+// (data/poblacion_objetivo.js, 1891 filas) y es la que muestra el tab
+// Poblacion Objetivo. La 2026 es la vigente y es la que va en el Resumen:
+// por eso los dos tabs muestran cifras distintas, cada una con su anio.
+const PO_ANUAL = {
+  2025: { saf: 601141, scd: 281334 },
+  2026: { saf: 607215, scd: 287259 }
+};
+const PO_VIGENTE = 2026;
+
 const PARAMS_ANUALES = {
-  saf: { meta: 277283, pob_obj: 607215 },
-  scd: { meta: 67387,  pob_obj: 287259 }
+  saf: { meta: 277283, pob_obj: PO_ANUAL[PO_VIGENTE].saf },
+  scd: { meta: 67387,  pob_obj: PO_ANUAL[PO_VIGENTE].scd }
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -3195,6 +3202,12 @@ function calcularMetricasAM(ds, ultimaFechaStr) {
   const scdCIAI      = sumBy(ultima, 'CIAI_SCD');
   const scdMadres    = of.scd ? of.scd.madres  : sumBy(ultima, 'MadresCuidadoras_SCD');
   const scdSA        = sumBy(ultima, 'SA_SCD');
+  // El campo SA_SCD del dataset llega vacio en todos los cortes. La cifra real
+  // de servicios alimentarios vive en el directorio data/sa_julio26.js, la misma
+  // fuente que usa el tab Ayuda Memoria, y solo vale para su propio corte.
+  const _dirSA       = window.SERVICIOS_ALIMENTARIOS;
+  const scdServAlim  = (_dirSA && _dirSA.filas && _dirSA.periodo === ultimaFechaStr)
+                       ? _dirSA.filas.length : 0;
   // Distritos SCD: solo donde hay atención efectiva (nniños_scd > 0)
   // CUMPLE_SCD="1" puede existir con nniños_scd=0 — no cuenta como cobertura activa
   const _scdActiva = ultima.filter(r => (r.nniños_scd||0) > 0 && r.distrito);
@@ -3236,7 +3249,7 @@ function calcularMetricasAM(ds, ultimaFechaStr) {
     scd: {
       fmtUsuarios: fmt(scdUsuarios), fmtEjecucion: fmtS(scdEjecucion),
       fmtCG: fmt(scdCG), fmtCIAI: fmt(scdCIAI),
-      fmtMadres: fmt(scdMadres), fmtSA: scdSA ? fmt(scdSA) : '0',
+      fmtMadres: fmt(scdMadres), fmtSA: scdServAlim ? fmt(scdServAlim) : '-',
       depts: scdDeps, provs: scdProvs, dists: scdDists, distsAtend: scdDistsAtend,
       distsOficial: (of.scd && of.scd.distritos) ? of.scd.distritos : 532,
       foc: scdFoc,
@@ -3702,7 +3715,7 @@ function renderTabAM(m) {
         <span class="brecha-sub">${m.saf.brechaMetaPct.toFixed(1)}% restante</span>
       </div>
       <div class="brecha-cell">
-        <span class="brecha-lbl">Pob. objetivo</span>
+        <span class="brecha-lbl">Pob. objetivo ${PO_VIGENTE}</span>
         <span class="brecha-val brecha-val-neutral">${m.saf.pobObj.toLocaleString('es-PE')}</span>
         <span class="brecha-sub">total elegibles</span>
       </div>
@@ -3766,7 +3779,7 @@ function renderTabAM(m) {
     </span>
     <span class="sc-chip-item">
       <span class="chip-ico chip-ico-scd"><i class="fas fa-utensils"></i></span>
-      <span class="chip-v">-</span><span class="chip-l">Servicios Alimentarios</span>
+      <span class="chip-v">${m.scd.fmtSA}</span><span class="chip-l">Servicios Alimentarios</span>
     </span>
     <span class="sc-chip-item">
       <span class="chip-ico chip-ico-scd"><i class="fas fa-heart"></i></span>
@@ -3813,7 +3826,7 @@ function renderTabAM(m) {
         <span class="brecha-sub">${m.scd.brechaMetaPct.toFixed(1)}% restante</span>
       </div>
       <div class="brecha-cell">
-        <span class="brecha-lbl">Pob. objetivo</span>
+        <span class="brecha-lbl">Pob. objetivo ${PO_VIGENTE}</span>
         <span class="brecha-val brecha-val-neutral">${m.scd.pobObj.toLocaleString('es-PE')}</span>
         <span class="brecha-sub">total elegibles</span>
       </div>
