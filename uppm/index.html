@@ -1838,14 +1838,22 @@ html.dark .service-card{border-color:#334155!important;}
   font-size:.66rem;font-weight:600;
 }
 
+/* Misma geometria que el laboratorio: ancho completo, aire, y la barra de
+   color al costado de cada titulo (rosa SAF / verde SCD). Los colores de
+   fondo y texto si van por tokens, para que el modo oscuro siga andando. */
 #tab-pncm .am-narrativa{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
-  box-shadow:var(--sh-sm);padding:18px 22px;margin-top:18px;
-  font-size:.82rem;line-height:1.65;color:var(--text-1);text-align:justify;
+  grid-column:1 / -1;
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 2px 16px rgba(0,0,0,.07);
+  padding:24px 30px 26px;margin-top:4px;
+  font-size:.88rem;line-height:1.75;color:var(--text-1);text-align:justify;
 }
-#tab-pncm .am-narrativa h3{font-size:.86rem;margin:14px 0 6px;}
+#tab-pncm .am-narrativa h3{
+  font-size:.8rem;font-weight:700;color:var(--text-1);letter-spacing:.01em;
+  margin:0 0 10px;padding-left:11px;border-left:3px solid var(--border);
+}
 #tab-pncm .am-narrativa h3:first-child{margin-top:0;}
-#tab-pncm .am-narrativa p{margin:0 0 9px;}
+#tab-pncm .am-narrativa p{margin:0 0 11px;}
 
 /* ════════ AM estable: reglas nuevas (acotadas a #tab-pncm) ════════ */
 @media(max-width:860px){
@@ -1932,6 +1940,12 @@ html.dark .service-card{border-color:#334155!important;}
   #tab-pncm select, #tab-pncm input, #tab-pncm textarea{font-size:16px!important}
 }
 
+
+/* ════════ Solo en la version publicada ════════ */
+/* El asistente y los exportadores del Resumen quedan para la oficina. */
+html.publicada #robot-widget,
+html.publicada #robot-panel,
+html.publicada #tab1-export-bar{display:none!important}
 
 /* ════════ TABLERO DE CONTROL (#tab-tablero) ════════ */
 /* La carpeta vive en SharePoint y el tenant no permite mostrarla dentro de
@@ -2153,6 +2167,16 @@ html.dark .service-card{border-color:#334155!important;}
   #tab-po .po-cifra b{font-size:1.7rem}
 }
 </style>
+<script>
+// "Online" = servida desde el dominio publico. En la oficina corre en
+// localhost o file://, y ahi si van el robot y los exportadores del Resumen.
+// Se marca en <html> antes de pintar, para que no se vean y desaparezcan.
+(function () {
+  var h = location.hostname;
+  var local = h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '';
+  if (!local && location.protocol !== 'file:') document.documentElement.classList.add('publicada');
+})();
+</script>
 </head>
 
 <body>
