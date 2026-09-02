@@ -108,7 +108,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F0F2F7;color:#1F2937;m
   background:linear-gradient(135deg,#0F172A 0%,#1E1B4B 60%,#312E81 100%);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   z-index:9999;gap:0;overflow:hidden;
-  transition:opacity .55s ease;
+  transition:opacity .28s ease;
 }
 #app-loading.fade-out{opacity:0;pointer-events:none;}
 
@@ -1475,6 +1475,11 @@ html.dark .service-card{border-color:#334155!important;}
 #tab-pncm .detail-table tr{border-bottom:1px solid #f1f5f9}
 #tab-pncm .detail-table tr:last-child{border-bottom:none}
 #tab-pncm .detail-table td{padding:9px 6px;color:#374151}
+/* nombre del comite junto a cada servicio alimentario: dato de apoyo, no cifra */
+#tab-pncm .detail-table td.sa-cg{
+  font-weight:600;font-size:.72rem;color:#6b7280;text-align:right;
+  white-space:normal;line-height:1.35;
+}
 #tab-pncm .detail-table td:last-child{text-align:right;font-weight:600;color:var(--text-1)}
 #tab-pncm .exec-row td{padding-top:12px!important;padding-bottom:4px!important}
 #tab-pncm .exec-val{color:var(--accent)!important;font-size:.95rem}
@@ -2757,6 +2762,7 @@ window.ARCHIVOS_MENSUALES = [
 <script src="data/focalizacion.js"></script>
 <script src="data/poblacion_objetivo.js"></script>
 <script src="data/actores_julio26.js"></script>
+<script src="data/sa_julio26.js"></script>
 
 <!-- CDN LIBS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -4862,9 +4868,10 @@ function _robotRespuesta(q){
     else    { html.classList.remove('dark'); if(icon){icon.className='fas fa-moon';} }
     localStorage.setItem(KEY, dark?'1':'0');
   }
+  // Por defecto, tema claro: solo se pone oscuro si el usuario lo eligio antes.
+  // No se sigue el prefers-color-scheme del sistema.
   const saved = localStorage.getItem(KEY);
-  if(saved!==null){ applyTheme(saved==='1'); }
-  else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){ applyTheme(true); }
+  applyTheme(saved === '1');
   window.toggleDark = function(){ applyTheme(!html.classList.contains('dark')); };
 })();
 
@@ -4972,7 +4979,7 @@ function _robotRespuesta(q){
 
   let current = 0;
   let phaseIdx = 0;
-  const STEP_MS = 18;
+  const STEP_MS = 9;
 
   function tick(){
     const target = phases[phaseIdx].pct;
@@ -4980,26 +4987,26 @@ function _robotRespuesta(q){
       current++;
       if(numEl) numEl.textContent = current;
       if(barEl) barEl.style.width = current + '%';
-      setTimeout(tick, STEP_MS + Math.random()*8);
+      setTimeout(tick, STEP_MS + Math.random()*4);
     } else {
       if(subEl) subEl.textContent = phases[phaseIdx].label;
       phaseIdx++;
       if(phaseIdx < phases.length){
-        setTimeout(tick, 280 + Math.random()*120);
+        setTimeout(tick, 140 + Math.random()*60);
       } else {
         setTimeout(function(){
           if(typeof cargarApp === 'function'){ cargarApp(); }
           if(overlay){ overlay.classList.add('fade-out'); }
-          setTimeout(function(){ if(overlay) overlay.style.display='none'; }, 600);
-        }, 400);
+          setTimeout(function(){ if(overlay) overlay.style.display='none'; }, 300);
+        }, 200);
       }
     }
   }
 
   if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ setTimeout(tick, 120); });
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(tick, 60); });
   } else {
-    setTimeout(tick, 120);
+    setTimeout(tick, 60);
   }
 })();
 
@@ -5767,6 +5774,7 @@ function renderKPIs(d, dep, prov, dist) {
   // ── Actores comunales: misma fuente que la narrativa (padrón deduplicado) ──
   const _ac  = d.esNacional ? actoresNacional() : actoresDe(d.ubigeos);
   const _det = _ac.cubiertos > 0;
+  const _sa  = d.esNacional ? saNacional() : saDe(d.ubigeos);
   const _n   = v => (v || 0).toLocaleString('es-PE');
   const _sep = t => `<tr class="row-sep"><td colspan="2">${t}</td></tr>`;
   const _fila = (ico, lbl, val) => val ? `<tr><td>${ico} ${lbl}</td><td>${_n(val)}</td></tr>` : '';
@@ -5797,9 +5805,14 @@ function renderKPIs(d, dep, prov, dist) {
   const bD = _ac.scd, okD = _det && bD.total;
   const scdRows = `
     <tr><td>🏘 CIAI</td><td>${_n(d.CIAI_SCD)}</td></tr>
+    ${_sa.servicios  ? `<tr><td>🍲 Servicios alimentarios</td><td>${_n(_sa.servicios)}</td></tr>` : ''}
     ${d.SA_SCD       ? `<tr><td>🏫 Servicios Adicionales</td><td>${_n(d.SA_SCD)}</td></tr>` : ''}
     ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${_n(d.dist_scd)}</td></tr>` : ''}
     ${nivelDepto     ? `<tr><td>🗺 Provincias con atención</td><td>${_n(d.prov_scd)}</td></tr>` : ''}
+    ${nivelDistrito && _sa.servicios ? (
+        _sep('Servicios alimentarios') +
+        _sa.lista.map(s => `<tr><td>🍲 ${s.sa_nombre}</td><td class="sa-cg">${s.cg_nombre}</td></tr>`).join('')
+      ) : ''}
     ${(nivelDistrito || d.esNacional) ? (okD ? (
         _sep('Actores comunales') +
         _fila('🏛','Comités de Gestión',       bD.cg) +
@@ -5938,6 +5951,8 @@ ${safCGLines}📌 Distritos con atención: ${d.dist_saf}
 *🟢 Servicio de Cuidado Diurno (SCD) -* ${dist && d.CUMPLE_SCD !== undefined ? `${getEtiquetaFocalizacion(d.CUMPLE_SCD).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SCD).texto}` : ''}  
 🧒 Niños: ${d.niños_2025.toLocaleString('es-PE')}
 🏘 CIAI: ${d.CIAI_SCD}
+${(() => { const s = d.esNacional ? saNacional() : saDe(d.ubigeos);
+           return s.servicios ? '🍲 Servicios alimentarios: ' + s.servicios : ''; })()}
 ${scdCGLines}📌 Distritos con atención: ${d.dist_scd}
 📌 Provincias con atención: ${d.prov_scd}  
 💰 Ejecución acumulada: S/. ${d.ejec_scd.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}  
@@ -6598,6 +6613,27 @@ async function exportarExcel() {
     XLSX.utils.book_append_sheet(wb, wsA, 'Actores comunales');
   })();
 
+  // Hoja de servicios alimentarios (solo si el ambito tiene alguno)
+  (function () {
+    const sa = d.esNacional ? { servicios: 0, lista: [] } : saDe(d.ubigeos);
+    const lista = sa.lista.length ? sa.lista
+      : (d.esNacional && _saVigente()
+          ? window.SERVICIOS_ALIMENTARIOS.filas.map(f => {
+              const o = {}; window.SERVICIOS_ALIMENTARIOS.campos.forEach((k, i) => o[k] = f[i]); return o;
+            })
+          : []);
+    if (!lista.length) return;
+    const filas = [['SERVICIOS ALIMENTARIOS'], [],
+      ['Departamento','Provincia','Distrito','Ubigeo','Comité de Gestión','Cód. CG','Servicio alimentario','Cód. SA']];
+    lista.forEach(o => filas.push([o.departamento, o.provincia, o.distrito, o.ubigeo,
+                                   o.cg_nombre, o.cg_codigo, o.sa_nombre, o.sa_codigo]));
+    filas.push([], ['Total de servicios', lista.length]);
+    filas.push(['Fuente', window.SERVICIOS_ALIMENTARIOS.fuente + ' (hoja ' + window.SERVICIOS_ALIMENTARIOS.hoja + ')']);
+    const wsS = XLSX.utils.aoa_to_sheet(filas);
+    wsS['!cols'] = [{wch:16},{wch:18},{wch:20},{wch:9},{wch:34},{wch:9},{wch:34},{wch:9}];
+    XLSX.utils.book_append_sheet(wb, wsS, 'Servicios alimentarios');
+  })();
+
   // Hoja de información con diseño
   const meta = [
     ['REPORTE DE COBERTURA PNCM'],
@@ -6860,6 +6896,68 @@ function _actVigente() {
   return f === window.ACTORES.periodo;
 }
 
+// ── SERVICIOS ALIMENTARIOS ─────────────────────────────────────────────────
+// Directorio por distrito (sa_julio26.js). Es un padron de un solo corte:
+// si el selector apunta a otro mes, no se muestra. El campo SA_SCD de bd.js
+// llega vacio en todos los cortes, asi que la cifra sale de aqui.
+let _SA_IDX = null;
+function _saVigente() {
+  if (!window.SERVICIOS_ALIMENTARIOS) return false;
+  const f = ultimaFecha instanceof Date
+    ? ultimaFecha.toISOString().split('T')[0] : String(ultimaFecha).slice(0, 10);
+  return f === window.SERVICIOS_ALIMENTARIOS.periodo;
+}
+function _saIndex() {
+  if (_SA_IDX) return _SA_IDX;
+  _SA_IDX = {};
+  const M = window.SERVICIOS_ALIMENTARIOS;
+  if (M && M.filas) {
+    const C = M.campos;
+    M.filas.forEach(f => {
+      const o = {}; C.forEach((k, i) => o[k] = f[i]);
+      (_SA_IDX[o.ubigeo] = _SA_IDX[o.ubigeo] || []).push(o);
+    });
+  }
+  return _SA_IDX;
+}
+// Servicios alimentarios de una lista de ubigeos.
+function saDe(ubigeos) {
+  const r = { servicios: 0, cg: 0, distritos: 0, lista: [] };
+  if (!_saVigente()) return r;
+  const idx = _saIndex(), cg = new Set();
+  (ubigeos || []).forEach(u => {
+    const arr = idx[u];
+    if (!arr || !arr.length) return;
+    r.distritos++;
+    arr.forEach(o => { r.servicios++; cg.add(o.cg_codigo); r.lista.push(o); });
+  });
+  r.cg = cg.size;
+  r.lista.sort((a, b) => a.sa_nombre.localeCompare(b.sa_nombre, 'es'));
+  return r;
+}
+// Frase de servicios alimentarios para la narrativa. Vacia si no hay ninguno:
+// solo 399 de los 1.890 distritos cuentan con este servicio.
+function _fraseSA(sa) {
+  if (!sa || !sa.servicios) return '';
+  const f = v => (v || 0).toLocaleString('es-PE');
+  const es1 = sa.servicios === 1;
+  const nombres = sa.lista.length && sa.lista.length <= 6
+    ? ' (' + sa.lista.map(s => s.sa_nombre).join(', ') + ')' : '';
+  const donde = sa.distritos > 1 ? ` en <strong>${f(sa.distritos)} distritos</strong>` : '';
+  return `<p>La alimentación de las niñas y los niños se prepara en ` +
+    `<strong>${f(sa.servicios)} ${es1 ? 'servicio alimentario' : 'servicios alimentarios'}</strong>${nombres}` +
+    `${donde}, a cargo de <strong>${f(sa.cg)} ${sa.cg === 1 ? 'Comité de Gestión' : 'Comités de Gestión'}</strong>.</p>`;
+}
+
+function saNacional() {
+  const M = window.SERVICIOS_ALIMENTARIOS;
+  if (!_saVigente() || !M) return { servicios: 0, cg: 0, distritos: 0, lista: [] };
+  return { servicios: M.filas.length,
+           cg: new Set(M.filas.map(f => f[5])).size,
+           distritos: new Set(M.filas.map(f => f[0])).size,
+           lista: [] };
+}
+
 let _ACT_IDX = null;
 function _actIndex() {
   if (_ACT_IDX) return _ACT_IDX;
@@ -7012,6 +7110,7 @@ function generarNarrativaSCD(nivel, d) {
       ? `<p>El servicio se sostiene con <strong>${fmt(b.cg)} Comités de Gestión</strong>. ` + _fraseActores(b, 'scd') +
         ` En conjunto, <strong>${fmt(b.total)} actores comunales</strong> participan en la prestación del servicio.</p>`
       : '';
+    p2 += _fraseSA(saNacional());
   } else if (nivel === 'departamento') {
     p1 = `<p>Por su parte, al cierre de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> alcanza una cobertura de <strong>${fmt(d.niños_2025)} niñas y niños</strong>, quienes reciben atención integral en espacios especialmente acondicionados para promover su desarrollo y bienestar.</p>`;
     p2 = `<p>Para la prestación de este servicio, se cuenta con <strong>${d.CIAI_SCD} Centros Infantiles de Atención Integral (CIAI)</strong>, con presencia en <strong>${d.dist_scd} distritos</strong> distribuidos en <strong>${d.prov_scd} provincias</strong>, lo que permite acercar la atención a las familias de los ámbitos de intervención del programa.</p>`;
@@ -7043,8 +7142,10 @@ function generarNarrativaSCD(nivel, d) {
         p2 = `<p>Para la prestación de este servicio se cuenta con <strong>${d.CIAI_SCD} ${d.CIAI_SCD === 1 ? 'Centro Infantil' : 'Centros Infantiles'} de Atención Integral (CIAI)</strong> y <strong>${b.cg} ${b.cg === 1 ? 'Comité de Gestión' : 'Comités de Gestión'}</strong>. ` +
              _fraseActores(b, 'scd') +
              ` En conjunto, <strong>${fmt(b.total)} ${b.total === 1 ? 'actor comunal sostiene' : 'actores comunales sostienen'}</strong> la atención cotidiana de las niñas y los niños usuarios.</p>`;
+        p2 += _fraseSA(saDe(d.ubigeos));
       } else {
         p2 = `<p>Para la prestación de este servicio, se cuenta con <strong>${d.CIAI_SCD} ${d.CIAI_SCD === 1 ? 'Centro Infantil' : 'Centros Infantiles'} de Atención Integral (CIAI)</strong> y <strong>${d.CG_SCD} ${d.CG_SCD === 1 ? 'Comité' : 'Comités'} de Gestión</strong>, con el apoyo de <strong>${d.MadresCuidadoras_SCD} ${d.MadresCuidadoras_SCD === 1 ? 'Madre Cuidadora' : 'Madres Cuidadoras'}</strong> que garantizan la atención cotidiana de las niñas y los niños usuarios.</p>`;
+        p2 += _fraseSA(saDe(d.ubigeos));
       }
     }
   }
@@ -7107,6 +7208,8 @@ function generarBloqueTerritorioNivel(nivel, dep, prov, resumen) {
 // ── Tarjetas KPI (reemplaza generarTablaSAF/SCD en Word) ───────────────────
 function generarTarjetasKPI(d, nivel, servicio) {
   const nivelDist  = nivel === 'distrito';
+  // misma fuente que la pantalla: el directorio, no el campo vacio de bd.js
+  const _saT = d.esNacional ? saNacional() : saDe(d.ubigeos);
   const nivelDep   = nivel === 'departamento';
   const nivelProv  = nivel === 'provincia';
   const fN = n => (n||0).toLocaleString('es-PE');
@@ -7149,12 +7252,14 @@ function generarTarjetasKPI(d, nivel, servicio) {
     const cols = nivelDist
       ? [card('Niñas/os', fN(d.niños_2025), 'usuarios'),
          card('CIAI', fN(d.CIAI_SCD)),
+         (_saT.servicios ? card('Serv. alim.', fN(_saT.servicios)) : ''),
          card('Com. Gestión', String(_okD ? _ac.scd.cg : d.CG_SCD)),
          card('Madres Cuid.', fN(_okD ? _ac.scd.madres_cuidadoras : d.MadresCuidadoras_SCD)),
          card('Ejecución', fS(d.ejec_scd), 'ene–'+mesMin+' '+año, true),
          focRow]
       : [card('Niñas/os', fN(d.niños_2025), 'usuarios'),
          card('CIAI', fN(d.CIAI_SCD)),
+         (_saT.servicios ? card('Serv. alim.', fN(_saT.servicios)) : ''),
          card('Distritos', String(d.dist_scd), 'con atención'),
          nivelDep ? card('Provincias', String(d.prov_scd)) : '',
          card('Ejecución', fS(d.ejec_scd), 'ene–'+mesMin+' '+año, true),
