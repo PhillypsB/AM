@@ -2174,7 +2174,14 @@ html.publicada #tab1-export-bar{display:none!important}
 (function () {
   var h = location.hostname;
   var local = h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '';
-  if (!local && location.protocol !== 'file:') document.documentElement.classList.add('publicada');
+  if (!local && location.protocol !== 'file:') {
+    document.documentElement.classList.add('publicada');
+    // Vercel Web Analytics. Solo se pide en la version publicada: en la
+    // oficina esa ruta no existe y daria 404 en cada carga.
+    var sc = document.createElement('script');
+    sc.defer = true; sc.src = '/_vercel/insights/script.js';
+    document.head.appendChild(sc);
+  }
 })();
 </script>
 </head>
@@ -9537,5 +9544,96 @@ window.PO = (function () {
 
 </script>
 
+<script>
+// ═══════════════════════════════════════════════════════════
+//  ESTADISTICAS DE USO
+//  Un solo punto de envio: track(). Hoy escribe en Vercel Web
+//  Analytics (window.va, que llega con el script de arriba); si no
+//  esta —oficina, sin conexion, o analytics apagado— no hace nada y
+//  la app sigue igual. Cambiar de proveedor es cambiar esta funcion.
+//
+//  No se manda ningun dato de personas ni de padron: solo que seccion
+//  se abrio, que se exporto y en que ambito (departamento / provincia /
+//  distrito / especial), que es lo que sirve para saber que se usa.
+// ═══════════════════════════════════════════════════════════
+(function () {
+  function track(nombre, datos) {
+    try {
+      if (typeof window.va === 'function') window.va('event', { name: nombre, data: datos || {} });
+    } catch (e) { /* la analitica nunca debe romper la app */ }
+  }
+  window.track = track;
+
+  // ── que se exporto y desde donde ──
+  const EXPORTS = {
+    't1-btnWA':    { formato: 'WhatsApp', seccion: 'resumen' },
+    't1-btnPDF':   { formato: 'PDF',      seccion: 'resumen' },
+    't1-btnWord':  { formato: 'Word',     seccion: 'resumen' },
+    't1-btnExcel': { formato: 'Excel',    seccion: 'resumen' },
+    'btnPDF':      { formato: 'PDF',      seccion: 'ayuda-memoria' },
+    'btnWord':     { formato: 'Word',     seccion: 'ayuda-memoria' },
+    'btnExcel':    { formato: 'Excel',    seccion: 'ayuda-memoria' },
+    'btnPPT':      { formato: 'PPT',      seccion: 'ayuda-memoria' },
+    'btnWA':       { formato: 'WhatsApp', seccion: 'ayuda-memoria' }
+  };
+  // los de Focalizacion y Poblacion Objetivo no tienen id: se reconocen por su onclick
+  const POR_ONCLICK = {
+    'FOC.descargarOficial()':  { formato: 'Excel oficial',  seccion: 'focalizacion' },
+    'FOC.exportarSeleccion()': { formato: 'Excel seleccion', seccion: 'focalizacion' },
+    'FOC.fichaExcel()':        { formato: 'Excel ficha',    seccion: 'focalizacion' },
+    'FOC.fichaWord()':         { formato: 'Word ficha',     seccion: 'focalizacion' },
+    'FOC.fichaPDF()':          { formato: 'PDF ficha',      seccion: 'focalizacion' },
+    'FOC.fichaWhatsApp()':     { formato: 'WhatsApp ficha', seccion: 'focalizacion' },
+    'PO.descargarOficial()':   { formato: 'Excel oficial',  seccion: 'poblacion-objetivo' },
+    'PO.exportarSeleccion()':  { formato: 'Excel seleccion', seccion: 'poblacion-objetivo' },
+    'PO.fichaExcel()':         { formato: 'Excel ficha',    seccion: 'poblacion-objetivo' },
+    'PO.fichaWord()':          { formato: 'Word ficha',     seccion: 'poblacion-objetivo' },
+    'PO.fichaPDF()':           { formato: 'PDF ficha',      seccion: 'poblacion-objetivo' },
+    'PO.fichaWhatsApp()':      { formato: 'WhatsApp ficha', seccion: 'poblacion-objetivo' }
+  };
+
+  // El ambito de la consulta del Ayuda Memoria, para saber si se usa
+  // el panorama nacional o el detalle fino.
+  function ambitoAM() {
+    const v = id => (document.getElementById(id) || {}).value || '';
+    if (v('selectEspecial')) return 'especial:' + v('selectEspecial');
+    if (v('selectDistrito'))  return 'distrito';
+    if (v('selectProvincia')) return 'provincia';
+    if (v('selectDepartamento')) return 'departamento';
+    return 'nacional';
+  }
+
+  document.addEventListener('click', function (e) {
+    const el = e.target.closest('button, a');
+    if (!el) return;
+    if (el.disabled) return;
+
+    const porId = EXPORTS[el.id];
+    if (porId) {
+      const d = { formato: porId.formato, seccion: porId.seccion };
+      if (porId.seccion === 'ayuda-memoria') d.ambito = ambitoAM();
+      return track('exportar', d);
+    }
+    const oc = (el.getAttribute('onclick') || '').trim();
+    if (POR_ONCLICK[oc]) return track('exportar', POR_ONCLICK[oc]);
+
+    if (el.id === 'tbl-abrir')  return track('tablero_abrir', {});
+    if (/copiarEnlaceTablero/.test(oc)) return track('tablero_copiar', {});
+    if (/AM\.filtrar\(\)/.test(oc))      return track('consulta', { seccion: 'ayuda-memoria', ambito: ambitoAM() });
+    if (/AM\.descargarTarjeta/.test(oc)) return track('descargar_tarjeta', { seccion: 'ayuda-memoria' });
+  }, true);
+
+  // ── que seccion se abre ──
+  const _sb = window.sbSwitch;
+  if (typeof _sb === 'function') {
+    window.sbSwitch = function (tab, itemId) {
+      track('seccion', { nombre: tab });
+      return _sb.apply(this, arguments);
+    };
+  }
+  // la primera, la que se ve al entrar
+  track('seccion', { nombre: 'am', inicial: true });
+})();
+</script>
 </body>
 </html>
