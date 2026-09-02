@@ -5823,7 +5823,6 @@ function renderKPIs(d, dep, prov, dist) {
   const scdRows = `
     <tr><td>🏘 CIAI</td><td>${_n(d.CIAI_SCD)}</td></tr>
     ${_sa.servicios  ? `<tr><td>🍲 Servicios alimentarios</td><td>${_n(_sa.servicios)}</td></tr>` : ''}
-    ${d.SA_SCD       ? `<tr><td>🏫 Servicios Adicionales</td><td>${_n(d.SA_SCD)}</td></tr>` : ''}
     ${!nivelDistrito ? `<tr><td>📌 Distritos con atención</td><td>${_n(d.dist_scd)}</td></tr>` : ''}
     ${nivelDepto     ? `<tr><td>🗺 Provincias con atención</td><td>${_n(d.prov_scd)}</td></tr>` : ''}
     ${nivelDistrito && _sa.servicios ? (
@@ -7892,7 +7891,7 @@ async function exportarPDF() {
     }
     if (!nivelDistrito) filaKV(scd,'Distritos con atención',  resumen.dist_scd);
     if (nivelDepto)     filaKV(scd,'Provincias con atención', resumen.prov_scd);
-    if (resumen.SA_SCD) filaKV(scd,'Servicios Adicionales',   resumen.SA_SCD);
+    if (resumen.SA_SCD) filaKV(scd,'Servicios Alimentarios',  resumen.SA_SCD);
     filaKV(scd,'Ejecución acumulada', 'S/. ' + resumen.ejec_scd.toLocaleString('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}));
     return { saf, scd };
   }
