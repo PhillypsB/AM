@@ -108,7 +108,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F0F2F7;color:#1F2937;m
   background:linear-gradient(135deg,#0F172A 0%,#1E1B4B 60%,#312E81 100%);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   z-index:9999;gap:0;overflow:hidden;
-  transition:opacity .28s ease;
+  transition:opacity .14s ease;
 }
 #app-loading.fade-out{opacity:0;pointer-events:none;}
 
@@ -5030,7 +5030,7 @@ function _robotRespuesta(q){
 
   let current = 0;
   let phaseIdx = 0;
-  const STEP_MS = 9;
+  const STEP_MS = 4;
 
   function tick(){
     const target = phases[phaseIdx].pct;
@@ -5038,26 +5038,26 @@ function _robotRespuesta(q){
       current++;
       if(numEl) numEl.textContent = current;
       if(barEl) barEl.style.width = current + '%';
-      setTimeout(tick, STEP_MS + Math.random()*4);
+      setTimeout(tick, STEP_MS + Math.random()*3);
     } else {
       if(subEl) subEl.textContent = phases[phaseIdx].label;
       phaseIdx++;
       if(phaseIdx < phases.length){
-        setTimeout(tick, 140 + Math.random()*60);
+        setTimeout(tick, 70 + Math.random()*30);
       } else {
         setTimeout(function(){
           if(typeof cargarApp === 'function'){ cargarApp(); }
           if(overlay){ overlay.classList.add('fade-out'); }
-          setTimeout(function(){ if(overlay) overlay.style.display='none'; }, 300);
-        }, 200);
+          setTimeout(function(){ if(overlay) overlay.style.display='none'; }, 150);
+        }, 100);
       }
     }
   }
 
   if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ setTimeout(tick, 60); });
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(tick, 30); });
   } else {
-    setTimeout(tick, 60);
+    setTimeout(tick, 30);
   }
 })();
 
