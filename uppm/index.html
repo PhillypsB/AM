@@ -5076,8 +5076,7 @@ window.asegurarLibs = window.asegurarLibs || (function () {
     xlsx:       'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js',
     html2canvas:'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
     frontera:   'data/frontera_modelo.js',  // 74 KB: solo al exportar FRONTERAS
-    pptx:       'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',
-    molde:      'data/molde_assets.js'      // 385 KB: imagenes del molde, solo al exportar PPT
+    pptmodelo:  'data/modelo_ppt.js'        // 2,5 MB: el deck modelo, solo al exportar PPT
   };
   const yaEsta = {
     filesaver:   () => typeof window.saveAs === 'function',
@@ -5086,8 +5085,7 @@ window.asegurarLibs = window.asegurarLibs || (function () {
     xlsx:        () => typeof window.XLSX !== 'undefined',
     html2canvas: () => typeof window.html2canvas !== 'undefined',
     frontera:    () => typeof FRONTERA_MODELO_B64 !== 'undefined',
-    pptx:        () => typeof PptxGenJS !== 'undefined',
-    molde:       () => !!window.MOLDE_IMG
+    pptmodelo:   () => typeof MOLDE_PPT_B64 !== 'undefined'
   };
   const pedidas = {};
   function una(k) {
@@ -6293,14 +6291,37 @@ function obtenerDatosCobertura(nivel, dep, prov) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-//  EXPORTAR PPT — reproduce MOLDE.pptx con los datos del ámbito consultado.
-//  Medidas y colores tomados del molde institucional (13,33" × 7,5").
-//  La librería y las imágenes pesan ~1,4 MB: se traen al primer clic.
+//  EXPORTAR PPT — el deck institucional de 5 láminas, con los datos del corte.
+//  No se reconstruye la presentación: se parchea modelo_ppt.pptx, que es un
+//  ZIP, igual que hace FRONTERAS con su libro modelo. Así se conservan tal
+//  cual las imágenes, las tipografías, los degradados y las notas; solo se
+//  reemplaza el contenido de los <a:t> que son cifras.
+//
+//  El deck es NACIONAL: las láminas 3 y 4 traen población objetivo, metas POI
+//  y PIM, que solo existen a nivel país. Por eso el PPT sale siempre con el
+//  panorama nacional, sin importar el filtro que esté puesto en pantalla.
+//
+//  El modelo pesa 2,5 MB y solo hace falta al exportar, así que se descarga
+//  recién en ese momento.
 // ══════════════════════════════════════════════════════════════════════════
-const MOLDE = {
-  vino:'B00020', beige:'D9D3CB', tinta:'404040', rojo:'FF0000',
-  titulo:'Century Gothic', texto:'Calibri'
+
+// Metas POI y población objetivo. En Web_UPPM ya viven en PARAMS_ANUALES, que
+// es del shell; estos valores son para el laboratorio y la estable, que no lo
+// tienen. Donde el shell existe, manda el shell.
+const PPT_METAS = {
+  saf: { meta: 277283, po: 607215 },
+  scd: { meta: 67387,  po: 287259 }
 };
+// PIM 2026 por servicio. Mientras estén en null, la lámina 4 muestra el monto
+// ejecutado sin el porcentaje: preferible a arrastrar un porcentaje viejo.
+const PPT_PIM = { saf: null, scd: null };
+
+function _pptParam(serv, campo) {
+  if (typeof PARAMS_ANUALES !== 'undefined' && PARAMS_ANUALES[serv]) {
+    return campo === 'meta' ? PARAMS_ANUALES[serv].meta : PARAMS_ANUALES[serv].pob_obj;
+  }
+  return PPT_METAS[serv][campo === 'meta' ? 'meta' : 'po'];
+}
 
 function _traerScript(src, listo) {
   if (listo()) return Promise.resolve();
@@ -6311,141 +6332,173 @@ function _traerScript(src, listo) {
     document.head.appendChild(s);
   });
 }
-// La estable y Web_UPPM ya tienen cargador perezoso y ahi viven las rutas;
-// el laboratorio no lo tiene y trae los dos archivos a mano.
+// La estable y Web_UPPM tienen cargador perezoso y ahí viven las rutas; el
+// laboratorio no lo tiene y trae el modelo a mano.
 function _libsPPT() {
-  if (typeof asegurarLibs === 'function') return asegurarLibs(['pptx', 'molde']);
-  return Promise.all([
-    _traerScript('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',
-                 () => typeof PptxGenJS !== 'undefined'),
-    _traerScript('molde_assets.js', () => !!window.MOLDE_IMG)
-  ]);
+  if (typeof asegurarLibs === 'function') return asegurarLibs(['pptmodelo']);
+  return _traerScript('modelo_ppt.js', () => typeof MOLDE_PPT_B64 !== 'undefined');
 }
 
+/* ---------- edición de los textos de una lámina ---------- */
+
+// Reemplaza el contenido exacto de un run <a:t>, conservando los espacios de
+// alrededor: en la tabla de la lámina 3 sirven para alinear las columnas.
+function _pptTexto(xml, viejo, nuevo) {
+  const izq = (viejo.match(/^\s*/) || [''])[0];
+  const der = (viejo.match(/\s*$/) || [''])[0];
+  const de  = '<a:t>' + _pptEsc(viejo) + '</a:t>';
+  const a   = '<a:t>' + izq + _pptEsc(String(nuevo)) + der + '</a:t>';
+  if (xml.indexOf(de) < 0) throw new Error('el modelo no trae el texto «' + viejo.trim() + '»');
+  return xml.split(de).join(a);
+}
+function _pptEsc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* ---------- exportador ---------- */
+
 async function exportarPPT() {
-  if (!window.ultimoResultado) return alert('Primero realice una consulta.');
+  if (typeof DecompressionStream === 'undefined') {
+    return alert('Este navegador no puede abrir el modelo. Use Chrome o Edge actualizado.');
+  }
   const btn = document.getElementById('btnPPT');
-  if (btn) { btn.disabled = true; btn.dataset.txt = btn.innerHTML; btn.innerHTML = '⏳ Generando…'; }
+  const rotulo = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Generando…'; }
   try {
     await _libsPPT();
-    _armarPPT();
+    if (typeof MOLDE_PPT_B64 === 'undefined') throw new Error('no se pudo cargar el modelo (modelo_ppt.js).');
+    await _armarPPT();
   } catch (e) {
+    console.error(e);
     alert('No se pudo generar el PPT: ' + e.message);
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = btn.dataset.txt || '<span>PPT</span>'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = rotulo || '<span>PPT</span>'; }
   }
 }
 
-function _armarPPT() {
-  const d   = window.ultimoResultado;
-  const IMG = window.MOLDE_IMG;
-  const ac  = d.esNacional ? actoresNacional() : actoresDe(d.ubigeos);
-  const hay = ac.cubiertos > 0 || d.esNacional;
-  const fN  = v => (v || 0).toLocaleString('es-PE');
+async function _armarPPT() {
+  // Siempre el panorama nacional: las láminas 3 y 4 no tienen equivalente por ámbito.
+  const d  = calcularResumenNacional();
+  const ac = actoresNacional();
+  const sa = (typeof saNacional === 'function') ? saNacional() : { servicios: 0 };
 
-  // ámbito consultado: sustituye a "NACIONAL" del molde
-  const ambito = (d.esNacional || (!d.departamento && !d.provincia && !d.distrito))
-    ? 'NACIONAL'
-    : [d.distrito, d.provincia, d.departamento].filter(Boolean).join(' / ').toUpperCase();
+  const fN  = v => Math.round(v || 0).toLocaleString('es-PE');
+  const fM  = v => (v || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const pc  = (a, b) => b ? (a / b * 100).toFixed(2) + '%' : '—';
+  const pcC = (a, b) => b ? (a / b * 100).toFixed(2).replace('.', ',') : '—';   // 99,80
 
-  const usuarios = (d.familias_2025 || 0) + (d.niños_2025 || 0);
-  const cgSAF    = hay ? ac.saf.cg : (d.CG_SAF || 0);
-  const cgSCD    = hay ? ac.scd.cg : (d.CG_SCD || 0);
-  const acSAF    = hay ? ac.saf.total : 0;
-  const acSCD    = hay ? ac.scd.total : 0;
+  const fam  = Math.round(d.familias_2025 || 0);
+  const usu  = Math.round(d.niños_2025 || 0);
+  const total = fam + usu;
+  const metaSaf = _pptParam('saf', 'meta'), poSaf = _pptParam('saf', 'po');
+  const metaScd = _pptParam('scd', 'meta'), poScd = _pptParam('scd', 'po');
+  const brSaf = Math.max(0, poSaf - fam), brScd = Math.max(0, poScd - usu);
+  // La brecha % se calcula como complemento de la cobertura, no por separado:
+  // asi las dos columnas siempre suman 100,00 como en el modelo.
+  const cobSaf = poSaf ? fam / poSaf * 100 : 0;
+  const cobScd = poScd ? usu / poScd * 100 : 0;
+  const MES = (mesNombre || '').toUpperCase();
+  const MESC = MES.slice(0, 3);
 
-  const p = new PptxGenJS();
-  p.layout = 'LAYOUT_WIDE';                     // 13,33" × 7,5" como el molde
-  p.author = 'PNCM — UPPM';
-  p.title  = 'Cobertura ' + ambito + ' ' + mesNombre + ' ' + año;
-  const s = p.addSlide();
+  // El monto ejecutado y, si se conoce el PIM del año, su porcentaje.
+  const linePres = (ejec, pim, guion) => fM(ejec) +
+    (pim ? ' ' + guion + ' ' + (ejec / pim * 100).toFixed(2) + ' % del PIM ' + año : '');
 
-  const T  = (t, o) => s.addText(t, Object.assign({ isTextBox:true, margin:0 }, o));
-  const cifra = (t, x, y, w, sz) => T(t, { x, y, w, h:0.62, fontSize:sz, bold:true,
-      color:MOLDE.tinta, fontFace:MOLDE.titulo, align:'center', valign:'middle' });
+  const CAMBIOS = {
+    'ppt/slides/slide1.xml': [
+      ['2026', String(año)]
+    ],
+    'ppt/slides/slide3.xml': [
+      ['FUENTE: SISTEMA INTEGRADO JULIO 2026', 'FUENTE: SISTEMA INTEGRADO ' + MES + ' ' + año],
+      ['341,339 ',      fN(total)],
+      ['276,720',       fN(fam)],
+      [' (99.80%) ',    '(' + pc(fam, metaSaf) + ')'],
+      ['64,619',        fN(usu)],
+      ['(95.89%)',      '(' + pc(usu, metaScd) + ')'],
+      ['ATENCIÓN JULIO', 'ATENCIÓN ' + MES],
+      ['        607,215', fN(poSaf)],
+      ['        276,720', fN(fam)],
+      ['45.57%',        cobSaf.toFixed(2) + '%'],
+      ['      330,495', fN(brSaf)],
+      ['54.43%',        (100 - cobSaf).toFixed(2) + '%'],
+      ['       287,259', fN(poScd)],
+      ['           64,619 ', fN(usu)],
+      ['22.49%',        cobScd.toFixed(2) + '%'],
+      ['        222,640 ', fN(brScd)],
+      ['77.51%',        (100 - cobScd).toFixed(2) + '%'],
+      ['Meta: 277,283', 'Meta: ' + fN(metaSaf)],
+      ['Meta: 67,387',  'Meta: ' + fN(metaScd)]
+    ],
+    'ppt/slides/slide4.xml': [
+      ['276,720', fN(fam)],
+      ['256,347', fN(d.niños_saf)],
+      ['22,040',  fN(d.gestantes_SAF)],
+      ['99,80',   pcC(fam, metaSaf)],
+      ['(277,283 familias ', '(' + fN(metaSaf) + ' familias'],
+      ['335,850,669.26 - 61.68 % del PIM 2026', linePres(d.ejec_saf, PPT_PIM.saf, '-')],
+      ['64,619',  fN(usu)],
+      ['2,542',   fN(d.CIAI_SCD)],
+      ['95,89',   pcC(usu, metaScd)],
+      ['67,387',  fN(metaScd)],
+      ['268,135,315 – 59.17 % del PIM 2026', linePres(d.ejec_scd, PPT_PIM.scd, '–')],
+      ['10,380',  fN(ac.scd.madres_cuidadoras)],
+      ['27,865',  fN(ac.saf.facilitadoras)],
+      ['2,404',   fN(ac.saf.cg)],
+      ['Con presencia en 25 departamentos, 188 provincias y 1,420 distritos',
+       'Con presencia en ' + fN(d.dep_saf) + ' departamentos, ' + fN(d.prov_saf) + ' provincias y ' + fN(d.dist_saf) + ' distritos'],
+      ['657',     fN(ac.scd.cg)],
+      ['Con presencia en 25 departamentos, 145 provincias y 535 distritos',
+       'Con presencia en ' + fN(d.dep_scd) + ' departamentos, ' + fN(d.prov_scd) + ' provincias y ' + fN(d.dist_scd) + ' distritos']
+    ],
+    'ppt/slides/slide5.xml': [
+      ['JUL 2026', MESC + ' ' + año],
+      ['341,339', fN(total)],
+      ['78,005',  fN(ac.saf.total + ac.scd.total)],
+      ['3,061',   fN(ac.saf.cg + ac.scd.cg)],
+      ['276,720', fN(fam)],
+      ['22,040',  fN(d.gestantes_SAF)],
+      ['256,347', fN(d.niños_saf)],
+      ['2,404',   fN(ac.saf.cg)],
+      ['48,254',  fN(ac.saf.total)],
+      ['64,619',  fN(usu)],
+      ['657',     fN(ac.scd.cg)],
+      ['29,751',  fN(ac.scd.total)],
+      ['2,542',   fN(d.CIAI_SCD)],
+      ['807',     fN(sa.servicios)]
+    ]
+  };
 
-  // ── cabecera ──
-  s.addShape(p.ShapeType.rect, { x:0, y:0,    w:13.33, h:0.18, fill:{ color:MOLDE.vino  } });
-  s.addShape(p.ShapeType.rect, { x:0, y:0.18, w:13.33, h:0.05, fill:{ color:MOLDE.beige } });
-  s.addImage({ data:IMG['image2.png'], x:0.18,  y:0.34, w:2.52, h:0.52 });
-  s.addImage({ data:IMG['image3.png'], x:2.84,  y:0.36, w:1.02, h:0.52 });
-  s.addImage({ data:IMG['image1.png'], x:11.48, y:0.29, w:1.74, h:1.03 });
-  T([{ text:'COBERTURA ', options:{ bold:true } },
-     { text:(mesNombre || '').slice(0,3) + ' ' + año, options:{ bold:true, color:MOLDE.vino } }],
-    { x:5.37, y:0.30, w:4.05, h:0.60, fontSize:24, color:MOLDE.tinta,
-      fontFace:MOLDE.titulo, align:'center', valign:'middle' });
+  // Se reusa la maquinaria de ZIP de la exportación de FRONTERAS.
+  const entradas = frLeerZip(frB64aBytes(MOLDE_PPT_B64));
+  const dec = new TextDecoder(), enc = new TextEncoder();
 
-  // ── misión y objetivo (texto institucional fijo) ──
-  const guion = (x, y) => T('------', { x, y, w:1.58, h:0.40, fontSize:40, bold:true,
-      color:MOLDE.rojo, fontFace:MOLDE.titulo });
-  guion(0.11, 1.08); guion(10.98, 0.90);
-  T('Misión',   { x:0.11,  y:1.30, w:2.17, h:0.40, fontSize:22, bold:true, color:MOLDE.tinta, fontFace:MOLDE.titulo });
-  T('Objetivo', { x:10.96, y:1.12, w:2.17, h:0.40, fontSize:22, bold:true, color:MOLDE.tinta, fontFace:MOLDE.titulo });
-  T('Brindar atención integral a niñas y niños menores de 36 meses de edad en zonas en situación de pobreza y pobreza extrema',
-    { x:0.04, y:1.78, w:2.20, h:1.55, fontSize:12, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
-  T('Mejorar el desarrollo infantil de niños y niñas menores de 36 meses de edad que viven en situación de pobreza y pobreza extrema para superar las brechas en su desarrollo cognitivo, social, físico y emocional.',
-    { x:10.99, y:1.58, w:2.20, h:2.45, fontSize:12, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
+  for (const hoja of Object.keys(CAMBIOS)) {
+    const e = entradas.find(x => x.nombre === hoja);
+    if (!e) throw new Error('el modelo no contiene ' + hoja + '.');
+    const crudo = (e.metodo === 0) ? e.datos : await frInflar(e.datos);
+    let xml = dec.decode(crudo);
+    for (const [viejo, nuevo] of CAMBIOS[hoja]) xml = _pptTexto(xml, viejo, nuevo);
 
-  // ── bloque central ──
-  s.addImage({ data:IMG['image4.png'],  x:4.29, y:1.72, w:1.92, h:0.99 });
-  cifra(fN(usuarios), 6.27, 1.85, 2.43, 40);
-  T([{ text:'usuarios a nivel\n', options:{} },
-     { text:ambito, options:{ bold:true } }],
-    { x:8.56, y:1.95, w:2.40, h:0.70, fontSize:14, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'middle' });
+    const bytes = enc.encode(xml);
+    const comprimido = await frDeflar(bytes);
+    e.origSz = bytes.length;
+    e.crc = frCrc32(bytes);
+    if (comprimido && comprimido.length < bytes.length) { e.metodo = 8; e.datos = comprimido; }
+    else { e.metodo = 0; e.datos = bytes; }
+  }
 
-  s.addShape(p.ShapeType.line, { x:4.25, y:3.01, w:2.02, h:0, line:{ color:MOLDE.beige, width:1.5 } });
-  s.addShape(p.ShapeType.line, { x:6.75, y:3.01, w:3.31, h:0, line:{ color:MOLDE.beige, width:1.5 } });
-
-  s.addImage({ data:IMG['image6.png'], x:6.13, y:2.87, w:0.82, h:0.99 });
-  cifra(fN(acSAF + acSCD), 4.41, 3.20, 1.76, 34);
-  T('actores comunales', { x:2.60, y:3.30, w:1.80, h:0.50, fontSize:14, color:MOLDE.tinta,
-      fontFace:MOLDE.texto, align:'right', valign:'middle' });
-  T('(juntas directivas, consejos de vigilancia, actores a cargo de la prestación del servicio)',
-    { x:2.95, y:3.92, w:3.91, h:0.55, fontSize:11, italic:true, color:MOLDE.tinta, fontFace:MOLDE.texto });
-
-  s.addImage({ data:IMG['image8.png'], x:8.13, y:2.83, w:1.04, h:1.04 });
-  cifra(fN(cgSAF + cgSCD), 6.87, 3.92, 1.70, 34);
-  T('comités de gestión', { x:8.22, y:3.95, w:1.60, h:0.50, fontSize:14, color:MOLDE.tinta,
-      fontFace:MOLDE.texto, valign:'middle' });
-
-  s.addShape(p.ShapeType.line, { x:2.95, y:4.74, w:8.35, h:0, line:{ color:MOLDE.beige, width:1.5 } });
-  s.addShape(p.ShapeType.line, { x:7.06, y:5.18, w:0, h:2.20, line:{ color:MOLDE.beige, width:1.5 } });
-
-  // ── SAF ──
-  s.addImage({ data:IMG['image10.png'], x:1.41, y:5.01, w:1.13, h:1.31 });
-  cifra(fN(d.familias_2025), 2.67, 4.82, 2.30, 40);
-  T([{ text:'Familias atendidas\n', options:{ bold:true } },
-     { text:'rurales, altoandinas, de zona de frontera y VRAEM', options:{ fontSize:11 } }],
-    { x:2.75, y:5.45, w:3.00, h:0.90, fontSize:15, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
-  T([{ text:fN(d.gestantes_SAF), options:{ bold:true } }, { text:' gestantes  ·  ' },
-     { text:fN(d.niños_saf),     options:{ bold:true } }, { text:' niñas y niños\n' },
-     { text:fN(cgSAF),           options:{ bold:true } }, { text:' comités de gestión\n' },
-     { text:fN(acSAF),           options:{ bold:true } }, { text:' actores comunales que prestan el servicio' }],
-    { x:1.41, y:6.45, w:5.20, h:1.00, fontSize:12, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
-
-  // ── SCD ──
-  s.addImage({ data:IMG['image12.png'], x:7.78, y:4.86, w:1.21, h:1.44 });
-  cifra(fN(d.niños_2025), 9.00, 4.82, 2.75, 40);
-  T([{ text:'Niños atendidos\n', options:{ bold:true } },
-     { text:'de 6 a 36 meses de zonas urbanas y periurbanas', options:{ fontSize:11 } }],
-    { x:9.07, y:5.45, w:2.90, h:0.90, fontSize:15, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
-  // El padron de servicios alimentarios por ahora solo vive en el laboratorio;
-  // donde no esta, la linea simplemente no sale.
-  const _saP = (typeof saNacional === 'function')
-    ? (d.esNacional ? saNacional() : saDe(d.ubigeos))
-    : { servicios: 0 };
-  T([{ text:fN(cgSCD),      options:{ bold:true } }, { text:' comités de gestión\n' },
-     { text:fN(acSCD),      options:{ bold:true } }, { text:' actores comunales que prestan el servicio\n' },
-     { text:fN(d.CIAI_SCD), options:{ bold:true } }, { text:' CIAI' },
-     ...( _saP.servicios ? [{ text:'  ·  ' }, { text:fN(_saP.servicios), options:{ bold:true } },
-                            { text:' servicios alimentarios' }] : [] )],
-    { x:7.95, y:6.45, w:5.10, h:1.00, fontSize:12, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
-
-  s.addNotes('Generado por el aplicativo de Ayuda Memoria — PNCM/UPPM. Corte: ' +
-             mesNombre + ' ' + año + '. Ámbito: ' + ambito + '.');
-
-  const nom = 'Cobertura_' + ambito.replace(/[^\wÁÉÍÓÚÑ]+/g, '_') + '_' + mesNombre + '_' + año + '.pptx';
-  p.writeFile({ fileName: nom });
+  const salida = frEscribirZip(entradas);
+  const nom = 'Cobertura_NACIONAL_' + mesNombre + '_' + año + '.pptx';
+  if (typeof saveAs !== 'function' && typeof asegurarLibs === 'function') {
+    try { await asegurarLibs(['filesaver']); } catch (e) { /* queda el enlace */ }
+  }
+  const blob = new Blob([salida], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+  if (typeof saveAs === 'function') saveAs(blob, nom);
+  else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = nom; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
 }
 
 // ──────────────────────────────────────────────────
