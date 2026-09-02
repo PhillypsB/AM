@@ -157,6 +157,8 @@ body{
 .btn-wa:hover:not(:disabled){background:#15803d;box-shadow:0 5px 16px rgba(22,163,74,.35);transform:translateY(-1px)}
 .btn-excel{background:#047857;color:#fff;box-shadow:0 3px 10px rgba(4,120,87,.28)}
 .btn-excel:hover:not(:disabled){background:#065f46;box-shadow:0 5px 16px rgba(4,120,87,.4);transform:translateY(-1px)}
+.btn-ppt{background:#c2410c;color:#fff;box-shadow:0 3px 10px rgba(194,65,12,.25)}
+.btn-ppt:hover:not(:disabled){background:#9a3412;box-shadow:0 5px 16px rgba(194,65,12,.35);transform:translateY(-1px)}
 
 /* ── LOADING ─────────────────────────────────── */
 .loading-wrap{
@@ -453,9 +455,9 @@ section#resultadosArea{margin-top:4px;}
   .filter-row[style]{margin-top:12px!important;padding-top:14px!important}
   #especial-info{width:100%;box-sizing:border-box}
 
-  .export-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;width:100%}
+  .export-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%}
   .export-bar .btn{
-    flex:none;min-height:46px;padding:10px 2px;font-size:.63rem;
+    flex:none;min-height:46px;padding:10px 1px;font-size:.58rem;
     justify-content:center;gap:0;
   }
   .export-bar .btn span{display:block;line-height:1.2}
@@ -545,6 +547,7 @@ section#resultadosArea{margin-top:4px;}
         <button id="btnPDF"   class="btn btn-pdf"   onclick="exportarPDF()"         disabled><span>PDF</span></button>
         <button id="btnWord"  class="btn btn-word"  onclick="exportarWord()"        disabled><span>Word</span></button>
         <button id="btnExcel" class="btn btn-excel" onclick="exportarExcel()"       disabled><span>Excel</span></button>
+        <button id="btnPPT"   class="btn btn-ppt"   onclick="exportarPPT()"         disabled><span>PPT</span></button>
         <button id="btnWA"    class="btn btn-wa"    onclick="compartirWhatsApp()"   disabled><span>WhatsApp</span></button>
       </div>
     </div>
@@ -570,7 +573,9 @@ section#resultadosArea{margin-top:4px;}
     autotable:  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',
     xlsx:       'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
     html2canvas:'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-    frontera:   '/am/frontera_modelo.js'   // 74 KB: solo al exportar FRONTERAS
+    frontera:   '/am/frontera_modelo.js',  // 74 KB: solo al exportar FRONTERAS
+    pptx:       'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',
+    molde:      '/am/molde_assets.js'      // 385 KB: imagenes del molde, solo al exportar PPT
   };
   const pedidas = {};
   function una(k) {
@@ -890,7 +895,7 @@ async function descargarTarjeta(serv) {
 }
 
 function setExportButtons(enabled) {
-  ['btnPDF','btnWord','btnExcel','btnWA'].forEach(id => {
+  ['btnPDF','btnWord','btnExcel','btnPPT','btnWA'].forEach(id => {
     document.getElementById(id).disabled = !enabled;
   });
 }
@@ -1768,6 +1773,162 @@ function obtenerDatosCobertura(nivel, dep, prov) {
     ejec_scd:a.ejec_scd+f.ejec_scd
   }),{familias:0,ninos_saf:0,gestantes:0,ejec_saf:0,usuarios:0,ciai:0,ejec_scd:0});
   return { tituloCol, filas, tot };
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  EXPORTAR PPT — reproduce MOLDE.pptx con los datos del ámbito consultado.
+//  Medidas y colores tomados del molde institucional (13,33" × 7,5").
+//  La librería y las imágenes pesan ~1,4 MB: se traen al primer clic.
+// ══════════════════════════════════════════════════════════════════════════
+const MOLDE = {
+  vino:'B00020', beige:'D9D3CB', tinta:'404040', rojo:'FF0000',
+  titulo:'Century Gothic', texto:'Calibri'
+};
+
+function _traerScript(src, listo) {
+  if (listo()) return Promise.resolve();
+  return new Promise((ok, mal) => {
+    const s = document.createElement('script');
+    s.src = src; s.async = false;
+    s.onload = ok; s.onerror = () => mal(new Error('No se pudo cargar ' + src));
+    document.head.appendChild(s);
+  });
+}
+// La estable y Web_UPPM ya tienen cargador perezoso y ahi viven las rutas;
+// el laboratorio no lo tiene y trae los dos archivos a mano.
+function _libsPPT() {
+  if (typeof asegurarLibs === 'function') return asegurarLibs(['pptx', 'molde']);
+  return Promise.all([
+    _traerScript('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',
+                 () => typeof PptxGenJS !== 'undefined'),
+    _traerScript('molde_assets.js', () => !!window.MOLDE_IMG)
+  ]);
+}
+
+async function exportarPPT() {
+  if (!window.ultimoResultado) return alert('Primero realice una consulta.');
+  const btn = document.getElementById('btnPPT');
+  if (btn) { btn.disabled = true; btn.dataset.txt = btn.innerHTML; btn.innerHTML = '⏳ Generando…'; }
+  try {
+    await _libsPPT();
+    _armarPPT();
+  } catch (e) {
+    alert('No se pudo generar el PPT: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = btn.dataset.txt || '<span>PPT</span>'; }
+  }
+}
+
+function _armarPPT() {
+  const d   = window.ultimoResultado;
+  const IMG = window.MOLDE_IMG;
+  const ac  = d.esNacional ? actoresNacional() : actoresDe(d.ubigeos);
+  const hay = ac.cubiertos > 0 || d.esNacional;
+  const fN  = v => (v || 0).toLocaleString('es-PE');
+
+  // ámbito consultado: sustituye a "NACIONAL" del molde
+  const ambito = (d.esNacional || (!d.departamento && !d.provincia && !d.distrito))
+    ? 'NACIONAL'
+    : [d.distrito, d.provincia, d.departamento].filter(Boolean).join(' / ').toUpperCase();
+
+  const usuarios = (d.familias_2025 || 0) + (d.niños_2025 || 0);
+  const cgSAF    = hay ? ac.saf.cg : (d.CG_SAF || 0);
+  const cgSCD    = hay ? ac.scd.cg : (d.CG_SCD || 0);
+  const acSAF    = hay ? ac.saf.total : 0;
+  const acSCD    = hay ? ac.scd.total : 0;
+
+  const p = new PptxGenJS();
+  p.layout = 'LAYOUT_WIDE';                     // 13,33" × 7,5" como el molde
+  p.author = 'PNCM — UPPM';
+  p.title  = 'Cobertura ' + ambito + ' ' + mesNombre + ' ' + año;
+  const s = p.addSlide();
+
+  const T  = (t, o) => s.addText(t, Object.assign({ isTextBox:true, margin:0 }, o));
+  const cifra = (t, x, y, w, sz) => T(t, { x, y, w, h:0.62, fontSize:sz, bold:true,
+      color:MOLDE.tinta, fontFace:MOLDE.titulo, align:'center', valign:'middle' });
+
+  // ── cabecera ──
+  s.addShape(p.ShapeType.rect, { x:0, y:0,    w:13.33, h:0.18, fill:{ color:MOLDE.vino  } });
+  s.addShape(p.ShapeType.rect, { x:0, y:0.18, w:13.33, h:0.05, fill:{ color:MOLDE.beige } });
+  s.addImage({ data:IMG['image2.png'], x:0.18,  y:0.34, w:2.52, h:0.52 });
+  s.addImage({ data:IMG['image3.png'], x:2.84,  y:0.36, w:1.02, h:0.52 });
+  s.addImage({ data:IMG['image1.png'], x:11.48, y:0.29, w:1.74, h:1.03 });
+  T([{ text:'COBERTURA ', options:{ bold:true } },
+     { text:(mesNombre || '').slice(0,3) + ' ' + año, options:{ bold:true, color:MOLDE.vino } }],
+    { x:5.37, y:0.30, w:4.05, h:0.60, fontSize:24, color:MOLDE.tinta,
+      fontFace:MOLDE.titulo, align:'center', valign:'middle' });
+
+  // ── misión y objetivo (texto institucional fijo) ──
+  const guion = (x, y) => T('------', { x, y, w:1.58, h:0.40, fontSize:40, bold:true,
+      color:MOLDE.rojo, fontFace:MOLDE.titulo });
+  guion(0.11, 1.08); guion(10.98, 0.90);
+  T('Misión',   { x:0.11,  y:1.30, w:2.17, h:0.40, fontSize:22, bold:true, color:MOLDE.tinta, fontFace:MOLDE.titulo });
+  T('Objetivo', { x:10.96, y:1.12, w:2.17, h:0.40, fontSize:22, bold:true, color:MOLDE.tinta, fontFace:MOLDE.titulo });
+  T('Brindar atención integral a niñas y niños menores de 36 meses de edad en zonas en situación de pobreza y pobreza extrema',
+    { x:0.04, y:1.78, w:2.20, h:1.55, fontSize:12, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
+  T('Mejorar el desarrollo infantil de niños y niñas menores de 36 meses de edad que viven en situación de pobreza y pobreza extrema para superar las brechas en su desarrollo cognitivo, social, físico y emocional.',
+    { x:10.99, y:1.58, w:2.20, h:2.45, fontSize:12, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
+
+  // ── bloque central ──
+  s.addImage({ data:IMG['image4.png'],  x:4.29, y:1.72, w:1.92, h:0.99 });
+  cifra(fN(usuarios), 6.27, 1.85, 2.43, 40);
+  T([{ text:'usuarios a nivel\n', options:{} },
+     { text:ambito, options:{ bold:true } }],
+    { x:8.56, y:1.95, w:2.40, h:0.70, fontSize:14, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'middle' });
+
+  s.addShape(p.ShapeType.line, { x:4.25, y:3.01, w:2.02, h:0, line:{ color:MOLDE.beige, width:1.5 } });
+  s.addShape(p.ShapeType.line, { x:6.75, y:3.01, w:3.31, h:0, line:{ color:MOLDE.beige, width:1.5 } });
+
+  s.addImage({ data:IMG['image6.png'], x:6.13, y:2.87, w:0.82, h:0.99 });
+  cifra(fN(acSAF + acSCD), 4.41, 3.20, 1.76, 34);
+  T('actores comunales', { x:2.60, y:3.30, w:1.80, h:0.50, fontSize:14, color:MOLDE.tinta,
+      fontFace:MOLDE.texto, align:'right', valign:'middle' });
+  T('(juntas directivas, consejos de vigilancia, actores a cargo de la prestación del servicio)',
+    { x:2.95, y:3.92, w:3.91, h:0.55, fontSize:11, italic:true, color:MOLDE.tinta, fontFace:MOLDE.texto });
+
+  s.addImage({ data:IMG['image8.png'], x:8.13, y:2.83, w:1.04, h:1.04 });
+  cifra(fN(cgSAF + cgSCD), 6.87, 3.92, 1.70, 34);
+  T('comités de gestión', { x:8.22, y:3.95, w:1.60, h:0.50, fontSize:14, color:MOLDE.tinta,
+      fontFace:MOLDE.texto, valign:'middle' });
+
+  s.addShape(p.ShapeType.line, { x:2.95, y:4.74, w:8.35, h:0, line:{ color:MOLDE.beige, width:1.5 } });
+  s.addShape(p.ShapeType.line, { x:7.06, y:5.18, w:0, h:2.20, line:{ color:MOLDE.beige, width:1.5 } });
+
+  // ── SAF ──
+  s.addImage({ data:IMG['image10.png'], x:1.41, y:5.01, w:1.13, h:1.31 });
+  cifra(fN(d.familias_2025), 2.67, 4.82, 2.30, 40);
+  T([{ text:'Familias atendidas\n', options:{ bold:true } },
+     { text:'rurales, altoandinas, de zona de frontera y VRAEM', options:{ fontSize:11 } }],
+    { x:2.75, y:5.45, w:3.00, h:0.90, fontSize:15, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
+  T([{ text:fN(d.gestantes_SAF), options:{ bold:true } }, { text:' gestantes  ·  ' },
+     { text:fN(d.niños_saf),     options:{ bold:true } }, { text:' niñas y niños\n' },
+     { text:fN(cgSAF),           options:{ bold:true } }, { text:' comités de gestión\n' },
+     { text:fN(acSAF),           options:{ bold:true } }, { text:' actores comunales que prestan el servicio' }],
+    { x:1.41, y:6.45, w:5.20, h:1.00, fontSize:12, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
+
+  // ── SCD ──
+  s.addImage({ data:IMG['image12.png'], x:7.78, y:4.86, w:1.21, h:1.44 });
+  cifra(fN(d.niños_2025), 9.00, 4.82, 2.75, 40);
+  T([{ text:'Niños atendidos\n', options:{ bold:true } },
+     { text:'de 6 a 36 meses de zonas urbanas y periurbanas', options:{ fontSize:11 } }],
+    { x:9.07, y:5.45, w:2.90, h:0.90, fontSize:15, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
+  // El padron de servicios alimentarios por ahora solo vive en el laboratorio;
+  // donde no esta, la linea simplemente no sale.
+  const _saP = (typeof saNacional === 'function')
+    ? (d.esNacional ? saNacional() : saDe(d.ubigeos))
+    : { servicios: 0 };
+  T([{ text:fN(cgSCD),      options:{ bold:true } }, { text:' comités de gestión\n' },
+     { text:fN(acSCD),      options:{ bold:true } }, { text:' actores comunales que prestan el servicio\n' },
+     { text:fN(d.CIAI_SCD), options:{ bold:true } }, { text:' CIAI' },
+     ...( _saP.servicios ? [{ text:'  ·  ' }, { text:fN(_saP.servicios), options:{ bold:true } },
+                            { text:' servicios alimentarios' }] : [] )],
+    { x:7.95, y:6.45, w:5.10, h:1.00, fontSize:12, color:MOLDE.tinta, fontFace:MOLDE.texto, valign:'top' });
+
+  s.addNotes('Generado por el aplicativo de Ayuda Memoria — PNCM/UPPM. Corte: ' +
+             mesNombre + ' ' + año + '. Ámbito: ' + ambito + '.');
+
+  const nom = 'Cobertura_' + ambito.replace(/[^\wÁÉÍÓÚÑ]+/g, '_') + '_' + mesNombre + '_' + año + '.pptx';
+  p.writeFile({ fileName: nom });
 }
 
 // ──────────────────────────────────────────────────
