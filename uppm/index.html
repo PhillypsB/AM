@@ -6355,6 +6355,36 @@ function _pptEsc(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Parte un run en varios para poder resaltar solo un trozo. Copia el formato
+// del original en cada pedazo y, en el resaltado, le suma el fondo amarillo
+// respetando el orden que exige DrawingML (highlight va antes de latin).
+function _pptPartir(xml, viejo, partes) {
+  const marca = '<a:t>' + _pptEsc(viejo) + '</a:t>';
+  const i = xml.indexOf(marca);
+  if (i < 0) throw new Error('el modelo no trae el texto \u00ab' + viejo.trim() + '\u00bb');
+  const ini = xml.lastIndexOf('<a:r>', i);
+  const fin = xml.indexOf('</a:r>', i) + 6;
+
+  let rPr = '';
+  const pi = xml.indexOf('<a:rPr', ini);
+  if (pi > ini && pi < i) {
+    const cierre = xml.indexOf('>', pi);
+    rPr = (xml[cierre - 1] === '/') ? xml.slice(pi, cierre + 1)
+                                    : xml.slice(pi, xml.indexOf('</a:rPr>', pi) + 8);
+  }
+  const HL = '<a:highlight><a:srgbClr val="FFFF00"/></a:highlight>';
+  const conHL = pr => {
+    if (!pr) return '<a:rPr>' + HL + '</a:rPr>';
+    if (pr.slice(-2) === '/>') return pr.slice(0, -2) + '>' + HL + '</a:rPr>';
+    if (pr.indexOf('<a:latin') >= 0) return pr.replace('<a:latin', HL + '<a:latin');
+    return pr.replace('</a:rPr>', HL + '</a:rPr>');
+  };
+
+  const runs = partes.map(p =>
+    '<a:r>' + (p.hl ? conHL(rPr) : rPr) + '<a:t>' + _pptEsc(p.t) + '</a:t></a:r>').join('');
+  return xml.slice(0, ini) + runs + xml.slice(fin);
+}
+
 /* ---------- exportador ---------- */
 
 async function exportarPPT() {
@@ -6400,9 +6430,12 @@ async function _armarPPT() {
   const MES = (mesNombre || '').toUpperCase();
   const MESC = MES.slice(0, 3);
 
-  // El monto ejecutado y, si se conoce el PIM del año, su porcentaje.
-  const linePres = (ejec, pim, guion) => fM(ejec) +
-    (pim ? ' ' + guion + ' ' + (ejec / pim * 100).toFixed(2) + ' % del PIM ' + año : '');
+  // El monto ejecutado y su porcentaje del PIM. Mientras el PIM del anio no
+  // este cargado, en lugar del porcentaje va un XX resaltado en amarillo:
+  // asi se ve que ese dato se completa a mano, en vez de desaparecer callado.
+  const pres = (ejec, pim, guion, sep) => pim
+    ? [{ t: fM(ejec) + ' ' + guion + ' ' + (ejec / pim * 100).toFixed(2) + sep + '% del PIM ' + año }]
+    : [{ t: fM(ejec) + ' ' + guion + ' ' }, { t: 'XX', hl: true }, { t: sep + '% del PIM ' + año }];
 
   const CAMBIOS = {
     'ppt/slides/slide1.xml': [
@@ -6435,12 +6468,12 @@ async function _armarPPT() {
       ['22,040',  fN(d.gestantes_SAF)],
       ['99,80',   pcC(fam, metaSaf)],
       ['(277,283 familias ', '(' + fN(metaSaf) + ' familias'],
-      ['335,850,669.26 - 61.68 % del PIM 2026', linePres(d.ejec_saf, PPT_PIM.saf, '-')],
+      ['335,850,669.26 - 61.68 % del PIM 2026', null, pres(d.ejec_saf, PPT_PIM.saf, '-', ' ')],
       ['64,619',  fN(usu)],
       ['2,542',   fN(d.CIAI_SCD)],
       ['95,89',   pcC(usu, metaScd)],
       ['67,387',  fN(metaScd)],
-      ['268,135,315 – 59.17 % del PIM 2026', linePres(d.ejec_scd, PPT_PIM.scd, '–')],
+      ['268,135,315 – 59.17 % del PIM 2026', null, pres(d.ejec_scd, PPT_PIM.scd, '–', ' ')],
       ['10,380',  fN(ac.scd.madres_cuidadoras)],
       ['27,865',  fN(ac.saf.facilitadoras)],
       ['2,404',   fN(ac.saf.cg)],
@@ -6477,7 +6510,9 @@ async function _armarPPT() {
     if (!e) throw new Error('el modelo no contiene ' + hoja + '.');
     const crudo = (e.metodo === 0) ? e.datos : await frInflar(e.datos);
     let xml = dec.decode(crudo);
-    for (const [viejo, nuevo] of CAMBIOS[hoja]) xml = _pptTexto(xml, viejo, nuevo);
+    for (const c of CAMBIOS[hoja]) {
+      xml = (c.length === 3) ? _pptPartir(xml, c[0], c[2]) : _pptTexto(xml, c[0], c[1]);
+    }
 
     const bytes = enc.encode(xml);
     const comprimido = await frDeflar(bytes);
