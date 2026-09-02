@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/uppm",
+      "destination": "/uppm/",
+      "permanent": false
+    }
+  ]
+}
