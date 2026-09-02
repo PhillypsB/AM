@@ -516,6 +516,7 @@ section#resultadosArea{margin-top:4px;}
             <option value="">— Ninguno —</option>
             <option value="VRAEM">🌿 VRAEM</option>
             <option value="NOR-VRAEM">🌿 NOR-VRAEM</option>
+            <option value="FRONTERAS">🛂 FRONTERAS</option>
           </select>
         </div>
 
@@ -568,7 +569,8 @@ section#resultadosArea{margin-top:4px;}
     jspdf:      'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
     autotable:  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',
     xlsx:       'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-    html2canvas:'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+    html2canvas:'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+    frontera:   '/am/frontera_modelo.js'   // 74 KB: solo al exportar FRONTERAS
   };
   const pedidas = {};
   function una(k) {
@@ -621,6 +623,8 @@ section#resultadosArea{margin-top:4px;}
 </script>
 <script>var dataset = window.AM_DATA;</script>
 <script src="/am/actores_julio26.js"></script>
+<script src="/am/frontera_distritos.js"></script>
+<script src="/am/frontera_export.js"></script>
 
 <script>
 // ══════════════════════════════════════════════════
@@ -1013,6 +1017,10 @@ const AMBITOS_ESPECIALES = {
   'NOR-VRAEM': {
     label: 'Nor Valle del Río Apurímac y Ene (NOR-VRAEM)',
     ubigeos: new Set(['120303', '120601', '120602', '120603', '120604', '120605', '120606', '120607', '120608', '250202', '250203', '250201'])
+  },
+  FRONTERAS: {
+    label: 'Distritos de frontera (SIRF \u2013 Ministerio de Relaciones Exteriores)',
+    ubigeos: new Set(FRONTERA_UBIGEOS)   // 85 distritos, ver frontera_distritos.js
   }
 };
 
@@ -1767,6 +1775,8 @@ function obtenerDatosCobertura(nivel, dep, prov) {
 // ──────────────────────────────────────────────────
 async function exportarExcel() {
   if (!window.ultimoResultado) return alert('Primero realice una consulta.');
+  // FRONTERAS se entrega sobre el libro modelo del SIRF, no sobre el formato propio
+  if (window.ultimoResultado._ambito === 'FRONTERAS') return exportarExcelFronteras();
   await asegurarLibs(['xlsx']);
   const d    = window.ultimoResultado;
   const dep  = d.departamento;
