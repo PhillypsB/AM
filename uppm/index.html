@@ -2774,9 +2774,13 @@ window.ARCHIVOS_MENSUALES = [
 // ═══════════════════════════════════════════════════════════
 //  PARÁMETROS ANUALES CENTRALIZADOS
 // ═══════════════════════════════════════════════════════════
+// Poblacion objetivo corregida el 02-sep-2026 (antes: SAF 601 141, SCD 281 334).
+// Ojo: data/poblacion_objetivo.js sigue siendo el archivo distrital de 2025 y sus
+// 1891 filas suman los valores viejos, asi que el tab Poblacion Objetivo todavia
+// muestra ese total. Para que coincidan hace falta el xlsx distrital actualizado.
 const PARAMS_ANUALES = {
-  saf: { meta: 277283, pob_obj: 601141 },
-  scd: { meta: 67387,  pob_obj: 281334 }
+  saf: { meta: 277283, pob_obj: 607215 },
+  scd: { meta: 67387,  pob_obj: 287259 }
 };
 
 // ─────────────────────────────────────────────────────────────
