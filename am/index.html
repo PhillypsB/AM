@@ -94,11 +94,34 @@ body{
   margin-bottom:20px;
 }
 .filter-card-title h2{
-  font-size:1rem;
-  font-weight:600;
-  color:#374151;
+  font-size:1.2rem;
+  font-weight:700;
+  color:#1e3a8a;
 }
-.filter-icon{font-size:1.1rem}
+.filter-icon{font-size:1.3rem}
+.filter-help{
+  font-size:.84rem;
+  color:#64748b;
+  margin:-8px 0 18px;
+  line-height:1.5;
+}
+.avanzada-toggle{
+  margin-top:18px;
+  background:none;
+  border:none;
+  color:#1d4ed8;
+  font-weight:600;
+  font-size:.82rem;
+  font-family:inherit;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 0;
+}
+.avanzada-toggle:hover{text-decoration:underline}
+.avanzada-chevron{transition:transform .2s;display:inline-block;font-size:.9rem}
+.avanzada-toggle[aria-expanded="true"] .avanzada-chevron{transform:rotate(180deg)}
 .filter-row{
   display:flex;
   align-items:flex-end;
@@ -499,6 +522,7 @@ section#resultadosArea{margin-top:4px;}
         <span class="filtro-chevron" aria-hidden="true">⌄</span>
       </button>
       <div id="filtroCuerpo">
+      <p class="filter-help">Elige un <strong>departamento</strong> y, si quieres bajar de nivel, luego la provincia, el distrito y el centro poblado para ver su cobertura.</p>
       <div class="filter-row">
         <div class="select-group">
           <label for="selectDepartamento">Departamento</label>
@@ -517,7 +541,12 @@ section#resultadosArea{margin-top:4px;}
           <select id="selectCentroPoblado" disabled></select>
         </div>
       </div>
-      <div class="filter-row" style="margin-top:14px;padding-top:14px;border-top:1px dashed #e2e8f0;">
+      <!-- Búsqueda avanzada: ámbito especial (poco frecuente, oculto por defecto) -->
+      <button type="button" id="avanzadaToggle" class="avanzada-toggle"
+              onclick="toggleAvanzada()" aria-expanded="false" aria-controls="avanzadaBox">
+        <span class="avanzada-chevron" aria-hidden="true">⌄</span> Búsqueda avanzada
+      </button>
+      <div id="avanzadaBox" class="filter-row" style="display:none;margin-top:6px;padding-top:14px;border-top:1px dashed #e2e8f0;">
         <div class="select-group" style="max-width:220px;">
           <label for="selectEspecial" style="display:flex;align-items:center;gap:6px;">
             <span style="background:#1d4ed8;color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:50px;letter-spacing:.05em;">ESPECIAL</span>
@@ -912,6 +941,15 @@ function onEspecialChange() {
     bloquearUbicacion(false);
     mostrarResumenNacional();
   }
+}
+
+// Muestra/oculta la búsqueda avanzada (ámbito especial)
+function toggleAvanzada() {
+  const box = document.getElementById('avanzadaBox');
+  const btn = document.getElementById('avanzadaToggle');
+  const abrir = box.style.display === 'none' || !box.style.display;
+  box.style.display = abrir ? 'flex' : 'none';
+  btn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
 }
 
 const departamentos = [...new Set(dataset.map(d => d.departamento))].sort((a, b) => a.localeCompare(b, 'es'));
