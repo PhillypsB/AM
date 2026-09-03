@@ -1018,8 +1018,13 @@ async function descargarTarjeta(serv) {
 }
 
 function setExportButtons(enabled) {
+  // En ámbito especial solo se ofrece Excel; el resto se oculta.
+  const esEspecial = !!(window.ultimoResultado && window.ultimoResultado._esEspecial);
   ['btnPDF','btnWord','btnExcel','btnPPT','btnWA'].forEach(id => {
-    document.getElementById(id).disabled = !enabled;
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.disabled = !enabled;
+    b.style.display = (esEspecial && id !== 'btnExcel') ? 'none' : '';
   });
 }
 
