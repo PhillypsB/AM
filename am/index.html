@@ -396,7 +396,7 @@ section#resultadosArea{margin-top:4px;}
   select, input, textarea { font-size: 16px !important; }   /* evita el zoom de iOS */
 
   .corte-select,
-  #selectDepartamento, #selectProvincia, #selectDistrito, #selectEspecial {
+  #selectDepartamento, #selectProvincia, #selectDistrito, #selectCentroPoblado, #selectEspecial {
     min-height: 44px; padding-top: 8px; padding-bottom: 8px;
   }
   .btn { min-height: 46px; font-size: .82rem; }
@@ -511,6 +511,10 @@ section#resultadosArea{margin-top:4px;}
         <div class="select-group">
           <label for="selectDistrito">Distrito</label>
           <select id="selectDistrito"></select>
+        </div>
+        <div class="select-group">
+          <label for="selectCentroPoblado">Centro Poblado</label>
+          <select id="selectCentroPoblado" disabled></select>
         </div>
       </div>
       <div class="filter-row" style="margin-top:14px;padding-top:14px;border-top:1px dashed #e2e8f0;">
@@ -635,6 +639,8 @@ section#resultadosArea{margin-top:4px;}
 <script src="/am/sa_julio26.js"></script>
 <script src="/am/frontera_distritos.js"></script>
 <script src="/am/frontera_export.js"></script>
+<script src="/am/ccpp.js"></script>
+<script src="/am/ut.js"></script>
 
 <script>
 // ══════════════════════════════════════════════════
@@ -767,6 +773,7 @@ selectCorte.addEventListener('change', () => {
     ultimaFecha = new Date(f);
     mesNombre   = ultimaFecha.toLocaleDateString('es-PE', { month: 'long' }).toUpperCase();
     año         = ultimaFecha.getFullYear();
+    poblarCentrosPoblados();   // reevalúa el filtro CCPP según el nuevo corte
     if (selectDep.value) filtrar(); else mostrarResumenNacional();
   };
   if (window.AM_EN_MEMORIA.has(f)) return aplicar();
@@ -804,6 +811,52 @@ function mostrarResumenNacional() {
 const selectDep  = document.getElementById('selectDepartamento');
 const selectProv = document.getElementById('selectProvincia');
 const selectDist = document.getElementById('selectDistrito');
+const selectCP   = document.getElementById('selectCentroPoblado');
+
+// Los datos CCPP (ccpp.js/ut.js) son de un solo corte; el filtro por centro
+// poblado solo aplica cuando el corte seleccionado coincide con ese corte.
+const CCPP_FECHA = '2026-07-31';
+function corteEsCCPP() {
+  try { return ultimaFecha.toISOString().split('T')[0] === CCPP_FECHA; }
+  catch (e) { return false; }
+}
+
+// Ubigeo (6 díg) del distrito seleccionado → llave para los datos CCPP
+function ubigeoDe(dep, prov, dist) {
+  const rec = dataset.find(d => d.departamento === dep && d.provincia === prov && d.distrito === dist);
+  return rec ? rec.ubigeo : null;
+}
+
+// Reinicia el selector de centro poblado
+function resetCentrosPoblados() {
+  selectCP.innerHTML = '<option value="">— Todos —</option>';
+  selectCP.disabled = true;
+}
+
+// Une CCPP de SAF y SCD del distrito y llena el 4º selector (solo en el corte CCPP)
+function poblarCentrosPoblados() {
+  resetCentrosPoblados();
+  if (!corteEsCCPP()) return;
+  const dep = selectDep.value, prov = selectProv.value, dist = selectDist.value;
+  if (!dist) return;
+  const ub = ubigeoDe(dep, prov, dist);
+  if (!ub) return;
+  const mapa = {};
+  (typeof CCPP_SAF !== 'undefined' ? (CCPP_SAF[ub] || []) : []).forEach(r => {
+    mapa[r[0]] = { c: r[0], n: r[1] };
+  });
+  (typeof CCPP_SCD !== 'undefined' ? (CCPP_SCD[ub] || []) : []).forEach(r => {
+    if (!mapa[r[0]]) mapa[r[0]] = { c: r[0], n: r[1] };
+  });
+  const lista = Object.values(mapa).sort((a, b) => a.n.localeCompare(b.n, 'es'));
+  if (!lista.length) return;
+  selectCP.disabled = false;
+  lista.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o.c; opt.text = o.n;
+    selectCP.add(opt);
+  });
+}
 
 const departamentos = [...new Set(dataset.map(d => d.departamento))].sort((a, b) => a.localeCompare(b, 'es'));
 selectDep.innerHTML = '<option value="">— Elegir —</option>';
@@ -817,6 +870,7 @@ selectDep.addEventListener('change', () => {
   const dep = selectDep.value;
   selectProv.innerHTML = '<option value="">— Todas —</option>';
   selectDist.innerHTML = '<option value="">— Todas —</option>';
+  resetCentrosPoblados();
   const provincias = [...new Set(dataset.filter(d => d.departamento === dep).map(d => d.provincia))].sort((a, b) => a.localeCompare(b, 'es'));
   provincias.forEach(prov => {
     const opt = document.createElement('option');
@@ -830,6 +884,7 @@ selectProv.addEventListener('change', () => {
   const dep  = selectDep.value;
   const prov = selectProv.value;
   selectDist.innerHTML = '<option value="">— Todas —</option>';
+  resetCentrosPoblados();
   const distritos = [...new Set(dataset.filter(d => d.departamento === dep && d.provincia === prov).map(d => d.distrito))].sort((a, b) => a.localeCompare(b, 'es'));
   distritos.forEach(dist => {
     const opt = document.createElement('option');
@@ -840,6 +895,11 @@ selectProv.addEventListener('change', () => {
 });
 
 selectDist.addEventListener('change', () => {
+  poblarCentrosPoblados();
+  if (selectDep.value) filtrar();
+});
+
+selectCP.addEventListener('change', () => {
   if (selectDep.value) filtrar();
 });
 
@@ -929,6 +989,7 @@ function limpiar() {
   selectDep.value  = '';
   selectProv.innerHTML = '<option value="">— Todas —</option>';
   selectDist.innerHTML = '<option value="">— Todas —</option>';
+  resetCentrosPoblados();
   document.getElementById('loadingState').classList.add('hidden');
   resumirFiltros(); toggleFiltros(true);
   mostrarResumenNacional();   // se vuelve al panorama nacional, no a una pantalla vacía
@@ -1251,28 +1312,63 @@ function filtrar() {
       departamento: dep, provincia: prov, distrito: dist
     };
 
+    // ── Centro Poblado (4º nivel): solo en el corte con datos CCPP ──
+    resumen.ccpp = null;
+    if (dist && selectCP.value && corteEsCCPP()) {
+      const ub   = datosUltima[0]?.ubigeo || ubigeoDe(dep, prov, dist);
+      const code = selectCP.value;
+      const I    = (typeof CCPP_IDX !== 'undefined') ? CCPP_IDX : null;
+      const saf  = (typeof CCPP_SAF !== 'undefined' ? (CCPP_SAF[ub] || []) : []).find(r => r[0] === code) || null;
+      const scd  = (typeof CCPP_SCD !== 'undefined' ? (CCPP_SCD[ub] || []) : []).find(r => r[0] === code) || null;
+      const nom  = saf ? saf[1] : (scd ? scd[1] : code);
+      const utNombre = (typeof UT_MAP !== 'undefined' && UT_MAP[ub] && UT_MAP[ub] !== 'NO APLICA') ? UT_MAP[ub] : null;
+      resumen.ccpp = {
+        codigo: (ub || '') + code,
+        nombre: nom,
+        ut: utNombre,
+        saf: saf ? {
+          familias: saf[I.SAF.FAM], ninoV: saf[I.SAF.NINO_V], ninaM: saf[I.SAF.NINA_M],
+          gestantes: saf[I.SAF.GEST], usuarios: saf[I.SAF.USU], cg: saf[I.SAF.G], fac: saf[I.SAF.H]
+        } : null,
+        scd: scd ? {
+          usuarios: scd[I.SCD.USU], varones: scd[I.SCD.VAR], mujeres: scd[I.SCD.MUJ],
+          locales: scd[I.SCD.C6],   // col6 = CIAI/locales (coincide exacto con bd.js)
+          madres:  scd[I.SCD.C8]    // col8 = Madres Cuidadoras (coincide exacto con bd.js)
+        } : null,
+        dist_familias: resumen.familias_2025,
+        dist_usuarios_scd: resumen.niños_2025
+      };
+    }
+
     // Títulos
     const nombreUbicacion = [dep];
     if (prov) nombreUbicacion.push(prov);
     if (dist) nombreUbicacion.push(dist);
-    const nivelLabel = dist ? 'Distrito' : prov ? 'Provincia' : 'Departamento';
+    if (resumen.ccpp) nombreUbicacion.push('CCPP ' + resumen.ccpp.nombre);
+    const nivelLabel = resumen.ccpp ? 'Centro Poblado' : dist ? 'Distrito' : prov ? 'Provincia' : 'Departamento';
     document.getElementById('resultadosTitulo').textContent   = nombreUbicacion.join(' / ');
     document.getElementById('resultadosSubtitulo').textContent = nivelLabel + ' · ' + mesNombre + ' ' + año;
 
     const _niv = dist ? 'distrito' : prov ? 'provincia' : 'departamento';
-    let htmlSalida = renderKPIs(resumen, dep, prov, dist);
-    // narrativa en pantalla (el mismo texto que va a Word y PDF)
-    htmlSalida += `<div class="am-narrativa">` +
-      `<div class="am-narrativa-lbl">Resumen narrativo</div>` +
-      generarIntroNarrativa(_niv, dep, prov, dist, resumen) +
-      `<div class="am-cols">` +
-        `<div class="am-col am-col-saf">${generarNarrativaSAF(_niv, resumen)}</div>` +
-        `<div class="am-col am-col-scd">${generarNarrativaSCD(_niv, resumen)}</div>` +
-      `</div></div>`;
-    // Tablas de cobertura según nivel consultado
-    htmlSalida += generarTablaCobertura('departamento', dep, prov, dist);
-    if (prov) htmlSalida += generarTablaCobertura('provincia',  dep, prov, dist);
-    if (dist) htmlSalida += generarTablaCobertura('distrito',   dep, prov, dist);
+    let htmlSalida = '';
+    if (resumen.ccpp) {
+      // Vista de Centro Poblado: solo la tarjeta del CCPP, sin datos distritales
+      htmlSalida = renderCCPP(resumen.ccpp);
+    } else {
+      htmlSalida = renderKPIs(resumen, dep, prov, dist);
+      // narrativa en pantalla (el mismo texto que va a Word y PDF)
+      htmlSalida += `<div class="am-narrativa">` +
+        `<div class="am-narrativa-lbl">Resumen narrativo</div>` +
+        generarIntroNarrativa(_niv, dep, prov, dist, resumen) +
+        `<div class="am-cols">` +
+          `<div class="am-col am-col-saf">${generarNarrativaSAF(_niv, resumen)}</div>` +
+          `<div class="am-col am-col-scd">${generarNarrativaSCD(_niv, resumen)}</div>` +
+        `</div></div>`;
+      // Tablas de cobertura según nivel consultado
+      htmlSalida += generarTablaCobertura('departamento', dep, prov, dist);
+      if (prov) htmlSalida += generarTablaCobertura('provincia',  dep, prov, dist);
+      if (dist) htmlSalida += generarTablaCobertura('distrito',   dep, prov, dist);
+    }
     document.getElementById('resultados').innerHTML = htmlSalida;
     window.ultimoResultado = resumen;
 
@@ -1282,6 +1378,88 @@ function filtrar() {
     resumirFiltros();
     if (window.matchMedia('(max-width:820px)').matches) toggleFiltros(false);
   }, 40);
+}
+
+// ──────────────────────────────────────────────────
+//  Centro Poblado (4º nivel)
+// ──────────────────────────────────────────────────
+// Texto narrativo del centro poblado (mismo en pantalla y en Word)
+function textoCCPP(c) {
+  const fN  = n => (n || 0).toLocaleString('es-PE');
+  const mes = (mesNombre || '').toLowerCase();
+  const pl  = (n, sing, plu) => `${fN(n)} ${n === 1 ? sing : plu}`;
+  const ut  = c.ut ? ` (${c.ut})` : '';
+  const r = {};
+  if (c.saf) {
+    const ninos = (c.saf.ninoV || 0) + (c.saf.ninaM || 0);
+    // Facilitadoras: presencia, no conteo exclusivo (una facilitadora puede cubrir varios CCPP)
+    const facTxt = (c.saf.fac != null) ? `, con presencia de ${pl(c.saf.fac, 'facilitadora', 'facilitadoras')}` : '';
+    r.saf = `En el Centro Poblado de ${c.nombre}${ut}, al cierre de ${mes} de ${año}, el Servicio de Acompañamiento a Familias (SAF) alcanza una cobertura de ${pl(c.saf.familias, 'familia', 'familias')} (${pl(c.saf.gestantes, 'gestante', 'gestantes')}, ${fN(ninos)} niñas y niños)${facTxt}.`;
+  }
+  if (c.scd) {
+    const madresTxt = (c.scd.madres  != null) ? `, atendidos por ${pl(c.scd.madres, 'madre cuidadora', 'madres cuidadoras')}` : '';
+    const localTxt  = (c.scd.locales != null) ? ` en ${pl(c.scd.locales, 'local', 'locales')}` : '';
+    r.scd = `En el Centro Poblado de ${c.nombre}${ut}, al cierre de ${mes} de ${año}, el Servicio de Cuidado Diurno (SCD) alcanza una cobertura de ${pl(c.scd.usuarios, 'usuario', 'usuarios')} (${fN(c.scd.varones)} niños y ${fN(c.scd.mujeres)} niñas)${madresTxt}${localTxt}.`;
+  }
+  return r;
+}
+
+function renderCCPP(c) {
+  const fN  = n => (n || 0).toLocaleString('es-PE');
+  const txt = textoCCPP(c);
+
+  const celda = (lbl, val) =>
+    `<div style="flex:1;min-width:78px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 8px;text-align:center;">
+       <div style="font-size:1.35rem;font-weight:800;color:#0f172a;line-height:1.1;">${val}</div>
+       <div style="font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.03em;margin-top:3px;">${lbl}</div>
+     </div>`;
+
+  const sinDato = serv =>
+    `<div class="service-card" style="border-top:4px solid #cbd5e1;display:flex;align-items:center;justify-content:center;min-height:120px;color:#94a3b8;font-size:.9rem;padding:20px;">
+       Sin atención ${serv} en este centro poblado
+     </div>`;
+
+  // Tarjeta SAF (columna izquierda)
+  const cardSAF = c.saf
+    ? `<div class="service-card saf-card" style="padding:18px 20px;">
+         <div style="font-weight:800;color:#b91c1c;font-size:.95rem;margin-bottom:10px;">👨‍👩‍👧 SAF · Acompañamiento a Familias</div>
+         <p style="font-size:.86rem;color:#334155;line-height:1.55;margin:0 0 12px;">${txt.saf}</p>
+         <div style="display:flex;flex-wrap:wrap;gap:8px;">
+           ${celda('Familias', fN(c.saf.familias))}
+           ${celda('Gestantes', fN(c.saf.gestantes))}
+           ${celda('Niños', fN(c.saf.ninoV))}
+           ${celda('Niñas', fN(c.saf.ninaM))}
+           ${c.saf.fac != null ? celda('Facilitadoras', fN(c.saf.fac)) : ''}
+         </div>
+       </div>`
+    : sinDato('SAF');
+
+  // Tarjeta SCD (columna derecha)
+  const cardSCD = c.scd
+    ? `<div class="service-card scd-card" style="padding:18px 20px;">
+         <div style="font-weight:800;color:#15803d;font-size:.95rem;margin-bottom:10px;">🧒 SCD · Cuidado Diurno</div>
+         <p style="font-size:.86rem;color:#334155;line-height:1.55;margin:0 0 12px;">${txt.scd}</p>
+         <div style="display:flex;flex-wrap:wrap;gap:8px;">
+           ${celda('Usuarios', fN(c.scd.usuarios))}
+           ${celda('Niños', fN(c.scd.varones))}
+           ${celda('Niñas', fN(c.scd.mujeres))}
+           ${c.scd.madres  != null ? celda('Madres', fN(c.scd.madres))   : ''}
+           ${c.scd.locales != null ? celda('Locales', fN(c.scd.locales)) : ''}
+         </div>
+       </div>`
+    : sinDato('SCD');
+
+  // Encabezado a todo el ancho (ocupa las 2 columnas del grid)
+  const header =
+    `<div style="grid-column:1 / -1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid #dbe1ea;border-radius:14px;padding:14px 18px;box-shadow:0 1px 3px rgba(0,0,0,.05);">
+       <span style="background:#1d4ed8;color:#fff;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:50px;letter-spacing:.06em;">CENTRO POBLADO</span>
+       <span style="font-size:1.2rem;font-weight:800;color:#0f172a;">${c.nombre}</span>
+       ${c.ut ? `<span style="background:#eef2ff;color:#4338ca;font-size:.66rem;font-weight:700;padding:3px 9px;border-radius:50px;">${c.ut}</span>` : ''}
+       <span style="font-size:.72rem;color:#94a3b8;font-family:monospace;">cód. ${c.codigo}</span>
+       <span style="margin-left:auto;font-size:.74rem;color:#64748b;">${mesNombre} ${año}</span>
+     </div>`;
+
+  return header + cardSAF + cardSCD;
 }
 
 // ──────────────────────────────────────────────────
@@ -1477,7 +1655,21 @@ function compartirWhatsApp() {
     year: 'numeric'
   });
 
-  const mensaje = `*REPORTE COBERTURA PNCM*  
+  // Bloque de Centro Poblado (si hay uno seleccionado)
+  const _fW = n => (n || 0).toLocaleString('es-PE');
+  let ccppBlock = '';
+  if (d.ccpp) {
+    const c = d.ccpp;
+    ccppBlock = `\n*📍 CENTRO POBLADO: ${c.nombre}${c.ut ? ' — ' + c.ut : ''}*  \n`;
+    ccppBlock += c.saf
+      ? `🔴 *SAF:* ${_fW(c.saf.familias)} familias (🤰 ${_fW(c.saf.gestantes)} gestantes, 🧒 ${_fW((c.saf.ninoV||0)+(c.saf.ninaM||0))} niñas y niños)${c.saf.fac != null ? ' · 👥 presencia de ' + _fW(c.saf.fac) + (c.saf.fac === 1 ? ' facilitadora' : ' facilitadoras') : ''}  \n`
+      : `🔴 *SAF:* sin atención  \n`;
+    ccppBlock += c.scd
+      ? `🟢 *SCD:* ${_fW(c.scd.usuarios)} usuarios (${_fW(c.scd.varones)} niños, ${_fW(c.scd.mujeres)} niñas)${c.scd.madres != null ? ' · 👩 ' + _fW(c.scd.madres) + (c.scd.madres === 1 ? ' madre' : ' madres') : ''}${c.scd.locales != null ? ' · 🏘 ' + _fW(c.scd.locales) + (c.scd.locales === 1 ? ' local' : ' locales') : ''}  \n`
+      : `🟢 *SCD:* sin atención  \n`;
+  }
+
+  const mensaje = `*REPORTE COBERTURA PNCM*
 ${encabezadoUbicacion}  
 📅 *Reporte:* ${mesNombre} ${año}  
 
@@ -1497,9 +1689,9 @@ ${(() => { const s = d.esNacional ? saNacional() : saDe(d.ubigeos);
            return s.servicios ? '🍲 Servicios alimentarios: ' + s.servicios : ''; })()}
 ${scdCGLines}📌 Distritos con atención: ${d.dist_scd}
 📌 Provincias con atención: ${d.prov_scd}  
-💰 Ejecución acumulada: S/. ${d.ejec_scd.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}  
+💰 Ejecución acumulada: S/. ${d.ejec_scd.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 
-
+${ccppBlock}
 🕐 Generado: ${fecha}
 `;
 
@@ -2200,6 +2392,48 @@ async function exportarExcel() {
   if (dep) agregarHoja('departamento', 'Departamental', dep);
   if (prov) agregarHoja('provincia', 'Provincia_' + prov.slice(0,20), prov);
   if (dist) agregarHoja('distrito',  'Distrito_'  + dist.slice(0,20), dist);
+
+  // Hoja de Centro Poblado (solo si se seleccionó un CCPP)
+  (function () {
+    const c = d.ccpp;
+    if (!c) return;
+    const filas = [
+      ['REPORTE A NIVEL CENTRO POBLADO'],
+      ['Centro poblado', c.nombre],
+      ['Código CCPP', c.codigo],
+      ['Unidad Territorial', c.ut || '—'],
+      ['Corte', `${mesNombre} ${año}`],
+      [],
+      ['SERVICIO DE ACOMPAÑAMIENTO A FAMILIAS (SAF)'],
+      ['Indicador', 'Valor']
+    ];
+    if (c.saf) {
+      filas.push(['Familias', c.saf.familias]);
+      filas.push(['Gestantes', c.saf.gestantes]);
+      filas.push(['Niñas y niños', (c.saf.ninoV || 0) + (c.saf.ninaM || 0)]);
+      filas.push(['  · Niños (varones)', c.saf.ninoV]);
+      filas.push(['  · Niñas (mujeres)', c.saf.ninaM]);
+      filas.push(['Usuarios (total)', c.saf.usuarios]);
+      if (c.saf.fac != null) filas.push(['Facilitadoras (presencia)', c.saf.fac]);
+    } else {
+      filas.push(['Sin atención SAF en este centro poblado', '']);
+    }
+    filas.push([]);
+    filas.push(['SERVICIO DE CUIDADO DIURNO (SCD)']);
+    filas.push(['Indicador', 'Valor']);
+    if (c.scd) {
+      filas.push(['Usuarios (total)', c.scd.usuarios]);
+      filas.push(['Niños', c.scd.varones]);
+      filas.push(['Niñas', c.scd.mujeres]);
+      if (c.scd.madres  != null) filas.push(['Madres Cuidadoras', c.scd.madres]);
+      if (c.scd.locales != null) filas.push(['Locales (CIAI)', c.scd.locales]);
+    } else {
+      filas.push(['Sin atención SCD en este centro poblado', '']);
+    }
+    const wsC = XLSX.utils.aoa_to_sheet(filas);
+    wsC['!cols'] = [{wch:36},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, wsC, 'Centro Poblado');
+  })();
 
   // Hoja de actores comunales — misma lógica que las tarjetas y la narrativa:
   // si un servicio no tiene detalle en el padrón, se usan los valores de bd.js.
@@ -3112,6 +3346,42 @@ function generarTablaDistritosEspecialWord(datosAm, ambito) {
     </table>`;
 }
 
+// Sección de Centro Poblado para el documento Word (solo datos del CCPP)
+function generarSeccionCCPPWord(c) {
+  const fN  = n => (n || 0).toLocaleString('es-PE');
+  const txt = textoCCPP(c);
+
+  let html = `<div class="page-break"></div>`;
+  html += `<h2>Centro Poblado: ${c.nombre}</h2>`;
+  html += `<p class="subtitulo-ubicacion">Cód. CCPP ${c.codigo}${c.ut ? ' · ' + c.ut : ''} · ${mesNombre} ${año}</p>`;
+
+  // SAF
+  html += `<h3>Servicio de Acompañamiento a Familias (SAF)</h3>`;
+  if (c.saf) {
+    html += `<p>${txt.saf}</p>`;
+    html += `<table>
+      <tr><th>Familias</th><th>Gestantes</th><th>Niñas y niños</th><th>Usuarios</th>${c.saf.fac != null ? '<th>Facilitadoras (presencia)</th>' : ''}</tr>
+      <tr><td>${fN(c.saf.familias)}</td><td>${fN(c.saf.gestantes)}</td><td>${fN((c.saf.ninoV||0)+(c.saf.ninaM||0))}</td><td>${fN(c.saf.usuarios)}</td>${c.saf.fac != null ? `<td>${fN(c.saf.fac)}</td>` : ''}</tr>
+    </table>`;
+  } else {
+    html += `<p><em>Sin atención SAF en este centro poblado.</em></p>`;
+  }
+
+  // SCD
+  html += `<h3>Servicio de Cuidado Diurno (SCD)</h3>`;
+  if (c.scd) {
+    html += `<p>${txt.scd}</p>`;
+    html += `<table>
+      <tr><th>Usuarios</th><th>Niños</th><th>Niñas</th>${c.scd.madres != null ? '<th>Madres Cuidadoras</th>' : ''}${c.scd.locales != null ? '<th>Locales</th>' : ''}</tr>
+      <tr><td>${fN(c.scd.usuarios)}</td><td>${fN(c.scd.varones)}</td><td>${fN(c.scd.mujeres)}</td>${c.scd.madres != null ? `<td>${fN(c.scd.madres)}</td>` : ''}${c.scd.locales != null ? `<td>${fN(c.scd.locales)}</td>` : ''}</tr>
+    </table>`;
+  } else {
+    html += `<p><em>Sin atención SCD en este centro poblado.</em></p>`;
+  }
+
+  return html;
+}
+
 async function exportarWord() {
   await asegurarLibs(['filesaver']);
   const logoBase64 = LOGO_BASE64;
@@ -3339,6 +3609,9 @@ async function exportarWord() {
     contenido += generarTarjetasKPI(resumenDist, 'distrito', 'SAF');
     contenido += generarNarrativaSCD('distrito', resumenDist);
     contenido += generarTarjetasKPI(resumenDist, 'distrito', 'SCD');
+
+    // ── CENTRO POBLADO (si se seleccionó) ──
+    if (d.ccpp) contenido += generarSeccionCCPPWord(d.ccpp);
   }
 
     // Footer: línea + tabla 3 columnas (texto | vacío | paginado)
@@ -3362,7 +3635,8 @@ async function exportarWord() {
     </html>
   `;
 
-  const nombreArchivo = `AM_${(dep||'Nacional').replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}_${mesNombre}_${año}.doc`;
+  const ccppSufijo = d.ccpp ? '_CP_' + d.ccpp.nombre.replace(/\s+/g, '_') : '';
+  const nombreArchivo = `AM_${(dep||'Nacional').replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}${ccppSufijo}_${mesNombre}_${año}.doc`;
 
   const blob = new Blob([contenido], {    type: 'application/msword'
   });
