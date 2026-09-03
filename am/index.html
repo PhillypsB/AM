@@ -523,7 +523,7 @@ section#resultadosArea{margin-top:4px;}
             <span style="background:#1d4ed8;color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:50px;letter-spacing:.05em;">ESPECIAL</span>
             <span>Ámbito especial</span>
           </label>
-          <select id="selectEspecial" onchange="if(this.value) filtrarEspecial();">
+          <select id="selectEspecial" onchange="onEspecialChange()">
             <option value="">— Ninguno —</option>
             <option value="VRAEM">🌿 VRAEM</option>
             <option value="NOR-VRAEM">🌿 NOR-VRAEM</option>
@@ -881,6 +881,39 @@ function poblarCentrosPoblados() {
 // Precarga el CCPP del corte inicial (si existe) para tenerlo listo al navegar
 cargarCCPP(fechaCorteActual()).then(ok => { if (ok && selectDist.value) poblarCentrosPoblados(); });
 
+// ── Exclusión mutua: "Ámbito especial" ↔ búsqueda por ubicación ──
+const selectEsp = document.getElementById('selectEspecial');
+
+function bloquearUbicacion(bloq) {
+  selectDep.disabled = selectProv.disabled = selectDist.disabled = bloq;
+  if (bloq) selectCP.disabled = true;   // al desbloquear, CP se rehabilita al elegir distrito
+}
+function bloquearEspecial(bloq) { selectEsp.disabled = bloq; }
+function limpiarUbicacionSelects() {
+  selectDep.value = '';
+  selectProv.innerHTML = '<option value="">— Todas —</option>';
+  selectDist.innerHTML = '<option value="">— Todas —</option>';
+  resetCentrosPoblados();
+}
+function limpiarEspecialSelect() {
+  selectEsp.value = '';
+  const info = document.getElementById('especial-info');
+  if (info) info.style.display = 'none';
+}
+// onchange del selector de ámbito especial
+function onEspecialChange() {
+  if (selectEsp.value) {
+    // entrar a modo especial: limpiar y bloquear la búsqueda por ubicación
+    limpiarUbicacionSelects();
+    bloquearUbicacion(true);
+    filtrarEspecial();
+  } else {
+    // salir de modo especial: rehabilitar ubicación y volver al panorama nacional
+    bloquearUbicacion(false);
+    mostrarResumenNacional();
+  }
+}
+
 const departamentos = [...new Set(dataset.map(d => d.departamento))].sort((a, b) => a.localeCompare(b, 'es'));
 selectDep.innerHTML = '<option value="">— Elegir —</option>';
 departamentos.forEach(dep => {
@@ -891,6 +924,8 @@ departamentos.forEach(dep => {
 
 selectDep.addEventListener('change', () => {
   const dep = selectDep.value;
+  // al usar la ubicación, salir/deshabilitar el ámbito especial
+  if (dep) { limpiarEspecialSelect(); bloquearEspecial(true); }
   selectProv.innerHTML = '<option value="">— Todas —</option>';
   selectDist.innerHTML = '<option value="">— Todas —</option>';
   resetCentrosPoblados();
@@ -1013,6 +1048,10 @@ function limpiar() {
   selectProv.innerHTML = '<option value="">— Todas —</option>';
   selectDist.innerHTML = '<option value="">— Todas —</option>';
   resetCentrosPoblados();
+  // rehabilitar ambos modos (ubicación y especial) y limpiar el especial
+  bloquearUbicacion(false);
+  bloquearEspecial(false);
+  limpiarEspecialSelect();
   document.getElementById('loadingState').classList.add('hidden');
   resumirFiltros(); toggleFiltros(true);
   mostrarResumenNacional();   // se vuelve al panorama nacional, no a una pantalla vacía
@@ -1153,6 +1192,8 @@ function filtrarEspecial() {
     dep_saf: depsSAF.size, dep_scd: depsSCD.size,
     departamento: ambito, provincia: '', distrito: '',
     CUMPLE_SAF: null, CUMPLE_SCD: null,
+    ubigeos: [...new Set(datosAm.map(x => x.ubigeo))],
+    ccpp: null,
     _esEspecial: true, _ambitoLabel: config.label, _ambito: ambito,
     _datos: datosAm
   };
@@ -2252,10 +2293,95 @@ async function _armarPPT() {
 // ──────────────────────────────────────────────────
 //  EXPORTAR EXCEL — una pestaña por nivel consultado
 // ──────────────────────────────────────────────────
+// Excel para ámbito especial (VRAEM / NOR-VRAEM): agrega SOLO el ámbito seleccionado
+async function exportarExcelEspecial(d) {
+  await asegurarLibs(['xlsx']);
+  const datosAm = d._datos || [];
+  const ambito  = d._ambito || 'ÁMBITO';
+  const COL = { titulo:'FF0056B3', saf:'FFF8BBD0', scd:'FFA5D6A7', gris:'FFF1F5F9',
+                totPink:'FFFCE4EC', totGreen:'FFC8E6C9', bordeHex:'FFCBD5E1', blanco:'FFFFFFFF', textoOsc:'FF1E293B' };
+  const bordeThin = { top:{style:'thin',color:{rgb:COL.bordeHex}}, bottom:{style:'thin',color:{rgb:COL.bordeHex}},
+                      left:{style:'thin',color:{rgb:COL.bordeHex}}, right:{style:'thin',color:{rgb:COL.bordeHex}} };
+  const F = (sz,bold,color)=>({name:'Calibri',sz,bold:!!bold,color:{rgb:color||COL.textoOsc}});
+  const wb = XLSX.utils.book_new();
+
+  function armarHoja(nombreHoja, colTitulo, filas, w0) {
+    const aoa = [];
+    aoa.push([`COBERTURA ${ambito} — POR ${colTitulo.toUpperCase()} · ${mesNombre} ${año}`]);
+    aoa.push([]);
+    aoa.push([colTitulo, 'Servicio de Acompañamiento a Familias','','','', 'Servicio de Cuidado Diurno','','']);
+    aoa.push(['', 'FAMILIAS','NIÑAS/OS','GESTANTES','S/. EJECUCIÓN ACUM.', 'USUARIOS','CIAI','S/. EJECUCIÓN ACUM.']);
+    const tot = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
+    filas.forEach(f => {
+      ['fam','nSaf','gest','eSaf','uScd','ciai','eScd'].forEach(k => tot[k]+=f[k]);
+      aoa.push([f.label, f.fam, f.nSaf, f.gest, Math.round(f.eSaf), f.uScd, f.ciai, Math.round(f.eScd)]);
+    });
+    aoa.push([`Total ${ambito}`, tot.fam, tot.nSaf, tot.gest, Math.round(tot.eSaf), tot.uScd, tot.ciai, Math.round(tot.eScd)]);
+
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{wch:w0||30},{wch:12},{wch:12},{wch:12},{wch:18},{wch:12},{wch:10},{wch:18}];
+    ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:7}},{s:{r:2,c:1},e:{r:2,c:4}},{s:{r:2,c:5},e:{r:2,c:7}},{s:{r:2,c:0},e:{r:3,c:0}}];
+    ws['!rows'] = [{hpt:24},{hpt:6},{hpt:22},{hpt:22}];
+    ws['!freeze'] = { xSplit:1, ySplit:4 };
+
+    const stTit  = { font:F(13,true,COL.blanco), fill:{fgColor:{rgb:COL.titulo}}, alignment:{horizontal:'left',vertical:'center'} };
+    const stHSAF = { font:F(9.5,true), fill:{fgColor:{rgb:COL.saf}}, alignment:{horizontal:'center',vertical:'center',wrapText:true}, border:bordeThin };
+    const stHSCD = { font:F(9.5,true), fill:{fgColor:{rgb:COL.scd}}, alignment:{horizontal:'center',vertical:'center',wrapText:true}, border:bordeThin };
+    const stHGr  = { font:F(9.5,true), fill:{fgColor:{rgb:COL.gris}}, alignment:{horizontal:'center',vertical:'center'}, border:bordeThin };
+    const stLbl  = { font:F(9.5,false), alignment:{horizontal:'left',vertical:'center'}, border:bordeThin };
+    const stNum  = { font:F(9.5,false), alignment:{horizontal:'right',vertical:'center'}, border:bordeThin };
+    const stTotL = { font:F(9.5,true), fill:{fgColor:{rgb:COL.totPink}}, alignment:{horizontal:'left',vertical:'center'}, border:bordeThin };
+    const stTotS = { font:F(9.5,true), fill:{fgColor:{rgb:COL.totPink}}, alignment:{horizontal:'right',vertical:'center'}, border:bordeThin };
+    const stTotD = { font:F(9.5,true), fill:{fgColor:{rgb:COL.totGreen}}, alignment:{horizontal:'right',vertical:'center'}, border:bordeThin };
+    const S = (a,st,z)=>{ if(!ws[a]) ws[a]={t:'s',v:''}; ws[a].s=st; if(z){ws[a].t='n';ws[a].z=z;} };
+
+    S('A1',stTit);
+    S('A3',stHGr); ['B3','C3','D3','E3'].forEach(a=>S(a,stHSAF)); ['F3','G3','H3'].forEach(a=>S(a,stHSCD));
+    ['B4','C4','D4','E4'].forEach(a=>S(a,stHSAF)); ['F4','G4','H4'].forEach(a=>S(a,stHSCD));
+    const nF = aoa.length;
+    for (let r=4; r<nF; r++) {
+      const esTot = (r === nF-1);
+      for (let c=0; c<=7; c++) {
+        const a = XLSX.utils.encode_cell({r,c});
+        const z = (c===4||c===7) ? '"S/. "#,##0' : (c>=1 ? '#,##0' : null);
+        if (c===0) S(a, esTot ? stTotL : stLbl);
+        else       S(a, esTot ? ((c<=4)?stTotS:stTotD) : stNum, z);
+      }
+    }
+    XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
+  }
+
+  const acumular = (m, k, r, label) => {
+    if (!m[k]) m[k] = { label, fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0 };
+    const o = m[k];
+    o.fam+=r.nfamilia_saf||0; o.nSaf+=r.nniños_saf||0; o.gest+=r.ngestantes_saf||0; o.eSaf+=r.ejecucion_saf||0;
+    o.uScd+=r.nniños_scd||0; o.ciai+=r.CIAI_SCD||0; o.eScd+=r.ejecucion_scd||0;
+  };
+
+  const mDep = {};
+  datosAm.forEach(r => acumular(mDep, r.departamento, r, r.departamento));
+  armarHoja('Por departamento', 'Departamento', Object.values(mDep).sort((a,b)=>a.label.localeCompare(b.label,'es')), 26);
+
+  const mDist = {};
+  datosAm.forEach(r => acumular(mDist, r.ubigeo, r, `${r.departamento} / ${r.provincia} / ${r.distrito}`));
+  armarHoja('Por distrito', 'Distrito', Object.values(mDist).sort((a,b)=>a.label.localeCompare(b.label,'es')), 46);
+
+  const meta = [['REPORTE ÁMBITO ESPECIAL PNCM'],[],['Ámbito',ambito],['Detalle',d._ambitoLabel||''],
+                ['Mes del corte',`${mesNombre} ${año}`],['Distritos',Object.keys(mDist).length],
+                ['Generado',_fmtFechaHora()],['Fuente','UPPM–PNCM–MIDIS 🇵🇪']];
+  const wsM = XLSX.utils.aoa_to_sheet(meta); wsM['!cols']=[{wch:20},{wch:48}];
+  XLSX.utils.book_append_sheet(wb, wsM, 'Información');
+
+  XLSX.writeFile(wb, `Cobertura_${ambito}_${mesNombre}_${año}.xlsx`);
+}
+
 async function exportarExcel() {
   if (!window.ultimoResultado) return alert('Primero realice una consulta.');
-  // FRONTERAS se entrega sobre el libro modelo del SIRF, no sobre el formato propio
-  if (window.ultimoResultado._ambito === 'FRONTERAS') return exportarExcelFronteras();
+  // Ámbito especial: FRONTERAS usa el libro modelo del SIRF; VRAEM/NOR-VRAEM su propio libro
+  if (window.ultimoResultado._esEspecial) {
+    if (window.ultimoResultado._ambito === 'FRONTERAS') return exportarExcelFronteras();
+    return exportarExcelEspecial(window.ultimoResultado);
+  }
   await asegurarLibs(['xlsx']);
   const d    = window.ultimoResultado;
   const dep  = d.departamento;
