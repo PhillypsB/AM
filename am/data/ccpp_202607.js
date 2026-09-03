@@ -1,29 +1,15 @@
 /* ══════════════════════════════════════════════════════════════════
-   ccpp.js — Datos a nivel CENTRO POBLADO (CCPP) · Corte JUL 2026
+   ccpp_202607.js — Datos CENTRO POBLADO · Corte 2026-07-31 (JUL 2026)
    Programa Nacional Cuna Más · MIDIS · UPPM
-   Generado desde Resultados_saf.csv / Resultados_scd.csv
-   ──────────────────────────────────────────────────────────────────
-   Estructura: objeto indexado por UBIGEO distrital (6 díg).
-   Cada valor es la lista de sus centros poblados.
-
-   SAF fila: [ccpp, nombre, familias, ninosVar, ninasMuj, gestantes, usuarios, colG, colH]
-     · colG (G) = sin confirmar (~1 por CCPP; no cuadra con CG ni facilitadoras de bd.js)
-     · colH (H) = Facilitadoras (PRESENCIA) — no aditivo exclusivo: una facilitadora puede
-                  cubrir varios CCPP/distritos, por eso la suma (78,872) supera el conteo
-                  único oficial (FACILITADOR_SAF = 30,269). Leer como "presencia de X".
-   SCD fila: [ccpp, nombre, usuarios, varones, mujeres, col6, col8, col9]
-     · col6 = Locales/CIAI       (coincide EXACTO con CIAI_SCD/nlocales_scd de bd.js)
-     · col8 = Madres Cuidadoras  (coincide EXACTO con MadresCuidadoras_SCD de bd.js)
-     · col9 = sin confirmar      (no cuadra con ningún campo de bd.js; posible servicio alimentario)
-
-   Índices (usar estas constantes en el código, no números mágicos):
+   Se autorregistra en window.CCPP_STORE[fecha] = { saf, scd }.
+   Convención: un archivo por mes → ccpp_YYYYMM.js (auto-detectado).
+   Índices de columnas: ver CCPP_IDX en index.html.
+     SAF: [ccpp, nombre, familias, ninoV, ninaM, gestantes, usuarios, colG, facilitadoras(colH)]
+     SCD: [ccpp, nombre, usuarios, varones, mujeres, locales(col6), madres(col8), col9]
    ════════════════════════════════════════════════════════════════ */
-const CCPP_IDX = {
-  SAF: { CC:0, NOM:1, FAM:2, NINO_V:3, NINA_M:4, GEST:5, USU:6, G:7, H:8 },
-  SCD: { CC:0, NOM:1, USU:2, VAR:3, MUJ:4, C6:5, C8:6, C9:7 }
-};
-
-const CCPP_SAF = {
+window.CCPP_STORE = window.CCPP_STORE || {};
+window.CCPP_STORE["2026-07-31"] = {
+saf:{
 "010101":[["0001","CHACHAPOYAS",50,21,28,1,50,1,7],["0007","BOCANEGRA",8,4,4,0,8,1,1],["0012","EL MOLINO",10,5,5,0,10,1,2],["0013","EL ALFALFAR",29,19,9,1,29,1,5],["0020","MARIPATA",8,6,2,0,8,1,1],["0023","OPELEL",32,14,15,3,32,1,6],["0024","TAQUIA",22,7,14,1,22,1,3]],
 "010103":[["0001","BALSAS",9,3,5,1,9,1,3],["0006","SAULLAMUR",8,3,3,2,8,1,2],["0009","CHACANTO",12,5,7,0,12,1,3]],
 "010104":[["0001","CHETO",10,4,5,1,10,1,2]],
@@ -1444,9 +1430,8 @@ const CCPP_SAF = {
 "250306":[["0001","HUIPOCA",83,44,38,1,83,1,17],["0016","NUEVO PORVENIR SANTA ANITA",1,0,0,1,1,1,1],["0022","AGUAS VERDES",9,2,7,0,9,1,4],["0023","LLANTA BLANCA",1,0,1,0,1,1,1],["0028","EL PORVENIR",1,0,0,1,1,1,1],["0031","HUACAMAILLO",2,1,1,0,2,1,1]],
 "250307":[["0001","BOQUERON",48,22,23,3,48,2,8],["0002","PREVISTO",25,10,13,3,26,1,4],["0003","SHAMBO",4,0,1,3,4,1,2],["0004","PAUJIL",4,2,1,1,4,1,3],["0005","MEDIACION",8,4,4,0,8,1,2],["0008","ALTO SHAMBILLO",1,1,0,0,1,1,1],["0009","ERIKA",2,1,1,0,2,2,2],["0010","HIDAYACU",3,1,2,0,3,1,2],["0011","CHANCADORA",5,1,3,1,5,1,2],["0013","ALTO ORIENTAL",5,2,2,1,5,1,4],["0014","SANTA ROSA",2,0,2,0,2,1,1],["0016","SANTA ROSA TEALERA",1,0,1,0,1,1,1],["0018","LA DIVISORIA",8,4,4,0,8,1,3],["0019","3 DE OCTUBRE",15,7,6,2,15,1,3]],
 "250401":[["0001","ESPERANZA",109,54,50,6,110,1,11],["0005","SALON DE SHAMBUYACU",9,2,6,1,9,1,1],["0006","SAN BERNARDO",21,10,11,0,21,1,3],["0010","PANKIRENTSY",10,4,6,0,10,1,1],["0015","CONTA",30,15,12,3,30,1,3],["0017","CANTA GALLO",31,11,19,1,31,1,4],["0024","NUEVA ESPERANZA",20,7,10,3,20,1,2]]
-};
-
-const CCPP_SCD = {
+},
+scd:{
 "010101":[["0001","CHACHAPOYAS",95,49,46,4,16,1]],
 "010201":[["0001","BAGUA",200,106,94,6,32,2]],
 "010204":[["0001","EL PARCO",18,9,9,1,3,1]],
@@ -1982,4 +1967,5 @@ const CCPP_SCD = {
 "250301":[["0001","AGUAYTIA",56,29,27,2,10,1],["0037","BOQUERON",28,16,12,1,5,1]],
 "250302":[["0001","SAN ALEJANDRO",40,22,18,1,6,1],["0066","EL PORVENIR",32,11,21,1,5,1]],
 "250303":[["0001","CURIMANA",64,35,29,3,11,1]]
+}
 };

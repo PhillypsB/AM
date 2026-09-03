@@ -639,7 +639,6 @@ section#resultadosArea{margin-top:4px;}
 <script src="/am/sa_julio26.js"></script>
 <script src="/am/frontera_distritos.js"></script>
 <script src="/am/frontera_export.js"></script>
-<script src="/am/ccpp.js"></script>
 <script src="/am/ut.js"></script>
 
 <script>
@@ -776,10 +775,12 @@ selectCorte.addEventListener('change', () => {
     poblarCentrosPoblados();   // reevalúa el filtro CCPP según el nuevo corte
     if (selectDep.value) filtrar(); else mostrarResumenNacional();
   };
-  if (window.AM_EN_MEMORIA.has(f)) return aplicar();
+  // carga el CCPP del corte (si existe) antes de renderizar
+  const cargarYAplicar = () => cargarCCPP(f).finally(aplicar);
+  if (window.AM_EN_MEMORIA.has(f)) return cargarYAplicar();
   selectCorte.disabled = true;
   _traerCorte(f)
-    .then(aplicar)
+    .then(cargarYAplicar)
     .catch(() => {   // respaldo: recargar pidiendo ese corte
       const url = new URL(location.href);
       url.searchParams.set('corte', f);
@@ -813,13 +814,35 @@ const selectProv = document.getElementById('selectProvincia');
 const selectDist = document.getElementById('selectDistrito');
 const selectCP   = document.getElementById('selectCentroPoblado');
 
-// Los datos CCPP (ccpp.js/ut.js) son de un solo corte; el filtro por centro
-// poblado solo aplica cuando el corte seleccionado coincide con ese corte.
-const CCPP_FECHA = '2026-07-31';
-function corteEsCCPP() {
-  try { return ultimaFecha.toISOString().split('T')[0] === CCPP_FECHA; }
-  catch (e) { return false; }
+// ── Datos por CENTRO POBLADO — carga mensual auto-detectada ──
+// Cada mes se genera /am/data/ccpp_YYYYMM.js que se autorregistra en
+// window.CCPP_STORE[fecha] = { saf, scd }. La app intenta cargar el archivo
+// del corte seleccionado; si existe, habilita el filtro CCPP; si no, lo omite.
+const CCPP_IDX = {
+  SAF: { CC:0, NOM:1, FAM:2, NINO_V:3, NINA_M:4, GEST:5, USU:6, G:7, H:8 },
+  SCD: { CC:0, NOM:1, USU:2, VAR:3, MUJ:4, C6:5, C8:6, C9:7 }
+};
+window.CCPP_STORE = window.CCPP_STORE || {};
+const _ccppIntentos = {};   // fecha → Promise (no recarga ni reintenta 404)
+
+function _fechaAWmes(fecha) { return fecha.replace(/-/g, '').slice(0, 6); } // 2026-07-31 → 202607
+
+function cargarCCPP(fecha) {
+  if (!fecha) return Promise.resolve(false);
+  if (window.CCPP_STORE[fecha]) return Promise.resolve(true);
+  if (_ccppIntentos[fecha]) return _ccppIntentos[fecha];
+  _ccppIntentos[fecha] = new Promise(resolve => {
+    const s = document.createElement('script');
+    s.src = '/am/data/ccpp_' + _fechaAWmes(fecha) + '.js';
+    s.onload  = () => resolve(!!window.CCPP_STORE[fecha]);
+    s.onerror = () => resolve(false);   // no hay CCPP para ese corte
+    document.head.appendChild(s);
+  });
+  return _ccppIntentos[fecha];
 }
+
+function fechaCorteActual() { try { return ultimaFecha.toISOString().split('T')[0]; } catch (e) { return null; } }
+function ccppDelCorte() { const f = fechaCorteActual(); return (f && window.CCPP_STORE[f]) ? window.CCPP_STORE[f] : null; }
 
 // Ubigeo (6 díg) del distrito seleccionado → llave para los datos CCPP
 function ubigeoDe(dep, prov, dist) {
@@ -833,21 +856,18 @@ function resetCentrosPoblados() {
   selectCP.disabled = true;
 }
 
-// Une CCPP de SAF y SCD del distrito y llena el 4º selector (solo en el corte CCPP)
+// Une CCPP de SAF y SCD del distrito y llena el 4º selector (solo si el corte tiene datos)
 function poblarCentrosPoblados() {
   resetCentrosPoblados();
-  if (!corteEsCCPP()) return;
+  const store = ccppDelCorte();
+  if (!store) return;
   const dep = selectDep.value, prov = selectProv.value, dist = selectDist.value;
   if (!dist) return;
   const ub = ubigeoDe(dep, prov, dist);
   if (!ub) return;
   const mapa = {};
-  (typeof CCPP_SAF !== 'undefined' ? (CCPP_SAF[ub] || []) : []).forEach(r => {
-    mapa[r[0]] = { c: r[0], n: r[1] };
-  });
-  (typeof CCPP_SCD !== 'undefined' ? (CCPP_SCD[ub] || []) : []).forEach(r => {
-    if (!mapa[r[0]]) mapa[r[0]] = { c: r[0], n: r[1] };
-  });
+  (store.saf[ub] || []).forEach(r => { mapa[r[0]] = { c: r[0], n: r[1] }; });
+  (store.scd[ub] || []).forEach(r => { if (!mapa[r[0]]) mapa[r[0]] = { c: r[0], n: r[1] }; });
   const lista = Object.values(mapa).sort((a, b) => a.n.localeCompare(b.n, 'es'));
   if (!lista.length) return;
   selectCP.disabled = false;
@@ -857,6 +877,9 @@ function poblarCentrosPoblados() {
     selectCP.add(opt);
   });
 }
+
+// Precarga el CCPP del corte inicial (si existe) para tenerlo listo al navegar
+cargarCCPP(fechaCorteActual()).then(ok => { if (ok && selectDist.value) poblarCentrosPoblados(); });
 
 const departamentos = [...new Set(dataset.map(d => d.departamento))].sort((a, b) => a.localeCompare(b, 'es'));
 selectDep.innerHTML = '<option value="">— Elegir —</option>';
@@ -1314,12 +1337,13 @@ function filtrar() {
 
     // ── Centro Poblado (4º nivel): solo en el corte con datos CCPP ──
     resumen.ccpp = null;
-    if (dist && selectCP.value && corteEsCCPP()) {
+    const _store = ccppDelCorte();
+    if (dist && selectCP.value && _store) {
       const ub   = datosUltima[0]?.ubigeo || ubigeoDe(dep, prov, dist);
       const code = selectCP.value;
-      const I    = (typeof CCPP_IDX !== 'undefined') ? CCPP_IDX : null;
-      const saf  = (typeof CCPP_SAF !== 'undefined' ? (CCPP_SAF[ub] || []) : []).find(r => r[0] === code) || null;
-      const scd  = (typeof CCPP_SCD !== 'undefined' ? (CCPP_SCD[ub] || []) : []).find(r => r[0] === code) || null;
+      const I    = CCPP_IDX;
+      const saf  = (_store.saf[ub] || []).find(r => r[0] === code) || null;
+      const scd  = (_store.scd[ub] || []).find(r => r[0] === code) || null;
       const nom  = saf ? saf[1] : (scd ? scd[1] : code);
       const utNombre = (typeof UT_MAP !== 'undefined' && UT_MAP[ub] && UT_MAP[ub] !== 'NO APLICA') ? UT_MAP[ub] : null;
       resumen.ccpp = {
@@ -2393,45 +2417,86 @@ async function exportarExcel() {
   if (prov) agregarHoja('provincia', 'Provincia_' + prov.slice(0,20), prov);
   if (dist) agregarHoja('distrito',  'Distrito_'  + dist.slice(0,20), dist);
 
-  // Hoja de Centro Poblado (solo si se seleccionó un CCPP)
+  // Hoja de Centro Poblado (solo si se seleccionó un CCPP) — con estilo
   (function () {
     const c = d.ccpp;
     if (!c) return;
-    const filas = [
-      ['REPORTE A NIVEL CENTRO POBLADO'],
-      ['Centro poblado', c.nombre],
-      ['Código CCPP', c.codigo],
-      ['Unidad Territorial', c.ut || '—'],
-      ['Corte', `${mesNombre} ${año}`],
-      [],
-      ['SERVICIO DE ACOMPAÑAMIENTO A FAMILIAS (SAF)'],
-      ['Indicador', 'Valor']
-    ];
+
+    // filas + tipo de cada una (para estilar)
+    const filas = [], tipo = [];
+    const push = (t, a, b) => { filas.push(b === undefined ? [a] : [a, b]); tipo.push(t); };
+
+    push('titulo', 'REPORTE A NIVEL CENTRO POBLADO');
+    push('meta', 'Centro poblado', c.nombre);
+    push('meta', 'Código CCPP', c.codigo);
+    push('meta', 'Unidad Territorial', c.ut || '—');
+    push('meta', 'Corte', `${mesNombre} ${año}`);
+    push('blank', '');
+    push('secSAF', 'SERVICIO DE ACOMPAÑAMIENTO A FAMILIAS (SAF)');
+    push('head', 'Indicador', 'Valor');
     if (c.saf) {
-      filas.push(['Familias', c.saf.familias]);
-      filas.push(['Gestantes', c.saf.gestantes]);
-      filas.push(['Niñas y niños', (c.saf.ninoV || 0) + (c.saf.ninaM || 0)]);
-      filas.push(['  · Niños (varones)', c.saf.ninoV]);
-      filas.push(['  · Niñas (mujeres)', c.saf.ninaM]);
-      filas.push(['Usuarios (total)', c.saf.usuarios]);
-      if (c.saf.fac != null) filas.push(['Facilitadoras (presencia)', c.saf.fac]);
+      push('dato', 'Familias', c.saf.familias);
+      push('dato', 'Gestantes', c.saf.gestantes);
+      push('dato', 'Niñas y niños', (c.saf.ninoV || 0) + (c.saf.ninaM || 0));
+      push('dato', '   · Niños (varones)', c.saf.ninoV);
+      push('dato', '   · Niñas (mujeres)', c.saf.ninaM);
+      push('dato', 'Usuarios (total)', c.saf.usuarios);
+      if (c.saf.fac != null) push('dato', 'Facilitadoras (presencia)', c.saf.fac);
     } else {
-      filas.push(['Sin atención SAF en este centro poblado', '']);
+      push('sin', 'Sin atención SAF en este centro poblado');
     }
-    filas.push([]);
-    filas.push(['SERVICIO DE CUIDADO DIURNO (SCD)']);
-    filas.push(['Indicador', 'Valor']);
+    push('blank', '');
+    push('secSCD', 'SERVICIO DE CUIDADO DIURNO (SCD)');
+    push('head', 'Indicador', 'Valor');
     if (c.scd) {
-      filas.push(['Usuarios (total)', c.scd.usuarios]);
-      filas.push(['Niños', c.scd.varones]);
-      filas.push(['Niñas', c.scd.mujeres]);
-      if (c.scd.madres  != null) filas.push(['Madres Cuidadoras', c.scd.madres]);
-      if (c.scd.locales != null) filas.push(['Locales (CIAI)', c.scd.locales]);
+      push('dato', 'Usuarios (total)', c.scd.usuarios);
+      push('dato', 'Niños', c.scd.varones);
+      push('dato', 'Niñas', c.scd.mujeres);
+      if (c.scd.madres  != null) push('dato', 'Madres Cuidadoras', c.scd.madres);
+      if (c.scd.locales != null) push('dato', 'Locales (CIAI)', c.scd.locales);
     } else {
-      filas.push(['Sin atención SCD en este centro poblado', '']);
+      push('sin', 'Sin atención SCD en este centro poblado');
     }
+
     const wsC = XLSX.utils.aoa_to_sheet(filas);
-    wsC['!cols'] = [{wch:36},{wch:14}];
+    wsC['!cols'] = [{wch:40},{wch:16}];
+
+    // Estilos (reutilizan la paleta COL y bordeThin de exportarExcel)
+    const f = (sz, bold, color) => ({ name:'Calibri', sz, bold: !!bold, color:{rgb: color || COL.textoOsc} });
+    const stTit    = { font:f(13,true,COL.blanco), fill:{fgColor:{rgb:COL.titulo}},  alignment:{horizontal:'left',vertical:'center'} };
+    const stMetaL  = { font:f(10,true),            fill:{fgColor:{rgb:COL.gris}},    alignment:{horizontal:'left',vertical:'center'},  border:bordeThin };
+    const stMetaV  = { font:f(10,false),                                             alignment:{horizontal:'left',vertical:'center'},  border:bordeThin };
+    const stSecSAF = { font:f(10.5,true),          fill:{fgColor:{rgb:COL.saf}},     alignment:{horizontal:'left',vertical:'center'} };
+    const stSecSCD = { font:f(10.5,true),          fill:{fgColor:{rgb:COL.scd}},     alignment:{horizontal:'left',vertical:'center'} };
+    const stHeadL  = { font:f(10,true),            fill:{fgColor:{rgb:COL.gris}},    alignment:{horizontal:'left',vertical:'center'},  border:bordeThin };
+    const stHeadV  = { font:f(10,true),            fill:{fgColor:{rgb:COL.gris}},    alignment:{horizontal:'right',vertical:'center'}, border:bordeThin };
+    const stDatoL  = { font:f(10,false),                                             alignment:{horizontal:'left',vertical:'center'},  border:bordeThin };
+    const stDatoV  = { font:f(10,true),                                              alignment:{horizontal:'right',vertical:'center'}, border:bordeThin };
+    const stSin    = { font:{ name:'Calibri', sz:10, italic:true, color:{rgb:COL.subtitulo} }, alignment:{horizontal:'left',vertical:'center'}, border:bordeThin };
+
+    const merges = [];
+    wsC['!rows'] = [];
+    for (let r = 0; r < filas.length; r++) {
+      const t = tipo[r];
+      const aA = XLSX.utils.encode_cell({ r, c:0 });
+      const aB = XLSX.utils.encode_cell({ r, c:1 });
+      if (t === 'blank') { wsC['!rows'][r] = { hpt: 6 }; continue; }
+      if (t === 'titulo' || t === 'secSAF' || t === 'secSCD' || t === 'sin') {
+        merges.push({ s:{r,c:0}, e:{r,c:1} });
+        if (!wsC[aB]) wsC[aB] = { t:'s', v:'' };
+      }
+      if (t === 'titulo') { wsC[aA].s = stTit; wsC[aB].s = stTit; wsC['!rows'][r] = { hpt: 24 }; }
+      else if (t === 'secSAF') { wsC[aA].s = stSecSAF; wsC[aB].s = stSecSAF; wsC['!rows'][r] = { hpt: 20 }; }
+      else if (t === 'secSCD') { wsC[aA].s = stSecSCD; wsC[aB].s = stSecSCD; wsC['!rows'][r] = { hpt: 20 }; }
+      else if (t === 'sin')    { wsC[aA].s = stSin; wsC[aB].s = stSin; }
+      else if (t === 'meta')   { wsC[aA].s = stMetaL; if (wsC[aB]) wsC[aB].s = stMetaV; }
+      else if (t === 'head')   { wsC[aA].s = stHeadL; if (wsC[aB]) wsC[aB].s = stHeadV; }
+      else if (t === 'dato')   {
+        wsC[aA].s = stDatoL;
+        if (wsC[aB]) { wsC[aB].t = 'n'; wsC[aB].z = '#,##0'; wsC[aB].s = stDatoV; }
+      }
+    }
+    wsC['!merges'] = merges;
     XLSX.utils.book_append_sheet(wb, wsC, 'Centro Poblado');
   })();
 
@@ -3382,8 +3447,8 @@ function generarSeccionCCPPWord(c) {
   return html;
 }
 
-async function exportarWord() {
-  await asegurarLibs(['filesaver']);
+async function exportarWord(opts = {}) {
+  if (!opts.soloHTML) await asegurarLibs(['filesaver']);
   const logoBase64 = LOGO_BASE64;
   const d = window.ultimoResultado;
   if (!d) return alert('Primero realice una consulta.');
@@ -3560,9 +3625,9 @@ async function exportarWord() {
       </body>
       </html>`;
 
-    const nomArchivo = `AM_${ambito}_${mesNombre}_${año}.doc`;
-    const blob = new Blob([contenido], { type: 'application/msword' });
-    saveAs(blob, nomArchivo);
+    const base = `AM_${ambito}_${mesNombre}_${año}`;
+    if (opts.soloHTML) return { html: contenido, base };
+    saveAs(new Blob([contenido], { type: 'application/msword' }), base + '.doc');
     return;
   }
 
@@ -3636,403 +3701,73 @@ async function exportarWord() {
   `;
 
   const ccppSufijo = d.ccpp ? '_CP_' + d.ccpp.nombre.replace(/\s+/g, '_') : '';
-  const nombreArchivo = `AM_${(dep||'Nacional').replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}${ccppSufijo}_${mesNombre}_${año}.doc`;
+  const base = `AM_${(dep||'Nacional').replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}${ccppSufijo}_${mesNombre}_${año}`;
 
-  const blob = new Blob([contenido], {    type: 'application/msword'
-  });
-
-  saveAs(blob, nombreArchivo);
+  if (opts.soloHTML) return { html: contenido, base };
+  saveAs(new Blob([contenido], { type: 'application/msword' }), base + '.doc');
 }
 
 async function exportarPDF() {
   if (!window.ultimoResultado) return alert('Primero realice una consulta.');
-  await asegurarLibs(['jspdf', 'autotable']);
+  await asegurarLibs(['jspdf', 'html2canvas', 'filesaver']);
   const { jsPDF } = window.jspdf;
-  const logoBase64 = LOGO_BASE64;
-  const d  = window.ultimoResultado;
-  const dep  = d.departamento;
-  const prov = d.provincia;
-  const dist = d.distrito;
 
-  // ── Nuevo documento (primera hoja portrait) ──
-  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'p', compress: true });
+  // El PDF es EXACTAMENTE el Word: se reutiliza el mismo HTML y se renderiza a PDF.
+  const built = await exportarWord({ soloHTML: true });
+  if (!built) return;
 
-  // Márgenes ajustados y colores corporativos
-  const MARGIN = { top: 28, bottom: 22, left: 10, right: 10 };
-  const COL = {
-    primary:  [29, 78, 216],       // azul
-    primary2: [30, 58, 138],
-    saf:      [229, 62, 62],       // rojo SAF
-    scd:      [56, 161, 105],      // verde SCD
-    ink:      [30, 41, 59],        // texto
-    muted:    [107, 114, 128],     // gris
-    soft:     [241, 245, 249],     // header suave
-    saf_soft: [248, 187, 208],     // rosa SAF
-    scd_soft: [165, 214, 167],     // verde SCD suave
-    sel:      [255, 241, 118],     // amarillo selección
-    total:    [252, 228, 236]      // total general rosa
-  };
-  const fh = _fmtFechaHora();
-  const footerL1 = `Datos actualizados a: ${DATOS_CORTE_LABEL_CORTO}  |  Proxima actualizacion: ${PROX_ACTUALIZACION_CORTO} (incluye ${PROX_DATOS_LABEL_CORTO})`;
-  const footerL2 = `Generado por: UPPM-PNCM-MIDIS  |  Version: ${APP_VERSION}  |  Fecha y hora: ${fh}`;
+  // Extrae estilos + cuerpo del documento Word
+  const parsed  = new DOMParser().parseFromString(built.html, 'text/html');
+  const estilos = Array.from(parsed.querySelectorAll('style')).map(s => s.textContent).join('\n');
+  const cuerpo  = parsed.body ? parsed.body.innerHTML : built.html;
 
-  // Dibuja header y footer en cada página (didDrawPage)
-  function drawHeaderFooter() {
+  // Contenedor oculto con ancho tipo A4 (px) para el render
+  const ANCHO = 780;
+  const cont = document.createElement('div');
+  cont.style.cssText = `position:fixed;left:-99999px;top:0;width:${ANCHO}px;background:#ffffff;`;
+  cont.innerHTML = `<style>${estilos}
+    .page-break{ page-break-before: always; break-before: page; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  </style><div style="padding:4px 8px;">${cuerpo}</div>`;
+  document.body.appendChild(cont);
+
+  try {
+    const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'p', compress: true });
+    await doc.html(cont, {
+      x: 0, y: 0,
+      margin: [28, 24, 34, 24],
+      autoPaging: 'text',
+      width: 547,          // ancho útil A4 (595pt - márgenes)
+      windowWidth: ANCHO,
+      html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false }
+    });
+
+    // Numeración de páginas (pie)
+    const n  = doc.internal.getNumberOfPages();
     const pw = doc.internal.pageSize.getWidth();
     const ph = doc.internal.pageSize.getHeight();
-
-    // ── HEADER (sin logo) ──
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(13);
-    doc.setTextColor(...COL.primary2);
-    doc.text('REPORTE DE COBERTURA — SAF / SCD', pw/2, 13, { align:'center' });
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...COL.muted);
-    doc.text(`${mesNombre} ${año}  ·  ${[dep,prov,dist].filter(Boolean).join(' / ')}`, pw/2, 18, { align:'center' });
-    doc.setDrawColor(...COL.primary);
-    doc.setLineWidth(0.5);
-    doc.line(MARGIN.left, 23, pw - MARGIN.right, 23);
-    // Cinta lateral
-    doc.setFillColor(...COL.primary);
-    doc.rect(0, 0, 4, ph, 'F');
-
-    // ── FOOTER ──
-    doc.setDrawColor(210);
-    doc.setLineWidth(0.2);
-    doc.line(MARGIN.left, ph - 16, pw - MARGIN.right, ph - 16);
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...COL.muted);
-    doc.text(footerL1, MARGIN.left, ph - 11);
-    doc.text(footerL2, MARGIN.left, ph - 6.5);
-    const pageNo = doc.internal.getNumberOfPages();
-    const totalPages = doc.internal.getNumberOfPages(); // se recalcula al final
-    doc.text(`Página ${pageNo}`, pw - MARGIN.right, ph - 8, { align:'right' });
-  }
-
-  // ── Helpers de secciones ──
-  function addSectionTitle(text, color) {
-    const pw = doc.internal.pageSize.getWidth();
-    const y = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? (doc.lastAutoTable.finalY + 8) : (MARGIN.top);
-    doc.setFillColor(...(color || COL.primary));
-    doc.roundedRect(MARGIN.left, y - 5, pw - MARGIN.left - MARGIN.right, 8, 1.5, 1.5, 'F');
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(10.5);
-    doc.setTextColor(255,255,255);
-    doc.text(text, MARGIN.left + 3, y + 0.5);
-    // devolver y final para encadenar
-    return y + 5;
-  }
-  function addNarrativa(texto, startY) {
-    const pw = doc.internal.pageSize.getWidth();
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...COL.ink);
-    const split = doc.splitTextToSize(texto, pw - MARGIN.left - MARGIN.right);
-    doc.text(split, MARGIN.left, startY + 4);
-    return startY + 4 + split.length * 4.2;
-  }
-  function filaKV(rows, label, val) { rows.push([label, val]); }
-
-  // Construye filas KV SAF y SCD para un nivel
-  function tablasKV(resumen, nivel) {
-    const nivelDistrito = (nivel === 'distrito');
-    const nivelDepto    = (nivel === 'departamento');
-    const saf = [];
-    filaKV(saf,'Familias',           resumen.familias_2025.toLocaleString('es-PE'));
-    filaKV(saf,'Niños',              resumen.niños_saf.toLocaleString('es-PE'));
-    filaKV(saf,'Gestantes',          resumen.gestantes_SAF.toLocaleString('es-PE'));
-    const _ac  = actoresDe(resumen.ubigeos);
-    const _det = _ac.cubiertos > 0;
-    if (nivelDistrito) {
-      const b = _ac.saf, ok = _det && b.total;
-      filaKV(saf,'Comités de Gestión', ok ? b.cg : resumen.CG_SAF);
-      filaKV(saf,'Facilitadoras',      ok ? b.facilitadoras : resumen.FACILITADOR_SAF);
-      if (ok) {
-        if (b.apoyo_admin)        filaKV(saf,'Apoyo administrativo',  b.apoyo_admin);
-        if (b.junta_directiva)    filaKV(saf,'Junta directiva',       b.junta_directiva);
-        if (b.consejo_vigilancia) filaKV(saf,'Consejo de vigilancia', b.consejo_vigilancia);
-        filaKV(saf,'Total actores comunales', b.total.toLocaleString('es-PE'));
-      }
+    for (let i = 1; i <= n; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Página ${i} de ${n}`, pw - 24, ph - 12, { align: 'right' });
     }
-    if (!nivelDistrito) filaKV(saf,'Distritos con atención',  resumen.dist_saf);
-    if (nivelDepto)     filaKV(saf,'Provincias con atención', resumen.prov_saf);
-    filaKV(saf,'Ejecución acumulada', 'S/. ' + resumen.ejec_saf.toLocaleString('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}));
 
-    const scd = [];
-    filaKV(scd,'Niños',              resumen.niños_2025.toLocaleString('es-PE'));
-    filaKV(scd,'CIAI',               resumen.CIAI_SCD.toLocaleString('es-PE'));
-    if (nivelDistrito) {
-      const b = _ac.scd, ok = _det && b.total;
-      filaKV(scd,'Comités de Gestión', ok ? b.cg : resumen.CG_SCD);
-      filaKV(scd,'Madres Cuidadoras',  (ok ? b.madres_cuidadoras : resumen.MadresCuidadoras_SCD).toLocaleString('es-PE'));
-      if (ok) {
-        if (b.madres_guia)        filaKV(scd,'Madres Guía',                 b.madres_guia);
-        if (b.guias_familia)      filaKV(scd,'Guías de Familia',            b.guias_familia);
-        if (b.socias_cocina)      filaKV(scd,'Socias de Cocina',            b.socias_cocina);
-        if (b.apoyo_limpieza)     filaKV(scd,'Apoyo limpieza y vigilancia', b.apoyo_limpieza);
-        if (b.repartidores)       filaKV(scd,'Repartidores de alimentos',   b.repartidores);
-        if (b.apoyo_admin)        filaKV(scd,'Apoyo administrativo',        b.apoyo_admin);
-        if (b.junta_directiva)    filaKV(scd,'Junta directiva',             b.junta_directiva);
-        if (b.consejo_vigilancia) filaKV(scd,'Consejo de vigilancia',       b.consejo_vigilancia);
-        filaKV(scd,'Total actores comunales', b.total.toLocaleString('es-PE'));
-      }
+    const blob = doc.output('blob');
+    if (typeof saveAs === 'function') saveAs(blob, built.base + '.pdf');
+    else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = built.base + '.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
     }
-    if (!nivelDistrito) filaKV(scd,'Distritos con atención',  resumen.dist_scd);
-    if (nivelDepto)     filaKV(scd,'Provincias con atención', resumen.prov_scd);
-    if (resumen.SA_SCD) filaKV(scd,'Servicios Alimentarios',  resumen.SA_SCD);
-    filaKV(scd,'Ejecución acumulada', 'S/. ' + resumen.ejec_scd.toLocaleString('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}));
-    return { saf, scd };
+  } catch (e) {
+    alert('No se pudo generar el PDF: ' + e.message);
+  } finally {
+    cont.remove();
   }
-
-  // Dibuja resumen de un nivel en la página vertical actual
-  function renderResumenNivel(nivel, nombre, resumen) {
-    const pw   = doc.internal.pageSize.getWidth();
-    const cw   = pw - MARGIN.left - MARGIN.right;          // ancho útil
-    const half = (cw - 6) / 2;                             // mitad con gap
-
-    // ── Título de sección ──────────────────────────────────────────────────
-    const yBase = (doc.lastAutoTable?.finalY ?? MARGIN.top) + 4;
-    doc.setFillColor(...COL.primary2);
-    doc.roundedRect(MARGIN.left, yBase, cw, 8, 1.5, 1.5, 'F');
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(10);
-    doc.setTextColor(255,255,255);
-    doc.text(`${nivel.toUpperCase()}: ${nombre.toUpperCase()}`, MARGIN.left + 3, yBase + 5.5);
-    const yAfterTitle = yBase + 11;
-
-    // ── Narrativa ──────────────────────────────────────────────────────────
-    const tot  = resumen.ejec_saf + resumen.ejec_scd;
-    const pSAF = tot > 0 ? ((resumen.ejec_saf/tot)*100).toFixed(1) : '0.0';
-    const pSCD = tot > 0 ? ((resumen.ejec_scd/tot)*100).toFixed(1) : '0.0';
-    const fN = n => (n||0).toLocaleString('es-PE');
-    const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
-    const mesMin = (mesNombre||'').toLowerCase();
-    const narrativaTxt =
-      `De enero a ${mesMin} de ${año}, el Programa Nacional Cuna Más (PNCM) ejecutó un monto total de ` +
-      `S/. ${fN(Math.round(tot))}, de los cuales S/. ${fN(Math.round(resumen.ejec_saf))} (${pSAF}%) corresponden al SAF y ` +
-      `S/. ${fN(Math.round(resumen.ejec_scd))} (${pSCD}%) al SCD. ` +
-      `Cobertura SAF: ${fN(resumen.familias_2025)} familias — ${fN(resumen.niños_saf)} niñas/os y ${fN(resumen.gestantes_SAF)} gestantes. ` +
-      `SCD: ${fN(resumen.niños_2025)} niñas/os en ${resumen.CIAI_SCD} CIAI.`;
-    const yAfterNarr = addNarrativa(narrativaTxt, yAfterTitle);
-
-    const { saf, scd } = tablasKV(resumen, nivel);
-    const yTablas = yAfterNarr + 3;
-
-    // Estilos compartidos
-    const sharedStyles = {
-      font:'helvetica', fontSize:8.5, cellPadding:2,
-      textColor: COL.ink, lineColor:[226,232,240], lineWidth:0.15
-    };
-    const colStyles = {
-      0:{ cellWidth: half*0.62, fontStyle:'normal' },
-      1:{ halign:'right', cellWidth: half*0.38, fontStyle:'bold', textColor: COL.primary }
-    };
-
-    // Tabla SAF izquierda
-    doc.autoTable({
-      startY: yTablas,
-      head: [[{ content:'🔴  Servicio de Acompañamiento a Familias (SAF)', colSpan:2 }]],
-      body: saf,
-      theme: 'striped',
-      margin: { left: MARGIN.left, right: pw - MARGIN.left - half, bottom: MARGIN.bottom },
-      tableWidth: half,
-      styles: sharedStyles,
-      headStyles: { fillColor:[153,27,27], textColor:[255,255,255], fontStyle:'bold', fontSize:9, cellPadding:3 },
-      alternateRowStyles: { fillColor:[255,245,245] },
-      columnStyles: colStyles,
-      didDrawPage: drawHeaderFooter
-    });
-    const ySafEnd = doc.lastAutoTable.finalY;
-
-    // Tabla SCD derecha
-    doc.autoTable({
-      startY: yTablas,
-      head: [[{ content:'🟢  Servicio de Cuidado Diurno (SCD)', colSpan:2 }]],
-      body: scd,
-      theme: 'striped',
-      margin: { left: MARGIN.left + half + 6, right: MARGIN.right, bottom: MARGIN.bottom },
-      tableWidth: half,
-      styles: sharedStyles,
-      headStyles: { fillColor:[22,101,52], textColor:[255,255,255], fontStyle:'bold', fontSize:9, cellPadding:3 },
-      alternateRowStyles: { fillColor:[240,253,244] },
-      columnStyles: colStyles,
-      didDrawPage: drawHeaderFooter
-    });
-
-    doc.lastAutoTable.finalY = Math.max(ySafEnd, doc.lastAutoTable.finalY);
-  }
-
-  // Dibuja tabla de cobertura (horizontal, nueva hoja)
-  function renderCobertura(nivel, tituloSeccion, seleccionado) {
-    doc.addPage('a4','l');
-    const pw = doc.internal.pageSize.getWidth();
-    addSectionTitle(tituloSeccion, COL.primary2);
-    const data = obtenerDatosCobertura(nivel, dep, prov);
-    const head = [
-      [
-        { content: data.tituloCol, rowSpan:2, styles:{ fillColor: COL.soft, textColor: COL.ink, valign:'middle' } },
-        { content: 'Servicio de Acompañamiento a Familias', colSpan:4, styles:{ fillColor: COL.saf_soft, textColor: COL.ink } },
-        { content: 'Servicio de Cuidado Diurno', colSpan:3, styles:{ fillColor: COL.scd_soft, textColor: COL.ink } }
-      ],
-      [
-        { content:'FAMILIAS',      styles:{ fillColor: COL.saf_soft, textColor: COL.ink } },
-        { content:'NIÑAS/OS',      styles:{ fillColor: COL.saf_soft, textColor: COL.ink } },
-        { content:'GESTANTES',     styles:{ fillColor: COL.saf_soft, textColor: COL.ink } },
-        { content:'S/. EJECUCIÓN ACUM.', styles:{ fillColor: COL.saf_soft, textColor: COL.ink } },
-        { content:'USUARIOS',      styles:{ fillColor: COL.scd_soft, textColor: COL.ink } },
-        { content:'CIAI',          styles:{ fillColor: COL.scd_soft, textColor: COL.ink } },
-        { content:'S/. EJECUCIÓN ACUM.', styles:{ fillColor: COL.scd_soft, textColor: COL.ink } }
-      ]
-    ];
-    const fmt = n => Math.round(n).toLocaleString('es-PE');
-    const fmtS = n => n > 0 ? 'S/. ' + Math.round(n).toLocaleString('es-PE') : 'S/ 0';
-    const body = data.filas.map(f => [f.nombre, fmt(f.familias), fmt(f.ninos_saf), fmt(f.gestantes), fmtS(f.ejec_saf), fmt(f.usuarios), fmt(f.ciai), fmtS(f.ejec_scd)]);
-    const total = ['Total general', fmt(data.tot.familias), fmt(data.tot.ninos_saf), fmt(data.tot.gestantes), fmtS(data.tot.ejec_saf), fmt(data.tot.usuarios), fmt(data.tot.ciai), fmtS(data.tot.ejec_scd)];
-
-    doc.autoTable({
-      startY: MARGIN.top + 6,
-      head, body,
-      foot: [total],
-      theme: 'grid',
-      margin: { left: MARGIN.left, right: MARGIN.right, bottom: MARGIN.bottom },
-      styles: { font:'helvetica', fontSize:8, cellPadding:1.4, textColor:COL.ink, lineColor:[203,213,225], lineWidth:0.1, overflow:'linebreak' },
-      headStyles: { fontStyle:'bold', halign:'center', fontSize:8 },
-      footStyles: { fillColor: COL.total, textColor: COL.ink, fontStyle:'bold', halign:'right' },
-      columnStyles: {
-        0:{ halign:'left', cellWidth: 60, fontStyle:'bold' },
-        1:{ halign:'right' }, 2:{ halign:'right' }, 3:{ halign:'right' }, 4:{ halign:'right' },
-        5:{ halign:'right' }, 6:{ halign:'right' }, 7:{ halign:'right' }
-      },
-      didParseCell: (data) => {
-        // Resaltar fila seleccionada
-        if (data.section === 'body' && data.row.raw && data.row.raw[0] === seleccionado) {
-          data.cell.styles.fillColor = COL.sel;
-          data.cell.styles.fontStyle = 'bold';
-        }
-        // Primera columna del footer alineada izquierda
-        if (data.section === 'foot' && data.column.index === 0) {
-          data.cell.styles.halign = 'left';
-        }
-      },
-      didDrawPage: drawHeaderFooter
-    });
-  }
-
-  // ── RESUMEN NACIONAL EN PDF (portrait, primera hoja) ────────────────────
-  function renderResumenNacionalPDF() {
-    const pw2 = doc.internal.pageSize.getWidth();
-    const cw2 = pw2 - MARGIN.left - MARGIN.right;
-    const rN  = calcularResumenNacional();
-    const tot = rN.ejec_saf + rN.ejec_scd;
-    const pSAF = tot > 0 ? ((rN.ejec_saf / tot) * 100).toFixed(1) : '0.0';
-    const pSCD = tot > 0 ? ((rN.ejec_scd / tot) * 100).toFixed(1) : '0.0';
-    const fN  = n => (n || 0).toLocaleString('es-PE');
-    const mesMin = (mesNombre || '').toLowerCase();
-
-    doc.setFillColor(55, 65, 81);
-    doc.roundedRect(MARGIN.left, MARGIN.top, cw2, 8, 1.5, 1.5, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(255, 255, 255);
-    doc.text('COBERTURA NACIONAL — PNCM', MARGIN.left + 3, MARGIN.top + 5.5);
-    const yH = MARGIN.top + 12;
-
-    const txt =
-      `De enero a ${mesMin} de ${año}, el PNCM ejecutó a nivel nacional ` +
-      `S/. ${fN(Math.round(tot))} — SAF: S/. ${fN(Math.round(rN.ejec_saf))} (${pSAF}%), ` +
-      `SCD: S/. ${fN(Math.round(rN.ejec_scd))} (${pSCD}%). ` +
-      `SAF: ${fN(rN.familias_2025)} familias, ${fN(rN.niños_saf)} niñas/os y ${fN(rN.gestantes_SAF)} gestantes ` +
-      `en ${rN.dist_saf} distritos de ${rN.dep_saf} departamentos. ` +
-      `SCD: ${fN(rN.niños_2025)} niñas/os en ${rN.CIAI_SCD} CIAI (${rN.dep_scd} departamentos).`;
-    const yN = addNarrativa(txt, yH);
-
-    const half2 = (cw2 - 6) / 2;
-    const shSt = { font: 'helvetica', fontSize: 8.5, cellPadding: 2, textColor: [30,41,59], lineColor: [209,213,219], lineWidth: 0.15 };
-    const cSt  = { 0: { cellWidth: half2 * 0.65 }, 1: { halign: 'right', cellWidth: half2 * 0.35, fontStyle: 'bold' } };
-    const safRows = [
-      ['Familias', fN(rN.familias_2025)], ['Niñas y niños SAF', fN(rN.niños_saf)],
-      ['Gestantes', fN(rN.gestantes_SAF)], ['Departamentos con SAF', String(rN.dep_saf)],
-      ['Distritos con atención', String(rN.dist_saf)],
-      ['Ejecución acumulada SAF', 'S/. ' + Math.round(rN.ejec_saf).toLocaleString('es-PE')]
-    ];
-    const scdRows = [
-      ['Niñas y niños SCD', fN(rN.niños_2025)], ['CIAI', String(rN.CIAI_SCD)],
-      ['Departamentos con SCD', String(rN.dep_scd)],
-      ['Distritos con atención', String(rN.dist_scd)],
-      ['Ejecución acumulada SCD', 'S/. ' + Math.round(rN.ejec_scd).toLocaleString('es-PE')]
-    ];
-    doc.autoTable({
-      startY: yN + 2,
-      head: [[{ content: '🔴  SAF — Nacional', colSpan: 2 }]],
-      body: safRows, theme: 'striped',
-      margin: { left: MARGIN.left, right: pw2 - MARGIN.left - half2, bottom: MARGIN.bottom },
-      tableWidth: half2, styles: shSt,
-      headStyles: { fillColor: [55,65,81], textColor: [255,255,255], fontStyle: 'bold', fontSize: 9, cellPadding: 3 },
-      alternateRowStyles: { fillColor: [249,250,251] }, columnStyles: cSt,
-      didDrawPage: drawHeaderFooter
-    });
-    const ySAFend = doc.lastAutoTable.finalY;
-    doc.autoTable({
-      startY: yN + 2,
-      head: [[{ content: '🟢  SCD — Nacional', colSpan: 2 }]],
-      body: scdRows, theme: 'striped',
-      margin: { left: MARGIN.left + half2 + 6, right: MARGIN.right, bottom: MARGIN.bottom },
-      tableWidth: half2, styles: shSt,
-      headStyles: { fillColor: [75,85,99], textColor: [255,255,255], fontStyle: 'bold', fontSize: 9, cellPadding: 3 },
-      alternateRowStyles: { fillColor: [249,250,251] }, columnStyles: cSt,
-      didDrawPage: drawHeaderFooter
-    });
-    doc.lastAutoTable.finalY = Math.max(ySAFend, doc.lastAutoTable.finalY);
-  }
-
-  // ── CONSTRUCCIÓN DEL DOCUMENTO ───────────────────────────────────────────
-  doc.setPage(1);
-  drawHeaderFooter();
-  doc.lastAutoTable = { finalY: MARGIN.top };
-  renderResumenNacionalPDF();
-  if (dep) renderCobertura('departamento', `Cobertura a nivel Departamental — ${dep}`, dep);
-
-  if (dep) {
-  doc.addPage('a4', 'p');
-  drawHeaderFooter();
-  doc.lastAutoTable = { finalY: MARGIN.top };
-  renderResumenNivel('departamento', dep, calcularResumen(dep));
-  renderCobertura('departamento', `Cobertura — ${dep}`, dep);
-  }
-
-  if (prov) {
-    doc.addPage('a4', 'p');
-    drawHeaderFooter();
-    doc.lastAutoTable = { finalY: MARGIN.top };
-    renderResumenNivel('provincia', `${dep} / ${prov}`, calcularResumen(dep, prov));
-    renderCobertura('provincia', `Cobertura — ${prov}`, prov);
-  }
-
-  if (dist) {
-    doc.addPage('a4', 'p');
-    drawHeaderFooter();
-    doc.lastAutoTable = { finalY: MARGIN.top };
-    renderResumenNivel('distrito', `${dep} / ${prov} / ${dist}`, calcularResumen(dep, prov, dist));
-    renderCobertura('distrito', `Cobertura — ${dist}`, dist);
-  }
-
-  // Numeración final
-  const totalPgs = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= totalPgs; i++) {
-    doc.setPage(i);
-    const pw3 = doc.internal.pageSize.getWidth();
-    const ph3 = doc.internal.pageSize.getHeight();
-    doc.setFillColor(255, 255, 255);
-    doc.rect(pw3 - MARGIN.right - 38, ph3 - 12, 38, 5, 'F');
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...COL.muted);
-    doc.text(`Página ${i} de ${totalPgs}`, pw3 - MARGIN.right, ph3 - 8, { align: 'right' });
-  }
-
-  const fechaA = `${mesNombre}_${año}`;
-  const nomPDF = `AM_${(dep||'Nacional').replace(/\s+/g, '_')}${prov ? '_' + prov.replace(/\s+/g, '_') : ''}${dist ? '_' + dist.replace(/\s+/g, '_') : ''}_${fechaA}.pdf`;
-  doc.save(nomPDF);
 }
-
 // ── Arranque: panorama nacional apenas carga la página ──
 try { mostrarResumenNacional(); } catch (e) { console.warn('Resumen nacional:', e.message); }
 try {
