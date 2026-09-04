@@ -449,6 +449,10 @@ section#resultadosArea{margin-top:4px;}
 }
 .filter-card.plegado .filtro-chevron{transform:rotate(-90deg)}
 .filter-card:not(.plegado) .filtro-resumen{display:none}
+/* Colapsada: barra más compacta (oculta subtítulo; el pill de avanzada
+   sigue visible y, al tocarlo, expande la tarjeta —ver toggleAvanzada). */
+.filter-card.plegado .filter-sub{display:none}
+.filter-card.plegado .filter-head{align-items:center}
 #filtroCuerpo{
   overflow:hidden;max-height:1400px;opacity:1;margin-top:14px;
   transition:max-height .3s cubic-bezier(.16,1,.3,1),opacity .2s,margin-top .3s;
@@ -958,11 +962,16 @@ function onEspecialChange() {
 
 // Muestra/oculta la búsqueda avanzada (ámbito especial)
 function toggleAvanzada() {
+  const card = document.querySelector('.filter-card');
   const box = document.getElementById('avanzadaBox');
   const btn = document.getElementById('avanzadaToggle');
   const abrir = box.style.display === 'none' || !box.style.display;
+  // En móvil la tarjeta se colapsa al filtrar; el bloque avanzado vive dentro,
+  // así que primero hay que expandir la tarjeta para que sea visible.
+  if (abrir && card && card.classList.contains('plegado')) toggleFiltros(true);
   box.style.display = abrir ? 'flex' : 'none';
   btn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+  if (abrir) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
 const departamentos = [...new Set(dataset.map(d => d.departamento))].sort((a, b) => a.localeCompare(b, 'es'));
