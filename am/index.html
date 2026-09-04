@@ -913,11 +913,8 @@ cargarCCPP(fechaCorteActual()).then(ok => { if (ok && selectDist.value) poblarCe
 // ── Exclusión mutua: "Ámbito especial" ↔ búsqueda por ubicación ──
 const selectEsp = document.getElementById('selectEspecial');
 
-function bloquearUbicacion(bloq) {
-  selectDep.disabled = selectProv.disabled = selectDist.disabled = bloq;
-  if (bloq) selectCP.disabled = true;   // al desbloquear, CP se rehabilita al elegir distrito
-}
-function bloquearEspecial(bloq) { selectEsp.disabled = bloq; }
+// Exclusión por RESET (no se deshabilita nada): elegir uno limpia el otro,
+// así siempre se puede alternar entre ubicación y ámbito especial.
 function limpiarUbicacionSelects() {
   selectDep.value = '';
   selectProv.innerHTML = '<option value="">— Todas —</option>';
@@ -932,13 +929,9 @@ function limpiarEspecialSelect() {
 // onchange del selector de ámbito especial
 function onEspecialChange() {
   if (selectEsp.value) {
-    // entrar a modo especial: limpiar y bloquear la búsqueda por ubicación
-    limpiarUbicacionSelects();
-    bloquearUbicacion(true);
+    limpiarUbicacionSelects();   // el ámbito especial reemplaza a la ubicación
     filtrarEspecial();
   } else {
-    // salir de modo especial: rehabilitar ubicación y volver al panorama nacional
-    bloquearUbicacion(false);
     mostrarResumenNacional();
   }
 }
@@ -962,8 +955,8 @@ departamentos.forEach(dep => {
 
 selectDep.addEventListener('change', () => {
   const dep = selectDep.value;
-  // al usar la ubicación, salir/deshabilitar el ámbito especial
-  if (dep) { limpiarEspecialSelect(); bloquearEspecial(true); }
+  // al usar la ubicación, el ámbito especial se limpia (quedan excluyentes)
+  if (dep) limpiarEspecialSelect();
   selectProv.innerHTML = '<option value="">— Todas —</option>';
   selectDist.innerHTML = '<option value="">— Todas —</option>';
   resetCentrosPoblados();
@@ -1091,9 +1084,6 @@ function limpiar() {
   selectProv.innerHTML = '<option value="">— Todas —</option>';
   selectDist.innerHTML = '<option value="">— Todas —</option>';
   resetCentrosPoblados();
-  // rehabilitar ambos modos (ubicación y especial) y limpiar el especial
-  bloquearUbicacion(false);
-  bloquearEspecial(false);
   limpiarEspecialSelect();
   document.getElementById('loadingState').classList.add('hidden');
   resumirFiltros(); toggleFiltros(true);
