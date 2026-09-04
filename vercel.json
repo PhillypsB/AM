@@ -4,6 +4,22 @@
       "source": "/uppm",
       "destination": "/uppm/",
       "permanent": false
+    },
+    {
+      "source": "/cv",
+      "destination": "/cv/",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/cv/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ]
 }
