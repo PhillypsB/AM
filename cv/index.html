@@ -491,6 +491,25 @@ a:focus-visible{outline:2px solid var(--magenta);outline-offset:2px;}
 .page.airy .products{gap:var(--s3);margin-top:var(--s4);}
 .page.airy .product{padding:var(--s5);}
 
+/* ---------- llamada a la accion (solo movil) ---------- */
+.cta-movil{display:none;width:100%;max-width:420px;margin:22px auto 40px;}
+.cta-pdf{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;padding:16px 20px;border:none;border-radius:999px;
+  background:var(--magenta);color:#fff;cursor:pointer;
+  font-family:'Manrope',-apple-system,sans-serif;
+  font-size:.95rem;font-weight:800;letter-spacing:.01em;
+  box-shadow:0 10px 26px -12px color-mix(in srgb, var(--magenta) 92%, transparent);
+  transition:transform .16s ease, box-shadow .16s ease;
+}
+.cta-pdf svg{width:19px;height:19px;flex:none;}
+.cta-pdf:active{transform:translateY(1px);box-shadow:0 6px 16px -12px var(--magenta);}
+.cta-nota{
+  margin:11px 0 0;text-align:center;
+  font-family:'IBM Plex Mono',monospace;font-size:.6rem;font-weight:500;
+  letter-spacing:.04em;line-height:1.55;color:var(--chrome-ink);opacity:.62;
+}
+
 @media screen and (max-width:760px){
   .page{padding:26px 22px 0;}
   .masthead .top{grid-template-columns:1fr;gap:var(--s4);}
@@ -507,30 +526,43 @@ a:focus-visible{outline:2px solid var(--magenta);outline-offset:2px;}
   .story .row{flex-direction:column;gap:2px;}
   .story .label{width:auto;border-right:none;padding-right:0;}
   .products{grid-template-columns:1fr;}
+
+  /* estas tres rejillas fijan 3 columnas con .tres, que gana en
+     especificidad al 1fr de arriba: hay que apagarlas por nombre */
+  .products.tres{grid-template-columns:1fr;gap:var(--s3);}
+  .secundarios,.secundarios.tres{grid-template-columns:1fr;gap:var(--s5);}
+  .ficha{grid-template-columns:1fr;gap:var(--s4);}
   /* sangra hasta el borde: el margen negativo debe igualar
      el padding lateral de .page, que en movil es 22px y no 46px */
-  .sheet-foot{flex-wrap:wrap;margin-left:-22px;margin-right:-22px;}
+  /* -- se quita el disfraz de hoja A4 --------------------------
+     Nada de esto toca al PDF: estas reglas viven en @media screen
+     y la impresion usa @media print, que sigue armando las dos
+     hojas A4 completas, con "20+ anos" y folios incluidos.      */
 
-  /* la grilla del masthead pasa a 1 columna: si .standing conserva
-     grid-column:2 se crea una segunda columna implicita y la hoja
-     se desborda (la recorta el overflow:hidden de .page) */
-  .masthead .standing{
-    grid-column:1;grid-row:auto;transform:none;
-    align-self:start;margin-top:var(--s3);
-  }
-  .toolbar{justify-content:flex-start;margin-top:var(--s3);}
+  /* bloque "20+ anos" y sello de fecha */
+  .masthead .standing{display:none;}
 
-  /* la pastilla flotante tapaba el titulo: en movil entra en el flujo.
-     :not(.suelta) para no romper el arrastre */
-  .tools:not(.suelta){
-    position:static;width:max-content;max-width:100%;
-    margin:0 0 12px auto;
-  }
+  /* la hoja 2 repetia entero el encabezado */
+  .page.airy .masthead{display:none;}
+  .page.airy::before{display:none;}
+
+  /* folio "01 / 02" y firma: cosas de papel */
+  .sheet-foot{display:none;}
+
+  /* las dos hojas se leen como un solo scroll continuo */
+  .pages{gap:0;}
+  .page{min-height:0;box-shadow:none;border:none;padding-bottom:0;}
+  .page:hover{transform:none !important;box-shadow:none !important;}
+  .page.airy{padding-top:10px;}
+
+  /* la pastilla flotante tapaba el titulo; aqui manda el boton del final */
+  .tools{display:none !important;}
 
   /* a 320px el enlace del sitio no entraba: que pueda partirse */
   .enlaces a{max-width:100%;flex-wrap:wrap;letter-spacing:.05em;}
 
-  .wrap{padding:34px 12px 44px;}
+  .wrap{padding:26px 12px 0;}
+  .cta-movil{display:block;}
 }
 
 
@@ -610,6 +642,7 @@ a:focus-visible{outline:2px solid var(--magenta);outline-offset:2px;}
   .page:last-child{break-after:auto;}
   .entry,.metric,.product{break-inside:avoid;}
   .tools{display:none !important;}
+  .cta-movil{display:none !important;}
   .wrap::before{display:none !important;}
   .marco .hint{display:none !important;}
   .marco{background:none !important;border-color:var(--border) !important;}
@@ -981,6 +1014,14 @@ a:focus-visible{outline:2px solid var(--magenta);outline-offset:2px;}
     </article>
 
   </div>
+
+  <div class="cta-movil">
+    <button type="button" class="cta-pdf" data-do="pdf" data-tip="Guardar como PDF">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="m8 11 4 4 4-4"/><path d="M4.5 17.5v1.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-1.5"/></svg>
+      Descargar PDF
+    </button>
+    <p class="cta-nota">Se abre el di&aacute;logo de impresi&oacute;n &middot; elige &laquo;Guardar como PDF&raquo;</p>
+  </div>
 </div>
 
 <script>
@@ -1078,7 +1119,7 @@ a:focus-visible{outline:2px solid var(--magenta);outline-offset:2px;}
       '</foreignObject></svg>';
   }
 
-  document.querySelectorAll('.act').forEach(function(boton){
+  document.querySelectorAll('.act, .cta-pdf').forEach(function(boton){
     boton.addEventListener('click', function(){
       var accion = boton.dataset.do;
       try{
