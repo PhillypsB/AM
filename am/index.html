@@ -160,8 +160,6 @@ body{
 }
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
-.btn-pdf{background:#dc2626;color:#fff;box-shadow:0 3px 10px rgba(220,38,38,.25)}
-.btn-pdf:hover:not(:disabled){background:#b91c1c;box-shadow:0 5px 16px rgba(220,38,38,.35);transform:translateY(-1px)}
 .btn-word{background:#1d4ed8;color:#fff;box-shadow:0 3px 10px rgba(29,78,216,.25)}
 .btn-word:hover:not(:disabled){background:#1e40af;box-shadow:0 5px 16px rgba(29,78,216,.35);transform:translateY(-1px)}
 .btn-wa{background:#16a34a;color:#fff;box-shadow:0 3px 10px rgba(22,163,74,.25)}
@@ -352,7 +350,7 @@ body{
   text-transform:uppercase;letter-spacing:.1em;
   padding-bottom:12px;margin-bottom:18px;border-bottom:1px solid #f1f5f9;
 }
-.am-narrativa h2{display:none;}       /* redundante en pantalla; se conserva en Word y PDF */
+.am-narrativa h2{display:none;}       /* redundante en pantalla; se conserva en Word */
 .am-narrativa h3{
   font-size:.8rem;font-weight:700;color:#1e293b;letter-spacing:.01em;
   margin:0 0 10px;padding-left:11px;border-left:3px solid #cbd5e1;
@@ -616,7 +614,6 @@ section#resultadosArea{margin-top:4px;}
         </div>
       </div>
       <div class="export-bar">
-        <button id="btnPDF"   class="btn btn-pdf"   onclick="exportarPDF()"         disabled><span>PDF</span></button>
         <button id="btnWord"  class="btn btn-word"  onclick="exportarWord()"        disabled><span>Word</span></button>
         <button id="btnExcel" class="btn btn-excel" onclick="exportarExcel()"       disabled><span>Excel</span></button>
         <button id="btnPPT"   class="btn btn-ppt"   onclick="exportarPPT()"         disabled><span>PPT</span></button>
@@ -635,14 +632,12 @@ section#resultadosArea{margin-top:4px;}
 
 <!-- LIBRERÍAS -->
 <!-- Las librerías de exportación (≈1,5 MB) ya no bloquean el render: se
-     descargan la primera vez que se pide un PDF, Word, Excel o imagen. -->
+     descargan la primera vez que se pide un Word, Excel, PPT o imagen. -->
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <script>
 (function () {
   const URLS = {
     filesaver:  'https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js',
-    jspdf:      'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-    autotable:  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',
     xlsx:       'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
     html2canvas:'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
     frontera:   '/am/frontera_modelo.js',  // 74 KB: solo al exportar FRONTERAS
@@ -660,7 +655,6 @@ section#resultadosArea{margin-top:4px;}
     });
     return pedidas[k];
   }
-  // jspdf debe estar antes que su plugin autotable
   window.asegurarLibs = async function (lista) {
     for (const k of lista) await una(k);
   };
@@ -759,7 +753,7 @@ function buildFooterLine(fechaHora) {
 
   let linea3;
   if (fechaHora) {
-    // Documentos exportados (Word/PDF): crédito institucional
+    // Documentos exportados (Word): crédito institucional
     linea3 = seg(`📊 ${it('Versión:')} ${st(APP_VERSION)}`) + sep +
              seg(`⚙️ ${it('Generado por:')} ${st('UPPM–PNCM–MIDIS')}`);
   } else {
@@ -798,7 +792,7 @@ function cerrarEstadisticas() { const o = document.getElementById('statsOverlay'
 function abrirEstadisticas() {
   const s = _leerStats();
   const n = k => s[k] || 0;
-  const total = n('pdf') + n('word') + n('excel') + n('ppt');
+  const total = n('word') + n('excel') + n('ppt');
   const fFecha = iso => iso ? new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
   const tile = (lbl, val, color) =>
     `<div style="flex:1;min-width:84px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 8px;text-align:center;">
@@ -821,10 +815,9 @@ function abrirEstadisticas() {
        <div style="padding:22px;">
          <div style="text-align:center;margin-bottom:18px;">
            <div style="font-size:2.8rem;font-weight:800;color:#1d4ed8;line-height:1;">${total.toLocaleString('es-PE')}</div>
-           <div style="font-size:.8rem;color:#64748b;margin-top:4px;">ayudas memoria generadas (PDF · Word · Excel · PPT)</div>
+           <div style="font-size:.8rem;color:#64748b;margin-top:4px;">ayudas memoria generadas (Word · Excel · PPT)</div>
          </div>
          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-           ${tile('PDF', n('pdf'), '#dc2626')}
            ${tile('Word', n('word'), '#1d4ed8')}
            ${tile('Excel', n('excel'), '#15803d')}
            ${tile('PPT', n('ppt'), '#c2410c')}
@@ -1174,7 +1167,7 @@ async function descargarTarjeta(serv) {
 function setExportButtons(enabled) {
   // En ámbito especial solo se ofrece Excel; el resto se oculta.
   const esEspecial = !!(window.ultimoResultado && window.ultimoResultado._esEspecial);
-  ['btnPDF','btnWord','btnExcel','btnPPT','btnWA'].forEach(id => {
+  ['btnWord','btnExcel','btnPPT','btnWA'].forEach(id => {
     const b = document.getElementById(id);
     if (!b) return;
     b.disabled = !enabled;
@@ -1583,7 +1576,7 @@ function filtrar() {
       htmlSalida = renderCCPP(resumen.ccpp);
     } else {
       htmlSalida = renderKPIs(resumen, dep, prov, dist);
-      // narrativa en pantalla (el mismo texto que va a Word y PDF)
+      // narrativa en pantalla (el mismo texto que va a Word)
       htmlSalida += `<div class="am-narrativa">` +
         `<div class="am-narrativa-lbl">Resumen narrativo</div>` +
         generarIntroNarrativa(_niv, dep, prov, dist, resumen) +
@@ -2162,7 +2155,7 @@ const _KE = 'padding:4px 10px;border:1px solid #9ca3af;font-size:9pt;text-align:
 //  fila correspondiente al seleccionado resaltada.
 // ──────────────────────────────────────────────────
 // ──────────────────────────────────────────────────
-//  Datos de cobertura (estructura cruda para Excel/PDF)
+//  Datos de cobertura (estructura cruda para Excel/Word)
 // ──────────────────────────────────────────────────
 function obtenerDatosCobertura(nivel, dep, prov) {
   const ultimaFechaStr = ultimaFecha.toISOString().split('T')[0];
@@ -4001,68 +3994,6 @@ async function exportarWord(opts = {}) {
   saveAs(new Blob([contenido], { type: 'application/msword' }), base + '.doc');
 }
 
-async function exportarPDF() {
-  if (!window.ultimoResultado) return alert('Primero realice una consulta.');
-  await asegurarLibs(['jspdf', 'html2canvas', 'filesaver']);
-  const { jsPDF } = window.jspdf;
-
-  // El PDF es EXACTAMENTE el Word: se reutiliza el mismo HTML y se renderiza a PDF.
-  const built = await exportarWord({ soloHTML: true });
-  if (!built) return;
-
-  // Extrae estilos + cuerpo del documento Word
-  const parsed  = new DOMParser().parseFromString(built.html, 'text/html');
-  const estilos = Array.from(parsed.querySelectorAll('style')).map(s => s.textContent).join('\n');
-  const cuerpo  = parsed.body ? parsed.body.innerHTML : built.html;
-
-  // Contenedor oculto con ancho tipo A4 (px) para el render
-  const ANCHO = 780;
-  const cont = document.createElement('div');
-  cont.style.cssText = `position:fixed;left:-99999px;top:0;width:${ANCHO}px;background:#ffffff;`;
-  cont.innerHTML = `<style>${estilos}
-    .page-break{ page-break-before: always; break-before: page; }
-    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  </style><div style="padding:4px 8px;">${cuerpo}</div>`;
-  document.body.appendChild(cont);
-
-  try {
-    const doc = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'p', compress: true });
-    await doc.html(cont, {
-      x: 0, y: 0,
-      margin: [28, 24, 34, 24],
-      autoPaging: 'text',
-      width: 547,          // ancho útil A4 (595pt - márgenes)
-      windowWidth: ANCHO,
-      html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false }
-    });
-
-    // Numeración de páginas (pie)
-    const n  = doc.internal.getNumberOfPages();
-    const pw = doc.internal.pageSize.getWidth();
-    const ph = doc.internal.pageSize.getHeight();
-    for (let i = 1; i <= n; i++) {
-      doc.setPage(i);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
-      doc.setTextColor(120, 120, 120);
-      doc.text(`Página ${i} de ${n}`, pw - 24, ph - 12, { align: 'right' });
-    }
-
-    const blob = doc.output('blob');
-    registrarStat('pdf');
-    if (typeof saveAs === 'function') saveAs(blob, built.base + '.pdf');
-    else {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = built.base + '.pdf';
-      document.body.appendChild(a); a.click(); a.remove();
-    }
-  } catch (e) {
-    alert('No se pudo generar el PDF: ' + e.message);
-  } finally {
-    cont.remove();
-  }
-}
 // ── Arranque: panorama nacional apenas carga la página ──
 try { mostrarResumenNacional(); } catch (e) { console.warn('Resumen nacional:', e.message); }
 try {
