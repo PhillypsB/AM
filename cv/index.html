@@ -491,6 +491,60 @@ a:focus-visible{outline:2px solid var(--magenta);outline-offset:2px;}
 .page.airy .products{gap:var(--s3);margin-top:var(--s4);}
 .page.airy .product{padding:var(--s5);}
 
+/* ═══════════════════════════════════════════════════════════════
+   SOLO PANTALLA — la version web respira; el PDF no cambia.
+   Todo esto vive en @media screen, asi que @media print sigue
+   armando el documento denso de dos hojas A4, completo.
+   Va ANTES del bloque max-width:760px a proposito: asi el movil
+   puede seguir ganandole a estas reglas.
+   ═══════════════════════════════════════════════════════════════ */
+@media screen{
+
+  /* ---- lo que se quita en la web ---- */
+
+  /* "20+ anos" + el sello de fecha: ocupaban la columna derecha
+     entera del encabezado y no dicen nada que el CV no pruebe */
+  .masthead .standing{display:none;}
+
+  /* la hoja 2 repetia el encabezado completo */
+  .page.airy .masthead{display:none;}
+
+  /* folio "01 / 02" y firma al pie: artefactos de papel */
+  .sheet-foot{display:none;}
+
+  /* bloque "Alcance": cuatro tarjetas que repiten, en abstracto,
+     lo que el resto del CV ya demuestra con hechos */
+  .pitch > .shead,
+  .pitch > .method{display:none;}
+
+  /* la quinta cifra y las dos formaciones menos relevantes */
+  .impact{grid-template-columns:repeat(4,1fr);}
+  .impact .metric:nth-child(5){display:none;}
+  .edu .row:nth-child(n+4){display:none;}
+
+  /* ---- aire ---- */
+  .page{padding:40px 54px 34px;}
+  .pitch{margin-top:22px;padding-left:var(--s6);}
+  .block{margin-top:28px;}
+  .shead{margin-bottom:var(--s4);}
+  .card{padding:17px;}
+  .trio{margin-top:26px;gap:var(--s4);}
+  .trio .col{padding:14px;}
+  .stack{row-gap:9px;}
+  .stack dt,.stack dd{padding-bottom:8px;}
+  .edu{gap:9px;}
+  .award .meta{line-height:1.5;}
+  .entry{padding-top:17px;margin-top:17px;}
+  .story{gap:8px;margin-top:10px;}
+  .story .body{line-height:1.5;}
+  .metric .caption{line-height:1.45;}
+  .reina{margin-top:var(--s5);}
+  .ficha{margin-top:var(--s5);}
+  .secundarios{margin-top:var(--s6);gap:var(--s6);}
+  .products{margin-top:var(--s5);}
+  .mini{padding-top:var(--s4);}
+}
+
 /* ---------- llamada a la accion (solo movil) ---------- */
 .cta-movil{display:none;width:100%;max-width:420px;margin:22px auto 40px;}
 .cta-pdf{
@@ -539,15 +593,8 @@ a:focus-visible{outline:2px solid var(--magenta);outline-offset:2px;}
      y la impresion usa @media print, que sigue armando las dos
      hojas A4 completas, con "20+ anos" y folios incluidos.      */
 
-  /* bloque "20+ anos" y sello de fecha */
-  .masthead .standing{display:none;}
-
-  /* la hoja 2 repetia entero el encabezado */
-  .page.airy .masthead{display:none;}
+  /* el resto de lo que se oculta ya viene del bloque @media screen */
   .page.airy::before{display:none;}
-
-  /* folio "01 / 02" y firma: cosas de papel */
-  .sheet-foot{display:none;}
 
   /* las dos hojas se leen como un solo scroll continuo */
   .pages{gap:0;}
