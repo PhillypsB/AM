@@ -9,11 +9,25 @@
       "source": "/cv",
       "destination": "/cv/",
       "permanent": false
+    },
+    {
+      "source": "/convenios",
+      "destination": "/convenios/",
+      "permanent": false
     }
   ],
   "headers": [
     {
       "source": "/cv/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/convenios/(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",

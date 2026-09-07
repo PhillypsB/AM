@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>PNCM · Convenios de Locales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+/* ═══ TOKENS ═══════════════════════════════════════════ */
+:root{
+  --navy:#0b1f47; --navy2:#14306a; --blue:#1d4ed8; --blue-l:#eef2ff;
+  --rojo:#dc2626; --rojo-l:#fef2f2; --ambar:#d97706; --ambar-l:#fffbeb;
+  --verde:#16a34a; --verde-l:#f0fdf4; --violeta:#7c3aed; --violeta-l:#f5f3ff;
+  --tinta:#0f172a; --texto:#334155; --suave:#64748b; --tenue:#94a3b8;
+  --linea:#e2e8f0; --linea-t:#f1f5f9; --fondo:#f0f2f7; --papel:#fff;
+  --r:14px; --r-s:10px;
+  --sombra:0 1px 2px rgba(15,23,42,.04), 0 2px 12px rgba(15,23,42,.06);
+  --sombra-m:0 4px 24px rgba(15,23,42,.09);
+  --sombra-a:0 18px 48px rgba(11,31,71,.28);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Segoe UI',Roboto,sans-serif;background:var(--fondo);
+     color:var(--texto);min-height:100vh;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums}
+.hidden{display:none!important}
+button{font-family:inherit}
+
+/* ═══ CABECERA ═════════════════════════════════════════ */
+.hdr{background:linear-gradient(120deg,var(--navy) 0%,var(--navy2) 48%,var(--blue) 100%);
+     color:#fff;box-shadow:0 6px 24px rgba(11,31,71,.34);position:sticky;top:0;z-index:40}
+.hdr-top{padding:13px 30px;display:flex;align-items:center;justify-content:space-between;
+         gap:16px;flex-wrap:wrap}
+.marca{display:flex;align-items:center;gap:16px;min-width:0}
+.logo{width:42px;height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:12px}
+.logo svg{width:25px;height:25px;display:block}
+.marca-n{font-size:1.05rem;font-weight:800;line-height:1.05;letter-spacing:-.01em;display:block}
+.marca-t{font-size:.63rem;color:#fbbf24;margin-top:2px;display:block;letter-spacing:.05em;
+         font-weight:700;text-transform:uppercase}
+.sep-v{width:1px;height:34px;background:rgba(255,255,255,.16);flex-shrink:0}
+.tit h1{font-size:1.1rem;font-weight:700;line-height:1.15}
+.tit p{font-size:.72rem;color:rgba(255,255,255,.62);margin-top:2px}
+.corte{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.24);border-radius:11px;
+       padding:6px 15px;display:flex;flex-direction:column;backdrop-filter:blur(4px)}
+.corte b{font-size:.92rem;font-weight:700;letter-spacing:-.01em}
+.corte span{font-size:.58rem;color:rgba(255,255,255,.6);text-transform:uppercase;
+            letter-spacing:.08em;font-weight:600}
+/* pestañas */
+.tabs{display:flex;gap:2px;padding:0 30px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:none;border:none;color:rgba(255,255,255,.6);font-size:.86rem;font-weight:600;
+     padding:11px 18px 13px;cursor:pointer;border-bottom:3px solid transparent;
+     white-space:nowrap;transition:color .16s,border-color .16s;display:flex;align-items:center;gap:8px}
+.tab:hover{color:rgba(255,255,255,.9)}
+.tab[aria-selected="true"]{color:#fff;border-bottom-color:#fbbf24}
+.tab .cnt{background:rgba(255,255,255,.16);border-radius:50px;padding:1px 7px;font-size:.68rem;
+          font-weight:700;letter-spacing:.02em}
+.tab[aria-selected="true"] .cnt{background:#fbbf24;color:var(--navy)}
+
+/* ═══ LIENZO ═══════════════════════════════════════════ */
+.wrap{max-width:1280px;margin:0 auto;padding:26px 20px 40px;display:flex;
+      flex-direction:column;gap:22px}
+.card{background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);
+      box-shadow:var(--sombra)}
+.card-h{padding:17px 22px;display:flex;align-items:center;justify-content:space-between;
+        gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--linea-t)}
+.card-h h2{font-size:1rem;font-weight:700;color:var(--tinta);letter-spacing:-.01em}
+.card-h p{font-size:.76rem;color:var(--suave);margin-top:2px}
+.eyebrow{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;
+         color:var(--tenue)}
+
+/* ═══ PANORAMA · titular de riesgo ═════════════════════ */
+.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.hero{grid-template-columns:1fr}}
+.riesgo{background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);
+        padding:20px 22px 18px;box-shadow:var(--sombra);position:relative;overflow:hidden;
+        display:flex;flex-direction:column;gap:2px}
+.riesgo::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
+.riesgo.r1::before{background:var(--rojo)} .riesgo.r2::before{background:var(--ambar)}
+.riesgo.r3::before{background:var(--verde)}
+.riesgo .lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+             display:flex;align-items:center;gap:7px}
+.riesgo.r1 .lbl{color:var(--rojo)} .riesgo.r2 .lbl{color:var(--ambar)} .riesgo.r3 .lbl{color:var(--verde)}
+.riesgo .big{font-size:2.5rem;font-weight:800;color:var(--tinta);line-height:1.05;
+             letter-spacing:-.03em;margin:6px 0 2px}
+.riesgo .sub{font-size:.83rem;color:var(--texto);line-height:1.5}
+.riesgo .pie{margin-top:12px;padding-top:11px;border-top:1px solid var(--linea-t);
+             font-size:.76rem;color:var(--suave);display:flex;justify-content:space-between;gap:10px}
+.riesgo .pie b{color:var(--tinta);font-weight:700}
+
+/* ═══ MAPA ═════════════════════════════════════════════ */
+.mapa-card{overflow:hidden}
+.mapa-barra{padding:12px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+            border-bottom:1px solid var(--linea-t);background:#fbfcfe}
+.capas{display:flex;gap:3px;background:var(--linea-t);padding:3px;border-radius:9px}
+.capa{background:none;border:none;padding:7px 13px;border-radius:7px;font-size:.78rem;
+      font-weight:600;color:var(--suave);cursor:pointer;transition:all .15s;white-space:nowrap}
+.capa:hover{color:var(--tinta)}
+.capa[aria-pressed="true"]{background:var(--papel);color:var(--blue);box-shadow:var(--sombra)}
+.mapa-body{display:grid;grid-template-columns:1fr 306px}
+#mapa{height:500px;width:100%;background:#eaeef4}
+.rank{border-left:1px solid var(--linea);height:500px;overflow-y:auto;background:#fbfcfe}
+.rank-h{padding:13px 16px 9px;position:sticky;top:0;background:#fbfcfe;
+        border-bottom:1px solid var(--linea-t);z-index:2}
+.rank-r{width:100%;background:none;border:none;border-bottom:1px solid var(--linea-t);
+        padding:10px 16px;display:flex;align-items:center;gap:11px;cursor:pointer;
+        text-align:left;transition:background .12s}
+.rank-r:hover{background:var(--blue-l)}
+.rank-r .pos{font-size:.68rem;font-weight:800;color:var(--tenue);width:16px;flex-shrink:0;
+             font-variant-numeric:tabular-nums}
+.rank-r .nm{flex:1;min-width:0}
+.rank-r .nm b{display:block;font-size:.8rem;font-weight:600;color:var(--tinta);
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-r .nm span{display:block;font-size:.68rem;color:var(--tenue);white-space:nowrap;
+                 overflow:hidden;text-overflow:ellipsis}
+.rank-r .vl{font-size:.88rem;font-weight:800;color:var(--tinta);flex-shrink:0;
+            font-variant-numeric:tabular-nums}
+.rank-r .vl small{display:block;font-size:.62rem;font-weight:600;color:var(--tenue);text-align:right}
+@media(max-width:820px){
+  .mapa-body{grid-template-columns:1fr}
+  #mapa{height:340px}
+  .rank{border-left:none;border-top:1px solid var(--linea);height:260px}
+}
+.leaflet-container{font:400 12px Inter,sans-serif}
+.leaflet-tile-pane{opacity:.62;filter:saturate(.55)}
+.leaflet-popup-content-wrapper{border-radius:11px;box-shadow:var(--sombra-m)}
+.leaflet-popup-content{margin:12px 14px;font-size:.78rem;line-height:1.55}
+.leaflet-popup-content b{color:var(--tinta)}
+.mapa-pie{padding:11px 18px;display:flex;align-items:center;justify-content:space-between;
+          gap:14px;flex-wrap:wrap;border-top:1px solid var(--linea-t);background:#fbfcfe}
+.escala{display:flex;align-items:center;gap:8px;font-size:.71rem;color:var(--suave)}
+.escala i{width:26px;height:9px;border-radius:2px;display:block}
+.mapa-nota{font-size:.71rem;color:var(--tenue)}
+
+/* ═══ COLA DE ACCIONES ═════════════════════════════════ */
+.accion{border-bottom:1px solid var(--linea-t)}
+.accion:last-child{border-bottom:none}
+.accion-h{width:100%;background:none;border:none;padding:15px 22px;display:flex;
+          align-items:center;gap:15px;cursor:pointer;text-align:left;transition:background .13s}
+.accion-h:hover{background:#fafbfd}
+.pri{width:27px;height:27px;flex-shrink:0;border-radius:8px;display:flex;align-items:center;
+     justify-content:center;font-size:.76rem;font-weight:800;color:#fff}
+.pri.p1{background:var(--rojo)} .pri.p2{background:var(--ambar)}
+.pri.p3{background:var(--blue)} .pri.p4{background:var(--violeta)}
+.accion-txt{flex:1;min-width:0}
+.accion-txt h3{font-size:.9rem;font-weight:700;color:var(--tinta);line-height:1.35}
+.accion-txt p{font-size:.77rem;color:var(--suave);margin-top:3px;line-height:1.5}
+.accion-n{font-size:1.4rem;font-weight:800;color:var(--tinta);flex-shrink:0;letter-spacing:-.02em}
+.accion-chv{color:var(--tenue);font-size:.85rem;flex-shrink:0;transition:transform .22s}
+.accion[data-abierto="1"] .accion-chv{transform:rotate(180deg)}
+.accion-b{max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.16,1,.3,1)}
+.accion[data-abierto="1"] .accion-b{max-height:900px}
+.accion-c{padding:2px 22px 20px 64px}
+.mini{width:100%;border-collapse:collapse;font-size:.79rem}
+.mini tr{border-bottom:1px solid var(--linea-t)}
+.mini tr:last-child{border-bottom:none}
+.mini td{padding:8px 6px;color:var(--texto)}
+.mini td:first-child{font-weight:600;color:var(--tinta)}
+.mini td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.mini tr.clic{cursor:pointer}
+.mini tr.clic:hover td{color:var(--blue)}
+.acc-cta{margin-top:13px;display:flex;gap:9px;flex-wrap:wrap}
+
+/* ═══ BOTONES ══════════════════════════════════════════ */
+.btn{padding:9px 17px;border-radius:var(--r-s);border:1px solid transparent;font-size:.8rem;
+     font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+     transition:all .15s;white-space:nowrap}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+.btn-p{background:var(--blue);color:#fff}
+.btn-p:hover:not(:disabled){background:#1e40af}
+.btn-s{background:var(--papel);color:var(--texto);border-color:var(--linea)}
+.btn-s:hover:not(:disabled){border-color:#cbd5e1;background:#f8fafc;color:var(--tinta)}
+.btn-x{background:#f8fafc;color:var(--suave);border-color:var(--linea-t);padding:7px 13px;font-size:.76rem}
+.btn-x:hover:not(:disabled){background:var(--linea-t);color:var(--tinta)}
+.btn-excel{background:#047857;color:#fff}.btn-excel:hover{background:#065f46}
+.btn-word{background:var(--blue);color:#fff}.btn-word:hover{background:#1e40af}
+.btn-wa{background:#16a34a;color:#fff}.btn-wa:hover{background:#15803d}
+
+/* ═══ CONSULTAR · filtros ══════════════════════════════ */
+.filtros{padding:20px 22px}
+.buscar{position:relative;display:flex;align-items:center;margin-bottom:13px}
+.buscar span{position:absolute;left:15px;color:var(--tenue);pointer-events:none;font-size:.9rem}
+.buscar input{width:100%;padding:12px 14px 12px 42px;border:1.5px solid #d8dee7;
+              border-radius:var(--r-s);font-size:.9rem;font-family:inherit;color:var(--tinta);
+              background:var(--papel);transition:border-color .18s,box-shadow .18s}
+.buscar input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.13)}
+.rejilla{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+@media(max-width:900px){.rejilla{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.rejilla{grid-template-columns:1fr}}
+.campo{display:flex;flex-direction:column;gap:5px}
+.campo label{font-size:.67rem;font-weight:700;color:var(--suave);text-transform:uppercase;
+             letter-spacing:.06em}
+.campo select{padding:9px 12px;border:1.5px solid #d8dee7;border-radius:var(--r-s);
+              font-size:.85rem;font-family:inherit;color:var(--tinta);background:var(--papel);
+              cursor:pointer;transition:border-color .18s}
+.campo select:hover{border-color:#b6c0cd}
+.campo select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.13)}
+.mas{margin-top:14px;overflow:hidden;max-height:0;opacity:0;
+     transition:max-height .3s cubic-bezier(.16,1,.3,1),opacity .2s,margin-top .3s}
+.mas.on{max-height:420px;opacity:1}
+.chips{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--blue-l);
+      border:1px solid #c7d2fe;color:#3730a3;border-radius:50px;padding:4px 11px;
+      font-size:.73rem;font-weight:600}
+.chip button{background:none;border:none;color:#6366f1;cursor:pointer;font-size:.85rem;
+             line-height:1;padding:0}
+.limpiar{background:none;border:none;color:var(--suave);font-size:.75rem;font-weight:600;
+         cursor:pointer;text-decoration:underline;padding:4px}
+.limpiar:hover{color:var(--blue)}
+
+/* ═══ CINTA DE RESUMEN ═════════════════════════════════ */
+.cinta{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--linea);
+       border:1px solid var(--linea);border-radius:var(--r);overflow:hidden;box-shadow:var(--sombra)}
+@media(max-width:820px){.cinta{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.cinta{grid-template-columns:repeat(2,1fr)}}
+.cinta-i{background:var(--papel);padding:15px 16px;display:flex;flex-direction:column;gap:3px}
+.cinta-i .v{font-size:1.5rem;font-weight:800;color:var(--tinta);letter-spacing:-.025em;line-height:1.1}
+.cinta-i .k{font-size:.68rem;color:var(--suave);font-weight:600;text-transform:uppercase;
+            letter-spacing:.05em}
+.cinta-i .x{font-size:.71rem;font-weight:700;margin-top:2px}
+.x-rojo{color:var(--rojo)} .x-verde{color:var(--verde)} .x-ambar{color:var(--ambar)}
+.x-suave{color:var(--tenue);font-weight:600}
+
+/* ═══ TABLA ════════════════════════════════════════════ */
+.tabla-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.grid{width:100%;border-collapse:collapse;font-size:.79rem;min-width:880px}
+table.grid thead th{background:#f8fafc;color:var(--suave);font-size:.65rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.05em;padding:10px;text-align:left;
+  border-bottom:1px solid var(--linea);white-space:nowrap;cursor:pointer;user-select:none}
+table.grid thead th:hover{background:#eef2f7;color:var(--blue)}
+table.grid tbody tr{border-bottom:1px solid var(--linea-t);cursor:pointer;transition:background .1s}
+table.grid tbody tr:hover{background:#f8fafc}
+table.grid td{padding:9px 10px;color:var(--texto);vertical-align:middle}
+table.grid td.n{text-align:right;font-variant-numeric:tabular-nums}
+.sec{font-size:.71rem;color:var(--tenue);display:block;margin-top:1px}
+.tag{display:inline-block;font-size:.63rem;font-weight:700;padding:3px 8px;border-radius:50px;
+     white-space:nowrap;letter-spacing:.02em}
+.t-con{background:#dcfce7;color:#15803d} .t-sin{background:#fee2e2;color:#b91c1c}
+.t-ciai{background:#e0e7ff;color:#3730a3} .t-sa{background:#fce7f3;color:#9d174d}
+.t-ced{background:var(--linea-t);color:#475569} .t-alq{background:#fef3c7;color:#92400e}
+.pt{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.pt-0{background:var(--rojo)}.pt-1{background:#f59e0b}.pt-2{background:var(--verde)}.pt-n{background:#cbd5e1}
+.pag{padding:13px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+     flex-wrap:wrap;border-top:1px solid var(--linea-t);background:#fbfcfe}
+.pag-i{font-size:.76rem;color:var(--suave)}
+.pag-b{display:flex;gap:5px}
+.pag-b button{min-width:32px;height:32px;border-radius:8px;border:1px solid var(--linea);
+  background:var(--papel);color:var(--texto);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .12s}
+.pag-b button:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
+.pag-b button[aria-current="true"]{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pag-b button:disabled{opacity:.35;cursor:not-allowed}
+.vacio{padding:60px 20px;text-align:center;color:var(--tenue)}
+.vacio div{font-size:2.1rem;margin-bottom:10px}
+
+/* ═══ ANÁLISIS ═════════════════════════════════════════ */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media(max-width:900px){.duo{grid-template-columns:1fr}}
+.barras{padding:16px 22px 20px;display:flex;flex-direction:column;gap:11px}
+.bar-r{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.bar-lbl{font-size:.79rem;color:var(--texto);font-weight:500;white-space:nowrap;overflow:hidden;
+         text-overflow:ellipsis}
+.bar-v{font-size:.78rem;font-weight:700;color:var(--tinta);font-variant-numeric:tabular-nums}
+.bar-t{grid-column:1/-1;height:7px;border-radius:50px;background:var(--linea-t);display:flex;overflow:hidden}
+.bar-t i{display:block;height:100%;transition:width .5s cubic-bezier(.16,1,.3,1)}
+.meses{padding:20px 22px;display:flex;align-items:flex-end;gap:5px;height:190px}
+.mes{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;
+     justify-content:flex-end;cursor:pointer}
+.mes-b{width:100%;border-radius:4px 4px 0 0;background:var(--blue);min-height:2px;
+       transition:opacity .15s,transform .15s;transform-origin:bottom}
+.mes:hover .mes-b{opacity:.75;transform:scaleY(1.02)}
+.mes-b.alto{background:var(--rojo)} .mes-b.medio{background:var(--ambar)}
+.mes-l{font-size:.6rem;color:var(--tenue);font-weight:600;text-transform:uppercase;
+       letter-spacing:.03em;white-space:nowrap}
+.mes-v{font-size:.7rem;font-weight:700;color:var(--tinta)}
+.lista{padding:6px 22px 18px}
+.lista-r{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 0;
+         border-bottom:1px solid var(--linea-t);font-size:.81rem}
+.lista-r:last-child{border-bottom:none}
+.lista-r span{color:var(--texto);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lista-r b{color:var(--tinta);font-weight:700;font-variant-numeric:tabular-nums;flex-shrink:0}
+.hallazgo{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--linea-t);font-size:.82rem}
+.hallazgo:last-child{border-bottom:none}
+.hallazgo .ic{flex-shrink:0;font-size:.95rem}
+.hallazgo b{color:var(--tinta)}
+.hallazgo p{color:var(--suave);font-size:.77rem;margin-top:2px;line-height:1.5}
+
+/* ═══ NARRATIVA / AVISO ════════════════════════════════ */
+.narr{padding:22px 26px 24px;font-size:.86rem;line-height:1.75;color:var(--texto);text-align:justify}
+.narr h3{font-size:.78rem;font-weight:700;color:var(--tinta);margin:17px 0 9px;padding-left:11px;
+         border-left:3px solid #cbd5e1}
+.narr h3.h-v{border-left-color:var(--ambar)} .narr h3.h-a{border-left-color:var(--verde)}
+.narr p{margin:0 0 10px;max-width:84ch} .narr p:last-child{margin-bottom:0}
+.narr strong{color:var(--tinta);font-weight:700}
+.aviso{background:var(--ambar-l);border:1px solid #fde68a;border-radius:var(--r);
+       padding:14px 18px;font-size:.78rem;color:#92400e;line-height:1.65}
+.aviso b{color:#78350f}
+
+/* ═══ FICHA (modal) ════════════════════════════════════ */
+.mbg{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);
+     display:flex;align-items:center;justify-content:center;padding:18px;z-index:80;
+     animation:fade .18s ease both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.modal{background:var(--papel);border-radius:16px;max-width:780px;width:100%;max-height:88vh;
+       overflow-y:auto;box-shadow:var(--sombra-a);animation:up .25s ease both}
+.modal-h{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:21px 26px;
+         display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+         position:sticky;top:0;z-index:2}
+.modal-h h2{font-size:1.12rem;font-weight:800;line-height:1.25;letter-spacing:-.01em}
+.modal-h p{font-size:.75rem;color:rgba(255,255,255,.72);margin-top:4px}
+.x{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);color:#fff;
+   width:33px;height:33px;border-radius:9px;font-size:1.05rem;cursor:pointer;flex-shrink:0;line-height:1}
+.x:hover{background:rgba(255,255,255,.26)}
+.modal-b{padding:20px 26px 26px}
+.banner{border-radius:11px;padding:13px 16px;font-size:.83rem;font-weight:600;margin-bottom:18px;
+        display:flex;align-items:center;gap:11px;line-height:1.5}
+.b-0{background:var(--rojo-l);color:#b91c1c;border:1px solid #fecaca}
+.b-1{background:var(--ambar-l);color:#b45309;border:1px solid #fde68a}
+.b-2{background:var(--verde-l);color:#15803d;border:1px solid #bbf7d0}
+.b-n{background:#f8fafc;color:#475569;border:1px solid var(--linea)}
+.f-sec{font-size:.62rem;font-weight:700;color:var(--tenue);text-transform:uppercase;
+       letter-spacing:.09em;margin:20px 0 8px;padding-bottom:7px;border-bottom:1px solid var(--linea-t)}
+.f-sec:first-child{margin-top:0}
+.f-g{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+@media(max-width:600px){.f-g{grid-template-columns:1fr}}
+.f-r{display:flex;justify-content:space-between;gap:14px;padding:7px 0;
+     border-bottom:1px solid #f8fafc;font-size:.82rem}
+.f-r span{color:var(--suave);flex-shrink:0}
+.f-r b{color:var(--tinta);font-weight:600;text-align:right}
+.f-full{grid-column:1/-1}
+
+/* ═══ PANEL LATERAL DEL MAPA ═══════════════════════════ */
+.dpanel{position:absolute;right:14px;top:14px;width:264px;background:var(--papel);
+        border:1px solid var(--linea);border-radius:12px;box-shadow:var(--sombra-m);
+        padding:15px 17px;z-index:500;animation:up .2s ease both}
+@media(max-width:700px){.dpanel{position:static;width:auto;margin:12px 14px;box-shadow:none}}
+.dpanel h4{font-size:.9rem;font-weight:800;color:var(--tinta);line-height:1.25}
+.dpanel .dp-s{font-size:.7rem;color:var(--tenue);margin-top:2px;text-transform:uppercase;
+              letter-spacing:.05em;font-weight:600}
+.dpanel .dp-r{display:flex;justify-content:space-between;gap:10px;padding:6px 0;
+              border-bottom:1px solid var(--linea-t);font-size:.78rem}
+.dpanel .dp-r:last-of-type{border-bottom:none}
+.dpanel .dp-r span{color:var(--suave)} .dpanel .dp-r b{color:var(--tinta);font-weight:700}
+.dp-x{position:absolute;right:9px;top:9px;background:none;border:none;color:var(--tenue);
+      cursor:pointer;font-size:.9rem;line-height:1;padding:3px}
+.dp-x:hover{color:var(--tinta)}
+
+/* ═══ PIE ══════════════════════════════════════════════ */
+footer{margin-top:10px;padding:18px;border-top:1px solid var(--linea);color:var(--suave);
+       font-size:.76rem;line-height:1.65;text-align:center}
+footer strong{color:#374151} footer em{color:var(--tenue);font-style:italic}
+
+@media(max-width:820px){
+  select,input{font-size:16px!important}
+  .campo select,.buscar input{min-height:44px}
+  .btn{min-height:44px}
+  .hdr-top{padding:12px 16px} .tabs{padding:0 10px}
+  .wrap{padding:16px 12px 30px}
+  .sep-v,.tit p{display:none}
+  .accion-c{padding-left:22px}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-top">
+    <div class="marca">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5.5" y="2.5" width="16" height="21" rx="2.6" fill="#fff"/>
+          <line x1="9" y1="7.5" x2="18" y2="7.5" stroke="#1d4ed8" stroke-width="1.7" stroke-linecap="round"/>
+          <line x1="9" y1="11.5" x2="18" y2="11.5" stroke="#1d4ed8" stroke-width="1.7" stroke-linecap="round"/>
+          <line x1="9" y1="15.5" x2="14.5" y2="15.5" stroke="#93b4fb" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M16.5 16.5 L28.5 21 L23.2 22.7 L26 28 L23 29.2 L20.2 24 L16.5 27 Z" fill="#fbbf24" stroke="#0b1f47" stroke-width="1" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <span class="marca-n">Ayuda Memoria</span>
+        <span class="marca-t">En un click</span>
+      </div>
+      <div class="sep-v"></div>
+      <div class="tit">
+        <h1>Convenios de Locales</h1>
+        <p>Documentos legales · Programa Nacional Cuna Más</p>
+      </div>
+    </div>
+    <div class="corte">
+      <span>Padrón</span>
+      <b id="hPadron">—</b>
+      <span id="hCorte" style="text-transform:none;letter-spacing:0">—</span>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-t="panorama" aria-selected="true">
+      ⚠️ Qué mirar <span class="cnt" id="cntAcc">—</span></button>
+    <button class="tab" role="tab" data-t="consultar" aria-selected="false">
+      🔎 Consultar</button>
+    <button class="tab" role="tab" data-t="analisis" aria-selected="false">
+      📊 Análisis</button>
+  </nav>
+</header>
+
+<!-- ══════════ PANORAMA ══════════ -->
+<main class="wrap" id="v-panorama">
+
+  <section class="hero" id="hero"></section>
+
+  <section class="card mapa-card">
+    <div class="card-h">
+      <div>
+        <span class="eyebrow">Dónde está el problema</span>
+        <h2>Mapa de riesgo distrital</h2>
+      </div>
+      <p style="font-size:.76rem;color:var(--suave)">Toca un distrito para ver su detalle</p>
+    </div>
+    <div class="mapa-barra">
+      <div class="capas" id="capas">
+        <button class="capa" data-c="sin"   aria-pressed="true">Sin documento legal</button>
+        <button class="capa" data-c="rojo"  aria-pressed="false">Por vencer</button>
+        <button class="capa" data-c="monto" aria-pressed="false">Gasto en alquiler</button>
+        <button class="capa" data-c="ninos" aria-pressed="false">Niños expuestos</button>
+      </div>
+    </div>
+    <div class="mapa-body">
+      <div style="position:relative"><div id="mapa"></div></div>
+      <aside class="rank">
+        <div class="rank-h"><span class="eyebrow" id="rankTit">Distritos críticos</span></div>
+        <div id="rankLista"></div>
+      </aside>
+    </div>
+    <div class="mapa-pie">
+      <div class="escala" id="escala"></div>
+      <span class="mapa-nota" id="mapaNota"></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-h">
+      <div>
+        <span class="eyebrow">Cola de trabajo priorizada</span>
+        <h2>Qué hacer, en orden</h2>
+      </div>
+      <button class="btn btn-s" id="btnAccWord">📄 Llevar a Word</button>
+    </div>
+    <div id="acciones"></div>
+  </section>
+
+  <section class="card"><div class="narr" id="narrPan"></div></section>
+</main>
+
+<!-- ══════════ CONSULTAR ══════════ -->
+<main class="wrap hidden" id="v-consultar">
+  <section class="card">
+    <div class="card-h">
+      <div>
+        <span class="eyebrow">Búsqueda</span>
+        <h2 id="fTit">3,366 locales a nivel nacional</h2>
+      </div>
+      <button class="btn btn-x" id="btnMas" aria-expanded="false">⚙ Más filtros ⌄</button>
+    </div>
+    <div class="filtros">
+      <div class="buscar">
+        <span>🔎</span>
+        <input type="search" id="q" autocomplete="off"
+               placeholder="Código, nombre del local, comité de gestión, cedente o dirección…">
+      </div>
+      <div class="rejilla">
+        <div class="campo"><label for="fUT">Unidad territorial</label><select id="fUT"></select></div>
+        <div class="campo"><label for="fDep">Departamento</label><select id="fDep"></select></div>
+        <div class="campo"><label for="fProv">Provincia</label><select id="fProv"></select></div>
+        <div class="campo"><label for="fDist">Distrito</label><select id="fDist"></select></div>
+      </div>
+      <div class="mas" id="mas">
+        <div class="rejilla">
+          <div class="campo"><label for="fCond">Documento legal</label><select id="fCond"></select></div>
+          <div class="campo"><label for="fTipo">Tipo de local</label><select id="fTipo"></select></div>
+          <div class="campo"><label for="fTen">Tenencia</label><select id="fTen"></select></div>
+          <div class="campo"><label for="fAlerta">Alerta</label><select id="fAlerta"></select></div>
+          <div class="campo"><label for="fDoc">Tipo de documento</label><select id="fDoc"></select></div>
+          <div class="campo"><label for="fEsp">Especialista</label><select id="fEsp"></select></div>
+          <div class="campo"><label for="fTitular">Titular del local</label><select id="fTitular"></select></div>
+          <div class="campo"><label for="fAnio">Año de vencimiento</label><select id="fAnio"></select></div>
+        </div>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
+
+  <section class="cinta" id="cinta"></section>
+
+  <section class="card">
+    <div class="card-h">
+      <div>
+        <span class="eyebrow" id="ambitoKick">Resultado</span>
+        <h2 id="ambitoTit">Todo el país</h2>
+        <p id="ambitoSub">—</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-excel" id="btnExcel">⤓ Excel</button>
+        <button class="btn btn-word"  id="btnWord">📄 Word</button>
+        <button class="btn btn-wa"    id="btnWA">💬 WhatsApp</button>
+        <button class="btn btn-s"     id="btnCopiar">⧉ Copiar</button>
+      </div>
+    </div>
+    <div class="tabla-wrap"><table class="grid" id="tabla"></table></div>
+    <div class="pag" id="pag"></div>
+  </section>
+</main>
+
+<!-- ══════════ ANÁLISIS ══════════ -->
+<main class="wrap hidden" id="v-analisis">
+  <section class="card">
+    <div class="card-h">
+      <div><span class="eyebrow">Calendario</span>
+        <h2>Vencimientos mes a mes</h2>
+        <p>Documentos vigentes que terminan en los próximos 12 meses</p></div>
+      <span class="eyebrow" id="vencTot"></span>
+    </div>
+    <div class="meses" id="meses"></div>
+  </section>
+
+  <div class="duo">
+    <section class="card">
+      <div class="card-h"><div><span class="eyebrow">Ranking</span>
+        <h2>Cobertura por unidad territorial</h2>
+        <p>Ordenado por brecha: verde con documento, rojo sin documento</p></div></div>
+      <div class="barras" id="barUT"></div>
+    </section>
+    <section class="card">
+      <div class="card-h"><div><span class="eyebrow">Instrumentos</span>
+        <h2>Tipo de documento legal</h2>
+        <p>Qué figura jurídica sostiene cada local</p></div></div>
+      <div class="lista" id="listaDoc"></div>
+    </section>
+  </div>
+
+  <div class="duo">
+    <section class="card">
+      <div class="card-h"><div><span class="eyebrow">Contraparte</span>
+        <h2>Quién es el titular del local</h2></div></div>
+      <div class="lista" id="listaTit"></div>
+    </section>
+    <section class="card">
+      <div class="card-h"><div><span class="eyebrow">Gasto</span>
+        <h2>Alquileres por unidad territorial</h2>
+        <p>Monto mensual comprometido</p></div></div>
+      <div class="lista" id="listaAlq"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-h"><div><span class="eyebrow">Advertencia</span>
+      <h2>Calidad del dato</h2>
+      <p>Lo que encontramos al procesar el padrón — conviene saberlo antes de citar cifras</p></div></div>
+    <div class="lista" id="hallazgos"></div>
+  </section>
+
+  <section class="aviso" id="aviso"></section>
+</main>
+
+<footer id="pie"></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="data/bd.js"></script>
+<script src="data/geo.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   Convenios de Locales — PNCM
+   Vanilla JS + Leaflet. Datos: bd.js (padrón) y geo.js (cartografía).
+   ══════════════════════════════════════════════════════════════════════ */
+
+const C = {cod:0,nombre:1,ut:2,esp:3,tipo:4,codCG:5,cg:6,cedente:7,titular:8,
+           foncodes:9,dir:10,ubigeo:11,dep:12,prov:13,dist:14,focal:15,
+           areaCedida:16,areaConstruida:17,usuarios:18,tiempoDoc:19,fIni:20,
+           fFin:21,monto:22,fEfec:23,tipoDoc:24,cond:25,tenencia:26,alerta:27,
+           nAdendas:28,dias:29};
+
+const CAT = CV_CAT, DATA = CV_DATA, META = CV_META, GEO = CV_GEO;
+const ALERTAS = ['ROJO','ÁMBAR','VERDE'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
+               'setiembre','octubre','noviembre','diciembre'];
+const MES3 = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SET','OCT','NOV','DIC'];
+const CORTE = new Date(META.corte + 'T00:00:00');
+
+const $   = id => document.getElementById(id);
+const cat = (k,i) => (i===null||i===undefined) ? '' : (CAT[k][i]||'');
+const nf  = n => (n||0).toLocaleString('es-PE');
+const sol = n => 'S/ ' + Math.round(n||0).toLocaleString('es-PE');
+const solD= n => 'S/ ' + (n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct = (a,b) => b ? (a*100/b).toFixed(1)+'%' : '0%';
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm= s => String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const fL  = iso => { if(!iso) return '—'; const [a,m,d]=iso.split('-'); return `${+d} de ${MESES[+m-1]} de ${a}`; };
+const fC  = iso => { if(!iso) return '—'; const [a,m,d]=iso.split('-'); return `${d}/${m}/${a}`; };
+
+/* ── Índice de búsqueda ───────────────────────────────── */
+const BUSCA = DATA.map(r => norm([r[C.cod],r[C.nombre],cat('cg',r[C.cg]),r[C.cedente],
+  r[C.dir],cat('dist',r[C.dist]),cat('prov',r[C.prov]),cat('ut',r[C.ut]),r[C.ubigeo]]
+  .filter(Boolean).join(' ')));
+
+/* ── Estado ───────────────────────────────────────────── */
+const F = {q:'',ut:'',dep:'',prov:'',dist:'',cond:'',tipo:'',ten:'',alerta:'',doc:'',
+           esp:'',titular:'',anio:''};
+let orden={col:C.ut,dir:1}, pagina=1, porPag=50, RES=[], capa='sin', mapa=null,
+    capaPol=null, distSel=null;
+
+/* ══════════════════════════════════════════════════════
+   AGREGADOS
+   ══════════════════════════════════════════════════════ */
+function resumir(rows){
+  const s={n:rows.length,con:0,sin:0,ciai:0,sa:0,conCiai:0,conSa:0,ced:0,alq:0,
+           rojo:0,ambar:0,verde:0,monto:0,nMonto:0,usuarios:0,cero:0,
+           uts:new Set(),deps:new Set(),dists:new Set(),v120:0,ninosSin:0,adendas:0};
+  for(const r of rows){
+    const con = r[C.cond]===1;
+    con ? s.con++ : s.sin++;
+    if(cat('tipo',r[C.tipo])==='CIAI'){ s.ciai++; if(con) s.conCiai++; }
+    else { s.sa++; if(con) s.conSa++; }
+    r[C.tenencia]===1 ? s.alq++ : s.ced++;
+    const a = r[C.alerta];
+    if(a===0) s.rojo++; else if(a===1) s.ambar++; else if(a===2) s.verde++;
+    if(a===0||a===1) s.v120++;
+    if(r[C.monto]>0){ s.monto+=r[C.monto]; s.nMonto++; }
+    s.usuarios += r[C.usuarios]||0;
+    if(!r[C.usuarios]) s.cero++;
+    if(!con) s.ninosSin += r[C.usuarios]||0;
+    if(r[C.nAdendas]>0) s.adendas++;
+    s.uts.add(r[C.ut]); s.deps.add(r[C.dep]); s.dists.add(r[C.dist]);
+  }
+  return s;
+}
+const NAC = resumir(DATA);
+/* El agregado por UT del universo completo no cambia: se calcula una vez.
+   Antes se recorrían los 3,366 locales en cada refresco sólo para la narrativa. */
+const UT_NAC = porUT(DATA);
+
+/* Agregado por distrito, para el mapa */
+const POR_DIST = (()=>{
+  const m = new Map();
+  for(const r of DATA){
+    const u = r[C.ubigeo]; if(!u) continue;
+    let d = m.get(u);
+    if(!d){ d={u,n:0,sin:0,rojo:0,ambar:0,monto:0,ninos:0,ninosSin:0,
+               nombre:cat('dist',r[C.dist]),prov:cat('prov',r[C.prov]),
+               dep:cat('dep',r[C.dep]),ut:cat('ut',r[C.ut])};
+            m.set(u,d); }
+    d.n++;
+    if(r[C.cond]===0){ d.sin++; d.ninosSin += r[C.usuarios]||0; }
+    if(r[C.alerta]===0) d.rojo++;
+    if(r[C.alerta]===1) d.ambar++;
+    if(r[C.monto]>0) d.monto += r[C.monto];
+    d.ninos += r[C.usuarios]||0;
+  }
+  return m;
+})();
+
+function porUT(rows){
+  const m = new Map();
+  for(const r of rows){
+    const k = cat('ut',r[C.ut]);
+    let v = m.get(k);
+    if(!v){ v={ut:k,n:0,con:0,sin:0,rojo:0,monto:0,ninosSin:0}; m.set(k,v); }
+    v.n++; r[C.cond]===1 ? v.con++ : (v.sin++, v.ninosSin += r[C.usuarios]||0);
+    if(r[C.alerta]===0) v.rojo++;
+    if(r[C.monto]>0) v.monto += r[C.monto];
+  }
+  return [...m.values()];
+}
+function contar(rows, fn){
+  const m = new Map();
+  for(const r of rows){ const k=fn(r); if(!k) continue; m.set(k,(m.get(k)||0)+1); }
+  return [...m.entries()].sort((a,b)=>b[1]-a[1]);
+}
+
+/* ══════════════════════════════════════════════════════
+   PESTAÑA 1 · PANORAMA
+   ══════════════════════════════════════════════════════ */
+function pintarHero(){
+  const dic = DATA.filter(r=>r[C.cond]===1 && (r[C.fEfec]||'').slice(0,7)==='2026-12').length;
+  $('hero').innerHTML = `
+  <div class="riesgo r1">
+    <span class="lbl">🔴 Sin respaldo legal</span>
+    <span class="big">${nf(NAC.sin)}</span>
+    <span class="sub">locales operan <b>sin documento legal</b>, el ${pct(NAC.sin,NAC.n)} del total.</span>
+    <div class="pie"><span>Niñas y niños ahí</span><b>${nf(NAC.ninosSin)}</b></div>
+  </div>
+  <div class="riesgo r2">
+    <span class="lbl">🟠 Vencen pronto</span>
+    <span class="big">${nf(NAC.v120)}</span>
+    <span class="sub">documentos vencen en <b>120 días o menos</b>; ${nf(NAC.rojo)} de ellos ya están en rojo.</span>
+    <div class="pie"><span>Y en diciembre, de golpe</span><b>${nf(dic)}</b></div>
+  </div>
+  <div class="riesgo r3">
+    <span class="lbl">💰 Gasto comprometido</span>
+    <span class="big">${sol(NAC.monto)}</span>
+    <span class="sub">mensuales en alquiler sobre <b>${nf(NAC.nMonto)} locales</b>.</span>
+    <div class="pie"><span>Proyección anual</span><b>${sol(NAC.monto*12)}</b></div>
+  </div>`;
+}
+/* Una sola pasada buscando el mínimo. Filtrar, mapear y ordenar 3,366 cadenas
+   para quedarse con la primera se pagaba en cada refresco. */
+function proxVenc(rows){
+  let min = null;
+  for(const r of rows){
+    if(r[C.cond]!==1 || !r[C.fEfec] || r[C.dias]<0) continue;
+    if(min===null || r[C.fEfec] < min) min = r[C.fEfec];
+  }
+  return min ? fC(min) : '—';
+}
+
+/* ── Cola de acciones ─────────────────────────────────── */
+function acciones(){
+  const rojos = DATA.filter(r=>r[C.alerta]===0)
+                    .sort((a,b)=>(a[C.dias]||0)-(b[C.dias]||0));
+  const ambar = DATA.filter(r=>r[C.alerta]===1);
+  const rojoAlq = rojos.filter(r=>r[C.tenencia]===1);
+  const sinGrandes = DATA.filter(r=>r[C.cond]===0 && r[C.usuarios]>=25)
+                         .sort((a,b)=>b[C.usuarios]-a[C.usuarios]);
+  const utBrecha = UT_NAC.filter(v=>v.n>=20)
+                    .map(v=>({...v,p:v.sin/v.n})).sort((a,b)=>b.p-a.p).slice(0,6);
+  const ceroUsu = DATA.filter(r=>r[C.usuarios]===0 && r[C.monto]>0)
+                      .sort((a,b)=>b[C.monto]-a[C.monto]);
+
+  /* El pico de diciembre. No lo detecta el semáforo: 31/12/2026 cae a 122 días
+     del corte, dos días fuera del umbral ámbar, así que 612 documentos figuran
+     en verde y nadie los ve venir. */
+  const dic = DATA.filter(r=>r[C.cond]===1 && (r[C.fEfec]||'').slice(0,7)==='2026-12');
+  const dicAlq = dic.filter(r=>r[C.tenencia]===1);
+  const dicMonto = dicAlq.reduce((a,r)=>a+(r[C.monto]||0),0);
+
+  return [
+    {p:1, n:dic.length,
+     t:'El pico de diciembre: 612 documentos vencen el mismo mes',
+     d:`${nf(dicAlq.length)} son alquileres por ${sol(dicMonto)} mensuales — el ${(dicMonto*100/NAC.monto).toFixed(0)}% de toda la renta del programa — y cubren a ${nf(dic.reduce((a,r)=>a+(r[C.usuarios]||0),0))} niñas y niños. El semáforo no los marca: el 31/12/2026 cae a 122 días del corte, dos días fuera del umbral ámbar, así que figuran en verde. Renovarlos exige empezar ahora, no en noviembre.`,
+     tabla: (()=>{ const m=new Map();
+        for(const r of dic){ const k=cat('ut',r[C.ut]); const v=m.get(k)||[0,0];
+          v[0]++; if(r[C.monto]) v[1]+=r[C.monto]; m.set(k,v); }
+        return [...m.entries()].sort((a,b)=>b[1][0]-a[1][0]).slice(0,8)
+          .map(([k,v])=>[esc(k), `${nf(v[0])} documentos`, sol(v[1]), null, k]); })(),
+     cols:['Unidad territorial','Vencen en diciembre','Renta mensual'],
+     filtro:{anio:'2026', cond:'CON DOC. LEGAL'}},
+
+    {p:1, n:rojos.length,
+     t:'Documentos en rojo: vencidos o con 60 días o menos',
+     d:`Es lo único que no puede esperar. ${nf(rojoAlq.length)} son alquileres y ${nf(rojos.length-rojoAlq.length)} cedidos. Cubren a ${nf(rojos.reduce((a,r)=>a+(r[C.usuarios]||0),0))} niñas y niños.`,
+     tabla: rojos.slice(0,8).map(r=>[
+        `${esc(r[C.nombre]||'—')}`,
+        `${esc(cat('ut',r[C.ut]))} · ${esc(cat('dist',r[C.dist]))}`,
+        `${fC(r[C.fEfec])}`, r[C.cod]]),
+     cols:['Local','Ubicación','Vence'],
+     filtro:{alerta:'ROJO'}},
+
+    {p:2, n:ambar.length,
+     t:'En ámbar: vencen dentro de 120 días',
+     d:`La ventana para renovar sin urgencia. Priorizar los ${nf(ambar.filter(r=>r[C.tenencia]===1).length)} alquileres, que requieren acuerdo de monto además de firma.`,
+     tabla: ambar.slice().sort((a,b)=>(a[C.dias]||0)-(b[C.dias]||0)).slice(0,8).map(r=>[
+        `${esc(r[C.nombre]||'—')}`,
+        `${esc(cat('ut',r[C.ut]))} · ${esc(cat('dist',r[C.dist]))}`,
+        `${fC(r[C.fEfec])}`, r[C.cod]]),
+     cols:['Local','Ubicación','Vence'],
+     filtro:{alerta:'ÁMBAR'}},
+
+    {p:3, n:sinGrandes.length,
+     t:'Locales sin documento donde se atiende a 25 niños o más',
+     d:`Sin documento legal y con servicio grande: si el propietario pide el local, no hay dónde reubicar. Suman ${nf(sinGrandes.reduce((a,r)=>a+r[C.usuarios],0))} niñas y niños.`,
+     tabla: sinGrandes.slice(0,8).map(r=>[
+        `${esc(r[C.nombre]||'—')}`,
+        `${esc(cat('ut',r[C.ut]))} · ${esc(cat('dist',r[C.dist]))}`,
+        nf(r[C.usuarios]), r[C.cod]]),
+     cols:['Local','Ubicación','Niños'],
+     filtro:{cond:'SIN DOC. LEGAL'}},
+
+    {p:4, n:utBrecha.length,
+     t:'Unidades territoriales con la brecha legal más ancha',
+     d:'Donde conviene concentrar al especialista antes que repartir esfuerzo parejo. Sólo se consideran UT con 20 locales o más.',
+     tabla: utBrecha.map(v=>[esc(v.ut), `${nf(v.sin)} de ${nf(v.n)}`,
+                             (v.p*100).toFixed(0)+'%', null, v.ut]),
+     cols:['Unidad territorial','Sin documento','Brecha'],
+     filtro:{cond:'SIN DOC. LEGAL'}},
+
+    {p:4, n:ceroUsu.length,
+     t:'Alquileres pagados en locales sin usuarios registrados',
+     d:`Se paga renta y el padrón no registra atención. Son ${sol(ceroUsu.reduce((a,r)=>a+r[C.monto],0))} al mes — conviene confirmar si están en acondicionamiento o si el gasto no corresponde.`,
+     tabla: ceroUsu.slice(0,8).map(r=>[
+        `${esc(r[C.nombre]||'—')}`,
+        `${esc(cat('ut',r[C.ut]))} · ${esc(cat('dist',r[C.dist]))}`,
+        sol(r[C.monto]), r[C.cod]]),
+     cols:['Local','Ubicación','Monto/mes'],
+     filtro:{ten:'ALQUILADO'}},
+  ];
+}
+
+function pintarAcciones(){
+  const A = acciones();
+  $('cntAcc').textContent = A.length;
+  $('acciones').innerHTML = A.map((a,i)=>`
+    <div class="accion" data-abierto="0" data-i="${i}">
+      <button class="accion-h">
+        <span class="pri p${a.p}">${a.p}</span>
+        <span class="accion-txt"><h3>${a.t}</h3><p>${a.d}</p></span>
+        <span class="accion-n num">${nf(a.n)}</span>
+        <span class="accion-chv">⌄</span>
+      </button>
+      <div class="accion-b"><div class="accion-c">
+        <table class="mini">
+          <thead><tr>${a.cols.map(c=>`<th style="text-align:left;font-size:.63rem;color:var(--tenue);
+            text-transform:uppercase;letter-spacing:.06em;padding:0 6px 7px;font-weight:700">${c}</th>`).join('')}</tr></thead>
+          <tbody>${a.tabla.map(f=>`<tr class="clic" data-cod="${f[3]??''}" data-ut="${f[4]??''}">
+            <td>${f[0]}</td><td style="color:var(--suave)">${f[1]}</td><td>${f[2]}</td></tr>`).join('')}</tbody>
+        </table>
+        ${a.n > a.tabla.length ? `<p style="font-size:.75rem;color:var(--tenue);margin-top:9px">
+          Se muestran ${a.tabla.length} de ${nf(a.n)}.</p>` : ''}
+        <div class="acc-cta">
+          <button class="btn btn-p" data-ir="${i}">Ver los ${nf(a.n)} en Consultar →</button>
+        </div>
+      </div></div>
+    </div>`).join('');
+
+  $('acciones').querySelectorAll('.accion-h').forEach(b=>{
+    b.onclick = () => {
+      const d = b.parentElement;
+      d.dataset.abierto = d.dataset.abierto==='1' ? '0' : '1';
+    };
+  });
+  $('acciones').querySelectorAll('[data-ir]').forEach(b=>{
+    b.onclick = e => { e.stopPropagation(); irAConsultar(A[+b.dataset.ir].filtro); };
+  });
+  $('acciones').querySelectorAll('.mini tr.clic').forEach(tr=>{
+    tr.onclick = e => {
+      e.stopPropagation();
+      if(tr.dataset.cod) abrirFicha(+tr.dataset.cod);
+      else if(tr.dataset.ut) irAConsultar({ut:tr.dataset.ut, cond:'SIN DOC. LEGAL'});
+    };
+  });
+}
+
+function irAConsultar(filtro){
+  Object.keys(F).forEach(k => F[k]='');
+  Object.assign(F, filtro);
+  sincronizar(); refrescar(); tab('consultar');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════════════════
+   MAPA
+   ══════════════════════════════════════════════════════ */
+const CAPAS = {
+  sin:   {t:'Locales sin documento legal', v:d=>d.sin, col:['#fee2e2','#fca5a5','#f87171','#ef4444','#b91c1c'],
+          fmt:d=>`${d.sin} de ${d.n} sin documento`},
+  rojo:  {t:'Documentos por vencer (rojo + ámbar)', v:d=>d.rojo+d.ambar,
+          col:['#fef3c7','#fde68a','#fbbf24','#f59e0b','#b45309'],
+          fmt:d=>`${d.rojo} en rojo · ${d.ambar} en ámbar`},
+  monto: {t:'Gasto mensual en alquiler', v:d=>d.monto,
+          col:['#dcfce7','#bbf7d0','#4ade80','#16a34a','#14532d'],
+          fmt:d=>`${sol(d.monto)} al mes`},
+  ninos: {t:'Niñas y niños en locales sin documento', v:d=>d.ninosSin,
+          col:['#ede9fe','#ddd6fe','#a78bfa','#7c3aed','#4c1d95'],
+          fmt:d=>`${nf(d.ninosSin)} niños expuestos`},
+};
+
+/* Los polígonos vienen delta-codificados en milésimas de grado. Decodificar los
+   29 mil vértices cuesta, así que se hace una sola vez por distrito y se guarda:
+   cambiar de capa no vuelve a tocar la geometría. */
+const _coords = new Map();
+function decodificar(u){
+  let c = _coords.get(u);
+  if(c) return c;
+  const arr = GEO.dis[u];
+  if(!arr) return null;
+  const p = GEO.prec, out = [];
+  let x=0, y=0;
+  for(let i=0;i<arr.length;i+=2){
+    if(i===0){ x=arr[0]; y=arr[1]; } else { x+=arr[i]; y+=arr[i+1]; }
+    out.push([y/p, x/p]);          // Leaflet usa [lat, lon]
+  }
+  _coords.set(u, out);
+  return out;
+}
+
+/* Cortes por cuantiles: con distribuciones tan sesgadas (Lima concentra todo),
+   los cortes iguales pintarían el mapa de un solo color. */
+function cortes(vals){
+  const v = vals.filter(x=>x>0).sort((a,b)=>a-b);
+  if(!v.length) return [0,0,0,0];
+  const q = p => v[Math.min(v.length-1, Math.floor(v.length*p))];
+  return [q(.25), q(.5), q(.75), q(.92)];
+}
+
+function color(val, cor, paleta){
+  if(!val) return null;
+  if(val <= cor[0]) return paleta[0];
+  if(val <= cor[1]) return paleta[1];
+  if(val <= cor[2]) return paleta[2];
+  if(val <= cor[3]) return paleta[3];
+  return paleta[4];
+}
+
+const PERU = L.latLngBounds([GEO.bbox[1],GEO.bbox[0]],[GEO.bbox[3],GEO.bbox[2]]);
+
+let renderer = null, POLYS = new Map(), realce = null;
+
+function initMapa(){
+  mapa = L.map('mapa',{preferCanvas:true, zoomSnap:.25, minZoom:4, maxZoom:12,
+                       attributionControl:true});
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    {attribution:'© Esri · HERE · Garmin · OpenStreetMap', maxZoom:16}).addTo(mapa);
+  mapa.attributionControl.setPrefix('Mapa base');
+  /* Encuadrar al país y no al mundo: si no, Perú queda a un costado y la
+     mitad del lienzo se la lleva Brasil. */
+  mapa.fitBounds(PERU, {padding:[6,6]});
+
+  /* UN solo renderer para los 437 distritos. Uno por polígono —que es lo que
+     había antes— mete 437 <canvas> en el DOM y el navegador los reposiciona
+     todos en cada paneo. */
+  renderer = L.canvas({padding:.25});
+  capaPol = L.layerGroup().addTo(mapa);
+  /* El realce del hover va en su propia capa SVG: repintar un polígono suelto
+     es barato, repintar el canvas entero en cada mousemove no lo es. */
+  realce = L.layerGroup().addTo(mapa);
+  construirPoligonos();
+  pintarMapa();
+
+  L.control.scale({imperial:false, maxWidth:120, position:'bottomleft'}).addTo(mapa);
+  const Reenc = L.Control.extend({
+    options:{position:'topleft'},
+    onAdd(){
+      const a = L.DomUtil.create('a','leaflet-bar');
+      a.href='#'; a.title='Ver todo el país'; a.innerHTML='⌂';
+      a.style.cssText='width:30px;height:30px;line-height:30px;text-align:center;'+
+                      'font-size:15px;background:#fff;color:#334155;text-decoration:none';
+      L.DomEvent.on(a,'click',e=>{ L.DomEvent.preventDefault(e);
+        cerrarPanel(); mapa.fitBounds(PERU,{padding:[6,6]}); });
+      return a;
+    }
+  });
+  mapa.addControl(new Reenc());
+}
+
+/* Los polígonos se crean UNA vez. Cambiar de capa sólo los recolorea. */
+function construirPoligonos(){
+  for(const [u,d] of POR_DIST){
+    const pts = decodificar(u); if(!pts) continue;
+    const poly = L.polygon(pts, {renderer, weight:.7, color:'#fff', fillOpacity:.82});
+    poly.on('click', ()=>{ distSel = d; panelDistrito(d); });
+    poly.on('mouseover', ()=> marcar(u));
+    poly.on('mouseout',  ()=> realce.clearLayers());
+    poly.bindTooltip('', {sticky:true});
+    POLYS.set(u, poly);
+    capaPol.addLayer(poly);
+  }
+}
+
+function marcar(u){
+  realce.clearLayers();
+  const pts = decodificar(u); if(!pts) return;
+  realce.addLayer(L.polygon(pts, {color:'#0f172a', weight:2, fill:false,
+                                  interactive:false, renderer:L.svg()}));
+}
+
+function pintarMapa(){
+  if(!mapa) return;
+  const cfg = CAPAS[capa];
+  const vals = [...POR_DIST.values()].map(cfg.v);
+  const cor = cortes(vals);
+  const total = vals.reduce((a,b)=>a+b,0);
+
+  for(const [u,d] of POR_DIST){
+    const poly = POLYS.get(u); if(!poly) continue;
+    const c = color(cfg.v(d), cor, cfg.col);
+    poly.setStyle({
+      color: c ? '#fff' : '#cbd5e1',
+      weight: c ? .7 : .5,
+      opacity: c ? .9 : .45,
+      fillColor: c || '#f1f5f9',
+      fillOpacity: c ? .82 : .3,
+    });
+    poly.setTooltipContent(
+      `<b>${esc(d.nombre)}</b><br>${esc(d.prov)}, ${esc(d.dep)}<br>${cfg.fmt(d)}`);
+  }
+
+  $('escala').innerHTML =
+    `<span style="font-weight:600;color:var(--tinta);margin-right:4px">${cfg.t}</span>
+     <span>menos</span>` +
+    cfg.col.map(c=>`<i style="background:${c}"></i>`).join('') +
+    `<span>más</span>`;
+  const sinGeom = [...POR_DIST.keys()].filter(u=>!GEO.dis[u]).length;
+  $('mapaNota').textContent =
+    `${nf(POR_DIST.size - sinGeom)} de ${nf(POR_DIST.size)} distritos dibujados · ` +
+    (capa==='monto' ? sol(total)+' al mes' : nf(total)+' casos en total');
+
+  pintarRanking(cfg);
+}
+
+/* El mapa dice dónde; el ranking dice cuánto y en qué orden atacarlo.
+   Juntos evitan que alguien tenga que interpretar tonos de color. */
+function pintarRanking(cfg){
+  const top = [...POR_DIST.values()]
+    .map(d => ({d, v: cfg.v(d)}))
+    .filter(x => x.v > 0)
+    .sort((a,b) => b.v - a.v)
+    .slice(0, 25);
+
+  $('rankTit').textContent = {sin:'Distritos con más locales sin documento',
+    rojo:'Distritos con más documentos por vencer',
+    monto:'Distritos con mayor gasto en alquiler',
+    ninos:'Distritos con más niños expuestos'}[capa];
+
+  $('rankLista').innerHTML = top.map((x,i)=>`
+    <button class="rank-r" data-u="${x.d.u}">
+      <span class="pos">${i+1}</span>
+      <span class="nm"><b>${esc(x.d.nombre)}</b><span>${esc(x.d.prov)}, ${esc(x.d.dep)}</span></span>
+      <span class="vl">${capa==='monto'?sol(x.v):nf(x.v)}
+        <small>${capa==='sin'?`de ${x.d.n}`:(capa==='monto'?'al mes':(capa==='ninos'?'niños':'documentos'))}</small></span>
+    </button>`).join('');
+
+  $('rankLista').querySelectorAll('.rank-r').forEach(b=>{
+    b.onclick = ()=>{
+      const u = b.dataset.u, d = POR_DIST.get(u), poly = POLYS.get(u);
+      if(poly) mapa.fitBounds(poly.getBounds(), {padding:[40,40], maxZoom:10});
+      else if(GEO.cen[u]) mapa.setView([GEO.cen[u][1], GEO.cen[u][0]], 10);
+      if(poly) marcar(u);
+      panelDistrito(d);
+    };
+  });
+}
+
+function panelDistrito(d){
+  cerrarPanel();
+  const cont = document.querySelector('#mapa').parentElement;
+  const div = document.createElement('div');
+  div.className = 'dpanel'; div.id = 'dpanel';
+  div.innerHTML = `
+    <button class="dp-x" id="dpX">✕</button>
+    <h4>${esc(d.nombre)}</h4>
+    <div class="dp-s">${esc(d.prov)} · ${esc(d.dep)}</div>
+    <div style="margin-top:12px">
+      <div class="dp-r"><span>Locales</span><b>${nf(d.n)}</b></div>
+      <div class="dp-r"><span>Sin documento legal</span><b style="color:${d.sin?'var(--rojo)':'inherit'}">${nf(d.sin)}</b></div>
+      <div class="dp-r"><span>En rojo / ámbar</span><b>${nf(d.rojo)} / ${nf(d.ambar)}</b></div>
+      <div class="dp-r"><span>Niños atendidos</span><b>${nf(d.ninos)}</b></div>
+      ${d.monto?`<div class="dp-r"><span>Alquiler mensual</span><b>${sol(d.monto)}</b></div>`:''}
+      <div class="dp-r"><span>Unidad territorial</span><b style="font-size:.72rem">${esc(d.ut)}</b></div>
+    </div>
+    <button class="btn btn-p" style="width:100%;margin-top:13px;justify-content:center"
+            id="dpIr">Ver los ${nf(d.n)} locales →</button>`;
+  cont.appendChild(div);
+  $('dpX').onclick = cerrarPanel;
+  $('dpIr').onclick = ()=> irAConsultar({dep:d.dep, prov:d.prov, dist:d.nombre});
+}
+const cerrarPanel = ()=> $('dpanel')?.remove();
+
+/* ══════════════════════════════════════════════════════
+   PESTAÑA 2 · CONSULTAR
+   ══════════════════════════════════════════════════════ */
+const unicos = a => [...new Set(a.filter(Boolean))].sort((x,y)=>x.localeCompare(y,'es'));
+function opciones(sel, lista, eti){
+  sel.innerHTML = `<option value="">${eti}</option>` +
+    lista.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+}
+function initSelects(){
+  opciones($('fUT'), unicos(CAT.ut), 'Todas las UT');
+  opciones($('fDep'), unicos(CAT.dep), 'Todo el país');
+  opciones($('fCond'), ['CON DOC. LEGAL','SIN DOC. LEGAL'], 'Todos');
+  opciones($('fTipo'), unicos(CAT.tipo), 'CIAI y SA');
+  opciones($('fTen'), ['CEDIDO','ALQUILADO'], 'Todas');
+  opciones($('fAlerta'), ALERTAS, 'Todas');
+  opciones($('fDoc'), unicos(CAT.tipoDoc), 'Todos');
+  opciones($('fEsp'), unicos(CAT.esp), 'Todos');
+  opciones($('fTitular'), unicos(CAT.titular), 'Todos');
+  opciones($('fAnio'), unicos(DATA.map(r=>r[C.fEfec]?r[C.fEfec].slice(0,4):null)), 'Todos');
+  cascada();
+}
+function cascada(){
+  const enDep = r => !F.dep || cat('dep',r[C.dep])===F.dep;
+  const enPro = r => !F.prov || cat('prov',r[C.prov])===F.prov;
+  const provs = unicos(DATA.filter(enDep).map(r=>cat('prov',r[C.prov])));
+  opciones($('fProv'), provs, 'Todas');
+  $('fProv').value = provs.includes(F.prov) ? F.prov : (F.prov='');
+  const dists = unicos(DATA.filter(r=>enDep(r)&&enPro(r)).map(r=>cat('dist',r[C.dist])));
+  opciones($('fDist'), dists, 'Todos');
+  $('fDist').value = dists.includes(F.dist) ? F.dist : (F.dist='');
+}
+/* Los campos categóricos se guardan como índice del catálogo, así que el filtro
+   se resuelve a índices UNA vez y adentro del bucle sólo se comparan enteros.
+   Antes eran doce búsquedas en array + doce comparaciones de cadena por fila,
+   3,366 veces, en cada tecla escrita. */
+function filtrar(){
+  const q  = norm(F.q.trim());
+  const ix = (k,v) => v ? CAT[k].indexOf(v) : -2;   // -2 = sin filtro, -1 = no existe
+  const iUT=ix('ut',F.ut), iDep=ix('dep',F.dep), iPro=ix('prov',F.prov),
+        iDis=ix('dist',F.dist), iTip=ix('tipo',F.tipo), iDoc=ix('tipoDoc',F.doc),
+        iEsp=ix('esp',F.esp), iTit=ix('titular',F.titular);
+  const cond   = F.cond ? (F.cond==='CON DOC. LEGAL' ? 1 : 0) : -1;
+  const ten    = F.ten  ? (F.ten==='ALQUILADO' ? 1 : 0) : -1;
+  const alerta = F.alerta ? ALERTAS.indexOf(F.alerta) : -1;
+  const anio   = F.anio || '';
+
+  RES = [];
+  for(let i=0;i<DATA.length;i++){
+    const r = DATA[i];
+    if(q && !BUSCA[i].includes(q)) continue;
+    if(iUT !==-2 && r[C.ut]      !==iUT ) continue;
+    if(iDep!==-2 && r[C.dep]     !==iDep) continue;
+    if(iPro!==-2 && r[C.prov]    !==iPro) continue;
+    if(iDis!==-2 && r[C.dist]    !==iDis) continue;
+    if(iTip!==-2 && r[C.tipo]    !==iTip) continue;
+    if(iDoc!==-2 && r[C.tipoDoc] !==iDoc) continue;
+    if(iEsp!==-2 && r[C.esp]     !==iEsp) continue;
+    if(iTit!==-2 && r[C.titular] !==iTit) continue;
+    if(cond  !==-1 && r[C.cond]     !==cond  ) continue;
+    if(ten   !==-1 && r[C.tenencia] !==ten   ) continue;
+    if(alerta!==-1 && r[C.alerta]   !==alerta) continue;
+    if(anio && (r[C.fEfec]||'').lastIndexOf(anio,0)!==0) continue;
+    RES.push(r);
+  }
+  ordenar();
+}
+function ordenar(){
+  const c=orden.col, d=orden.dir;
+  const txt = {[C.ut]:'ut',[C.dist]:'dist',[C.tipoDoc]:'tipoDoc'}[c];
+  RES.sort((x,y)=>{
+    let a=x[c], b=y[c];
+    if(txt){ a=cat(txt,a); b=cat(txt,b); }
+    if(a==null||a==='') return 1;
+    if(b==null||b==='') return -1;
+    if(typeof a==='number'&&typeof b==='number') return (a-b)*d;
+    return String(a).localeCompare(String(b),'es')*d;
+  });
+}
+function ambito(){
+  let a;
+  if(F.dist)      a = `${F.dist}, ${F.prov}`;
+  else if(F.prov) a = `Provincia de ${F.prov}`;
+  else if(F.dep)  a = `Departamento de ${F.dep}`;
+  else if(F.ut)   a = `UT ${F.ut}`;
+  else            a = 'Todo el país';
+  if(F.q.trim())  a += ` · “${F.q.trim()}”`;
+  if(F.cond)      a += ` · ${F.cond}`;
+  if(F.alerta)    a += ` · alerta ${F.alerta}`;
+  if(F.ten)       a += ` · ${F.ten}`;
+  return a;
+}
+function pintarCinta(s){
+  $('cinta').innerHTML = `
+   <div class="cinta-i"><span class="v num">${nf(s.n)}</span><span class="k">Locales</span>
+     <span class="x x-suave">${nf(s.ciai)} CIAI · ${nf(s.sa)} SA</span></div>
+   <div class="cinta-i"><span class="v num">${nf(s.con)}</span><span class="k">Con documento</span>
+     <span class="x x-verde">${pct(s.con,s.n)}</span></div>
+   <div class="cinta-i"><span class="v num">${nf(s.sin)}</span><span class="k">Sin documento</span>
+     <span class="x x-rojo">${pct(s.sin,s.n)}</span></div>
+   <div class="cinta-i"><span class="v num">${nf(s.v120)}</span><span class="k">Vencen ≤120 días</span>
+     <span class="x x-ambar">${nf(s.rojo)} en rojo</span></div>
+   <div class="cinta-i"><span class="v num">${sol(s.monto)}</span><span class="k">Alquiler / mes</span>
+     <span class="x x-suave">${nf(s.nMonto)} locales</span></div>`;
+}
+const COLS = [
+  {t:'Código',c:C.cod,cls:'n'},{t:'Local',c:C.nombre},{t:'UT',c:C.ut},
+  {t:'Distrito',c:C.dist},{t:'Tipo',c:C.tipo},{t:'Documento',c:C.cond},
+  {t:'Tenencia',c:C.tenencia},{t:'Vence',c:C.fEfec},{t:'Alerta',c:C.alerta},
+  {t:'Monto',c:C.monto,cls:'n'},{t:'Niños',c:C.usuarios,cls:'n'},
+];
+function pintarTabla(){
+  const tot=RES.length, pgs=Math.max(1,Math.ceil(tot/porPag));
+  if(pagina>pgs) pagina=pgs;
+  const ini=(pagina-1)*porPag, fin=Math.min(ini+porPag,tot);
+  if(!tot){
+    $('tabla').innerHTML = `<tbody><tr><td><div class="vacio"><div>🔍</div>
+      <p>Ningún local coincide con esta consulta.<br>Prueba quitando algún filtro.</p></div></td></tr></tbody>`;
+    $('pag').innerHTML=''; return;
+  }
+  const th = COLS.map((c,i)=>`<th data-i="${i}">${c.t}${orden.col===c.c?
+      ` <span style="color:var(--blue)">${orden.dir===1?'▲':'▼'}</span>`:''}</th>`).join('');
+  const tb = RES.slice(ini,fin).map(r=>{
+    const con=r[C.cond]===1, a=r[C.alerta];
+    return `<tr data-cod="${r[C.cod]}">
+      <td class="n">${r[C.cod]??''}</td>
+      <td><b style="color:var(--tinta)">${esc(r[C.nombre]||'—')}</b>
+          <span class="sec">${esc(cat('cg',r[C.cg]))}</span></td>
+      <td>${esc(cat('ut',r[C.ut]))}</td>
+      <td>${esc(cat('dist',r[C.dist]))}<span class="sec">${esc(cat('dep',r[C.dep]))}</span></td>
+      <td><span class="tag ${cat('tipo',r[C.tipo])==='CIAI'?'t-ciai':'t-sa'}">${esc(cat('tipo',r[C.tipo]))}</span></td>
+      <td><span class="tag ${con?'t-con':'t-sin'}">${con?'CON':'SIN'}</span></td>
+      <td><span class="tag ${r[C.tenencia]===1?'t-alq':'t-ced'}">${r[C.tenencia]===1?'ALQUILADO':'CEDIDO'}</span></td>
+      <td>${fC(r[C.fEfec])}</td>
+      <td><span class="pt pt-${a==null?'n':a}"></span>${a==null?'—':ALERTAS[a]}</td>
+      <td class="n">${r[C.monto]?nf(r[C.monto]):'—'}</td>
+      <td class="n">${nf(r[C.usuarios])}</td></tr>`;
+  }).join('');
+  $('tabla').innerHTML = `<thead><tr>${th}</tr></thead><tbody>${tb}</tbody>`;
+  $('tabla').querySelectorAll('thead th').forEach(th=>{
+    th.onclick = ()=>{ const c=COLS[+th.dataset.i].c;
+      orden.dir = orden.col===c ? -orden.dir : 1; orden.col=c;
+      ordenar(); pintarTabla(); };
+  });
+  $('tabla').querySelectorAll('tbody tr').forEach(tr=>{
+    tr.onclick = ()=> abrirFicha(+tr.dataset.cod);
+  });
+  const b=(x,p,dis,cur)=>`<button ${dis?'disabled':''} ${cur?'aria-current="true"':''} data-p="${p}">${x}</button>`;
+  let nums='', de=Math.max(1,pagina-2), ha=Math.min(pgs,de+4);
+  for(let p=de;p<=ha;p++) nums+=b(p,p,false,p===pagina);
+  $('pag').innerHTML = `<span class="pag-i">Mostrando <b>${nf(ini+1)}–${nf(fin)}</b> de <b>${nf(tot)}</b></span>
+    <span class="pag-b">${b('‹',pagina-1,pagina===1)}${nums}${b('›',pagina+1,pagina===pgs)}</span>`;
+  $('pag').querySelectorAll('button').forEach(x=>{
+    x.onclick = ()=>{ pagina=+x.dataset.p; pintarTabla();
+      window.scrollTo({top:$('tabla').closest('.card').offsetTop-90,behavior:'smooth'}); };
+  });
+}
+
+/* ── Ficha ────────────────────────────────────────────── */
+function abrirFicha(cod){
+  const r = DATA.find(x=>x[C.cod]===cod); if(!r) return;
+  const con=r[C.cond]===1, a=r[C.alerta];
+  const ic=['🔴','🟠','🟢'][a]||'⚪';
+  const msg = !con ? 'Este local <b>no cuenta con documento legal</b> registrado.'
+    : a==null ? 'Documento legal registrado, sin fecha de término.'
+    : a===2 ? `Vigente hasta el <b>${fL(r[C.fEfec])}</b> — ${nf(r[C.dias])} días.`
+    : `Vence el <b>${fL(r[C.fEfec])}</b> — quedan <b>${r[C.dias]} días</b>.`;
+  const fi=(k,v)=>`<div class="f-r"><span>${k}</span><b>${v||'—'}</b></div>`;
+  const ff=(k,v)=>`<div class="f-r f-full"><span>${k}</span><b>${v||'—'}</b></div>`;
+  document.body.insertAdjacentHTML('beforeend',`
+  <div class="mbg" id="mbg"><div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-h">
+      <div><h2>${esc(r[C.nombre]||'Local sin nombre')}</h2>
+        <p>Código ${r[C.cod]} · ${esc(cat('tipo',r[C.tipo]))} · ${esc(cat('ut',r[C.ut]))}</p></div>
+      <button class="x" id="mx" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-b">
+      <div class="banner b-${con?(a==null?'n':a):'0'}"><span>${con?ic:'⚪'}</span><span>${msg}</span></div>
+      <div class="f-sec">Identificación</div>
+      <div class="f-g">
+        ${fi('Código de local', r[C.cod])}
+        ${fi('Tipo de local', esc(cat('tipo',r[C.tipo])))}
+        ${fi('Comité de gestión', esc(cat('cg',r[C.cg])))}
+        ${fi('Código del comité', r[C.codCG])}
+        ${ff('Cedente', esc(r[C.cedente]))}
+        ${fi('Titular del local', esc(cat('titular',r[C.titular])))}
+        ${fi('Construido por FONCODES', esc(cat('foncodes',r[C.foncodes])))}
+      </div>
+      <div class="f-sec">Ubicación</div>
+      <div class="f-g">
+        ${ff('Dirección', esc(r[C.dir]))}
+        ${fi('Distrito', esc(cat('dist',r[C.dist])))}
+        ${fi('Provincia', esc(cat('prov',r[C.prov])))}
+        ${fi('Departamento', esc(cat('dep',r[C.dep])))}
+        ${fi('Ubigeo', r[C.ubigeo])}
+        ${fi('Distrito focalizado', r[C.focal]===1?'Sí cumple RM 089-2017':(r[C.focal]===0?'No focalizado':'—'))}
+        ${fi('Unidad territorial', esc(cat('ut',r[C.ut])))}
+        ${fi('Especialista', esc(cat('esp',r[C.esp])))}
+      </div>
+      <div class="f-sec">Documento legal</div>
+      <div class="f-g">
+        ${fi('Condición', con?'CON DOC. LEGAL':'SIN DOC. LEGAL')}
+        ${fi('Tipo de documento', esc(cat('tipoDoc',r[C.tipoDoc])))}
+        ${fi('Tenencia', r[C.tenencia]===1?'ALQUILADO':'CEDIDO')}
+        ${fi('Duración pactada', esc(r[C.tiempoDoc]))}
+        ${fi('Fecha de inicio', fL(r[C.fIni]))}
+        ${fi('Fecha final del documento', fL(r[C.fFin]))}
+        ${fi('Adendas suscritas', r[C.nAdendas])}
+        ${fi('Fecha final efectiva', fL(r[C.fEfec]))}
+        ${fi('Monto de alquiler', r[C.monto]?solD(r[C.monto])+' / mes':'—')}
+        ${fi('Alerta', a==null?'—':ALERTAS[a])}
+      </div>
+      <div class="f-sec">Servicio e infraestructura</div>
+      <div class="f-g">
+        ${fi('Niñas y niños registrados', nf(r[C.usuarios]))}
+        ${fi('Área cedida', r[C.areaCedida]?nf(r[C.areaCedida])+' m²':'—')}
+        ${fi('Área construida', r[C.areaConstruida]?nf(r[C.areaConstruida])+' m²':'—')}
+      </div>
+    </div></div></div>`);
+  document.body.style.overflow='hidden';
+  const cerrar=()=>{ $('mbg')?.remove(); document.body.style.overflow=''; };
+  $('mx').onclick=cerrar;
+  $('mbg').onclick=e=>{ if(e.target.id==='mbg') cerrar(); };
+  document.addEventListener('keydown', function esc2(e){
+    if(e.key==='Escape'){ cerrar(); document.removeEventListener('keydown',esc2); } });
+}
+
+/* ══════════════════════════════════════════════════════
+   PESTAÑA 3 · ANÁLISIS
+   ══════════════════════════════════════════════════════ */
+function pintarAnalisis(){
+  /* — calendario de vencimientos, 12 meses desde el corte — */
+  const meses = [];
+  for(let i=0;i<12;i++){
+    const d = new Date(CORTE.getFullYear(), CORTE.getMonth()+i, 1);
+    meses.push({y:d.getFullYear(), m:d.getMonth(), n:0});
+  }
+  let fuera = 0;
+  for(const r of DATA){
+    if(r[C.cond]!==1 || !r[C.fEfec]) continue;
+    const [y,m] = r[C.fEfec].split('-').map(Number);
+    const b = meses.find(x=>x.y===y && x.m===m-1);
+    b ? b.n++ : fuera++;
+  }
+  const max = Math.max(...meses.map(x=>x.n), 1);
+  $('meses').innerHTML = meses.map((x,i)=>{
+    const h = Math.max(2, x.n/max*130);
+    const cl = x.n>=max*.66 ? 'alto' : (x.n>=max*.33 ? 'medio' : '');
+    return `<div class="mes" data-y="${x.y}" data-m="${x.m+1}">
+      <span class="mes-v">${x.n||''}</span>
+      <div class="mes-b ${cl}" style="height:${h}px"></div>
+      <span class="mes-l">${MES3[x.m]}${x.m===0||i===0?`<br>${String(x.y).slice(2)}`:''}</span>
+    </div>`;
+  }).join('');
+  $('vencTot').textContent =
+    `${nf(meses.reduce((a,b)=>a+b.n,0))} en 12 meses · ${nf(fuera)} después`;
+  $('meses').querySelectorAll('.mes').forEach(el=>{
+    el.onclick = ()=> irAConsultar({anio:el.dataset.y, cond:'CON DOC. LEGAL'});
+  });
+
+  /* — cobertura por UT — */
+  const uts = UT_NAC.slice().sort((a,b)=>(b.sin/b.n)-(a.sin/a.n));
+  $('barUT').innerHTML = uts.map(v=>`
+    <div class="bar-r">
+      <span class="bar-lbl">${esc(v.ut)}</span>
+      <span class="bar-v">${nf(v.sin)} / ${nf(v.n)} · ${(v.sin*100/v.n).toFixed(0)}%</span>
+      <span class="bar-t">
+        <i style="width:${v.con*100/v.n}%;background:var(--verde)"></i>
+        <i style="width:${v.sin*100/v.n}%;background:var(--rojo)"></i>
+      </span>
+    </div>`).join('');
+
+  /* — tipos de documento — */
+  const docs = contar(DATA, r=>cat('tipoDoc',r[C.tipoDoc]));
+  const maxD = docs[0] ? docs[0][1] : 1;
+  $('listaDoc').innerHTML = docs.slice(0,12).map(([k,n])=>`
+    <div class="lista-r"><span title="${esc(k)}">${esc(k)}</span><b>${nf(n)}</b></div>
+    <div style="height:4px;border-radius:50px;background:var(--linea-t);margin:-4px 0 6px">
+      <i style="display:block;height:100%;border-radius:50px;width:${n*100/maxD}%;background:var(--blue)"></i>
+    </div>`).join('') +
+    `<div class="lista-r" style="border-top:1px solid var(--linea);margin-top:6px;padding-top:11px">
+       <span style="color:var(--suave)">Sin documento legal</span>
+       <b style="color:var(--rojo)">${nf(NAC.sin)}</b></div>`;
+
+  /* — titulares — */
+  const tits = contar(DATA, r=>cat('titular',r[C.titular]));
+  $('listaTit').innerHTML = tits.map(([k,n])=>`
+    <div class="lista-r"><span>${esc(k)}</span>
+      <b>${nf(n)} <span style="color:var(--tenue);font-weight:600">· ${pct(n,NAC.n)}</span></b></div>`).join('');
+
+  /* — alquileres por UT — */
+  const alq = porUT(DATA.filter(r=>r[C.monto]>0)).sort((a,b)=>b.monto-a.monto);
+  $('listaAlq').innerHTML = alq.map(v=>`
+    <div class="lista-r"><span>${esc(v.ut)} <span style="color:var(--tenue)">· ${nf(v.n)} locales</span></span>
+      <b>${sol(v.monto)}</b></div>`).join('') +
+    `<div class="lista-r" style="border-top:1px solid var(--linea);margin-top:6px;padding-top:11px">
+       <span style="font-weight:700;color:var(--tinta)">Total nacional</span>
+       <b>${sol(NAC.monto)}</b></div>`;
+
+  /* — calidad del dato — */
+  const sinDir = DATA.filter(r=>!r[C.dir]).length;
+  const sinArea = DATA.filter(r=>!r[C.areaCedida]).length;
+  const contradice = DATA.filter(r=>r[C.cond]===0 && r[C.tipoDoc]!=null).length;
+  const codigos = new Map(); DATA.forEach(r=>codigos.set(r[C.cod],(codigos.get(r[C.cod])||0)+1));
+  const dup = [...codigos.entries()].filter(([,n])=>n>1);
+  const H = [
+    ['⚠️', `${nf(contradice)} locales marcados SIN DOC. LEGAL pero con tipo de documento registrado`,
+      'El conteo oficial de 1,033 sin documento no es auditable fila por fila mientras esta contradicción exista.'],
+    ['🔁', `${dup.length} código${dup.length===1?'':'s'} de local duplicado${dup.length===1?'':'s'}${dup.length?': '+dup.map(d=>d[0]).join(', '):''}`,
+      'El código de local es la llave del padrón; duplicado impide cruzar con otras bases.'],
+    ['📍', `${nf(sinDir)} locales sin dirección registrada`,
+      'Dificulta la verificación en campo y la notificación al cedente.'],
+    ['📐', `${nf(sinArea)} locales sin área cedida`,
+      'Sin metraje no se puede valorizar la cesión ni dimensionar el acondicionamiento.'],
+    ['🧒', `${nf(NAC.cero)} locales con 0 niñas y niños registrados`,
+      'Puede ser acondicionamiento en curso, suspensión o un registro no actualizado. Conviene depurar.'],
+    ['🗺️', `${nf(META.conUbigeo)} de ${nf(NAC.n)} locales tienen ubigeo`,
+      'El padrón traía 697 vacíos; se completaron cruzando distrito, provincia y departamento con el listado del INEI.'],
+  ];
+  $('hallazgos').innerHTML = H.map(([ic,t,d])=>`
+    <div class="hallazgo"><span class="ic">${ic}</span>
+      <div><b>${t}</b><p>${d}</p></div></div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   NARRATIVA + EXPORTACIONES
+   ══════════════════════════════════════════════════════ */
+function narrativa(s, destino, amb){
+  const mes = MESES[+META.padron.slice(5,7)-1], anio = META.padron.slice(0,4);
+  const utsSin = UT_NAC.slice().sort((a,b)=>b.sin-a.sin).slice(0,3);
+  let t = `
+  <span class="eyebrow">Resumen narrativo</span>
+  <p style="margin-top:14px">Al corte del <strong>${fL(META.corte)}</strong>, sobre el padrón de
+  <strong>${mes} ${anio}</strong>, ${amb==='Todo el país'?'el país':`<strong>${esc(amb)}</strong>`} registra
+  <strong>${nf(s.n)} locales</strong> del Programa Nacional Cuna Más:
+  ${nf(s.ciai)} Centros Infantiles de Atención Integral y ${nf(s.sa)} Servicios Alimentarios,
+  con <strong>${nf(s.usuarios)} niñas y niños</strong> registrados.</p>
+
+  <h3>📄 Situación legal</h3>
+  <p><strong>${nf(s.con)} locales (${pct(s.con,s.n)})</strong> cuentan con documento legal y
+  <strong>${nf(s.sin)} (${pct(s.sin,s.n)})</strong> operan sin él.
+  ${s.ninosSin?`En esos locales se atiende a <strong>${nf(s.ninosSin)} niñas y niños</strong>.`:''}
+  ${amb==='Todo el país'&&utsSin.length?`Las unidades territoriales con más locales sin documento son
+  ${utsSin.map(v=>`<strong>${esc(v.ut)}</strong> (${v.sin})`).join(', ')}.`:''}</p>`;
+
+  if(s.con) t += `
+  <h3 class="h-v">⏱ Vencimientos</h3>
+  <p>De los ${nf(s.con)} documentos vigentes, <strong>${nf(s.rojo)} están en alerta roja</strong>
+  —vencidos o con 60 días o menos—, <strong>${nf(s.ambar)} en ámbar</strong> y ${nf(s.verde)} en verde.
+  En conjunto, <strong>${nf(s.v120)} requieren gestión dentro de los próximos 120 días</strong>.
+  El vencimiento más próximo es el ${proxVenc(RES.length?RES:DATA)}.
+  ${s.adendas?`${nf(s.adendas)} documentos ya fueron prorrogados mediante adenda.`:''}</p>`;
+
+  if(s.alq) t += `
+  <h3 class="h-a">💰 Tenencia</h3>
+  <p>${nf(s.ced)} locales son cedidos y <strong>${nf(s.alq)} alquilados</strong>.
+  ${s.nMonto?`Los ${nf(s.nMonto)} con monto registrado suman <strong>${solD(s.monto)} mensuales</strong>,
+  equivalentes a <strong>${solD(s.monto*12)} al año</strong>, con un promedio de ${solD(s.monto/s.nMonto)} por local.`:''}</p>`;
+
+  destino.innerHTML = t;
+}
+
+function descargar(nombre, contenido, mime){
+  const blob = new Blob(["﻿"+contenido], {type:mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = nombre;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const sufijo = () => ambito().replace(/[^\wáéíóúñÁÉÍÓÚÑ ]/g,'').replace(/\s+/g,'_').slice(0,60);
+
+function tablaHTML(rows){
+  const cab=['Código','Local','Comité de gestión','Cedente','Titular','UT','Especialista',
+    'Departamento','Provincia','Distrito','Ubigeo','Dirección','Tipo','Condición','Tenencia',
+    'Tipo de documento','Duración','Fecha inicio','Fecha final','Adendas','Fecha final efectiva',
+    'Alerta','Días restantes','Monto alquiler','Niños','Área cedida m2'];
+  const f = rows.map(r=>[r[C.cod],r[C.nombre],cat('cg',r[C.cg]),r[C.cedente],
+    cat('titular',r[C.titular]),cat('ut',r[C.ut]),cat('esp',r[C.esp]),cat('dep',r[C.dep]),
+    cat('prov',r[C.prov]),cat('dist',r[C.dist]),r[C.ubigeo],r[C.dir],cat('tipo',r[C.tipo]),
+    r[C.cond]===1?'CON DOC. LEGAL':'SIN DOC. LEGAL',r[C.tenencia]===1?'ALQUILADO':'CEDIDO',
+    cat('tipoDoc',r[C.tipoDoc]),r[C.tiempoDoc],r[C.fIni],r[C.fFin],r[C.nAdendas],r[C.fEfec],
+    r[C.alerta]==null?'':ALERTAS[r[C.alerta]],r[C.dias],r[C.monto],r[C.usuarios],r[C.areaCedida]]);
+  return `<table border="1"><thead><tr>${cab.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead>
+    <tbody>${f.map(x=>`<tr>${x.map(v=>`<td>${esc(v==null?'':v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+const ESTILO_OFI = `<style>body{font-family:Calibri;font-size:11pt;color:#1e293b}
+  h1{color:#14306a;font-size:16pt;margin-bottom:4pt}h2{color:#1d4ed8;font-size:12pt;margin-top:14pt}
+  h3{font-size:10.5pt;color:#0f172a}table{border-collapse:collapse;font-size:8pt;width:100%}
+  th{background:#14306a;color:#fff}td,th{border:1px solid #ccc;padding:3px}
+  .meta{color:#64748b;font-size:9pt}</style>`;
+
+$('btnExcel').onclick = ()=> descargar(`Convenios_${sufijo()}_${META.padron}.xls`,
+  `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8">
+   <style>th{background:#14306a;color:#fff;font-weight:bold}td,th{font-family:Calibri;font-size:11pt}</style>
+   </head><body>${tablaHTML(RES)}</body></html>`, 'application/vnd.ms-excel');
+
+$('btnWord').onclick = ()=> descargar(`Convenios_${sufijo()}_${META.padron}.doc`,
+  `<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">${ESTILO_OFI}</head><body>
+   <h1>Convenios de Locales — ${esc(ambito())}</h1>
+   <p class="meta"><b>Padrón:</b> ${META.padron} · <b>Corte:</b> ${fL(META.corte)}</p>
+   ${$('narrPan').innerHTML.replace(/<span class="eyebrow">.*?<\/span>/,'')}
+   <h2>Detalle de locales (${nf(RES.length)})</h2>${tablaHTML(RES)}
+   <p class="meta">Fuente: ${esc(META.fuente)} · Generado el ${new Date().toLocaleDateString('es-PE')}</p>
+   </body></html>`, 'application/msword');
+
+$('btnAccWord').onclick = ()=>{
+  const A = acciones();
+  const cuerpo = A.map(a=>`<h2>${a.p}. ${a.t} — ${nf(a.n)} casos</h2><p>${a.d}</p>
+    <table border="1"><thead><tr>${a.cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${a.tabla.map(f=>`<tr><td>${f[0]}</td><td>${f[1]}</td><td>${f[2]}</td></tr>`).join('')}</tbody></table>`).join('');
+  descargar(`Convenios_Acciones_${META.padron}.doc`,
+    `<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">${ESTILO_OFI}</head><body>
+     <h1>Convenios de Locales — Cola de trabajo priorizada</h1>
+     <p class="meta">Padrón ${META.padron} · Corte ${fL(META.corte)} · ${nf(NAC.n)} locales</p>
+     <p><b>${nf(NAC.sin)}</b> locales sin documento legal (${pct(NAC.sin,NAC.n)}), donde se atiende a
+     <b>${nf(NAC.ninosSin)}</b> niñas y niños. <b>${nf(NAC.v120)}</b> documentos vencen en 120 días o menos.
+     El gasto mensual en alquiler asciende a <b>${solD(NAC.monto)}</b>.</p>
+     ${cuerpo}
+     <p class="meta">Fuente: ${esc(META.fuente)}</p></body></html>`, 'application/msword');
+};
+
+function textoWA(){
+  const s = resumir(RES);
+  return `*CONVENIOS DE LOCALES — ${ambito().toUpperCase()}*
+Padrón ${META.padron} · Corte ${fC(META.corte)}
+
+🏘 *${nf(s.n)}* locales (${nf(s.ciai)} CIAI · ${nf(s.sa)} SA)
+✅ Con documento legal: *${nf(s.con)}* (${pct(s.con,s.n)})
+⚠️ Sin documento legal: *${nf(s.sin)}* (${pct(s.sin,s.n)})
+🧒 Niños atendidos: ${nf(s.usuarios)}${s.ninosSin?` (${nf(s.ninosSin)} en locales sin documento)`:''}
+
+*VENCIMIENTOS*
+🔴 Rojo (≤60 días): ${nf(s.rojo)}
+🟠 Ámbar (≤120 días): ${nf(s.ambar)}
+🟢 Verde (>120 días): ${nf(s.verde)}
+⏱ Requieren gestión en 120 días: *${nf(s.v120)}*
+
+*TENENCIA*
+🤝 Cedidos: ${nf(s.ced)} · 💰 Alquilados: ${nf(s.alq)}
+💵 Alquiler mensual: ${solD(s.monto)} (${solD(s.monto*12)} al año)`;
+}
+$('btnWA').onclick = ()=> window.open('https://wa.me/?text='+encodeURIComponent(textoWA()),'_blank');
+$('btnCopiar').onclick = async e=>{
+  try{ await navigator.clipboard.writeText(textoWA());
+    const b=e.currentTarget, t=b.textContent; b.textContent='✓ Copiado';
+    setTimeout(()=>b.textContent=t,1600);
+  }catch(_){ alert('No se pudo copiar al portapapeles.'); }
+};
+
+/* ══════════════════════════════════════════════════════
+   CHIPS, PESTAÑAS Y CICLO
+   ══════════════════════════════════════════════════════ */
+const ETI = {q:'Búsqueda',ut:'UT',dep:'Departamento',prov:'Provincia',dist:'Distrito',
+  cond:'Documento',tipo:'Tipo',ten:'Tenencia',alerta:'Alerta',doc:'Documento legal',
+  esp:'Especialista',titular:'Titular',anio:'Vence en'};
+function pintarChips(){
+  const act = Object.entries(F).filter(([,v])=>v);
+  $('chips').innerHTML = act.length
+    ? act.map(([k,v])=>`<span class="chip">${ETI[k]}: ${esc(v)}
+        <button data-k="${k}" title="Quitar">✕</button></span>`).join('')
+      + '<button class="limpiar" id="limpiar">Limpiar todo</button>'
+    : '';
+  $('chips').querySelectorAll('.chip button').forEach(b=>{
+    b.onclick = ()=>{ F[b.dataset.k]=''; sincronizar(); refrescar(); };
+  });
+  if($('limpiar')) $('limpiar').onclick = ()=>{
+    Object.keys(F).forEach(k=>F[k]=''); sincronizar(); refrescar(); };
+}
+function sincronizar(){
+  $('q').value=F.q; $('fUT').value=F.ut; $('fDep').value=F.dep; $('fCond').value=F.cond;
+  $('fTipo').value=F.tipo; $('fTen').value=F.ten; $('fAlerta').value=F.alerta;
+  $('fDoc').value=F.doc; $('fEsp').value=F.esp; $('fTitular').value=F.titular;
+  $('fAnio').value=F.anio;
+  cascada();
+  $('fProv').value=F.prov; $('fDist').value=F.dist;
+  const hayMas = F.cond||F.tipo||F.ten||F.alerta||F.doc||F.esp||F.titular||F.anio;
+  if(hayMas){ $('mas').classList.add('on'); $('btnMas').setAttribute('aria-expanded','true'); }
+}
+function refrescar(){
+  filtrar(); pagina=1;
+  const s = resumir(RES);
+  const amb = ambito();
+  $('ambitoTit').textContent = amb;
+  $('ambitoSub').textContent =
+    `${nf(RES.length)} locales · ${nf(s.con)} con documento · ${nf(s.sin)} sin documento`;
+  $('fTit').textContent = `${nf(RES.length)} de ${nf(DATA.length)} locales`;
+  pintarCinta(s); pintarTabla(); pintarChips();
+  narrativa(RES.length===DATA.length ? NAC : s, $('narrPan'), amb);
+}
+function tab(nombre){
+  document.querySelectorAll('.tab').forEach(b=>
+    b.setAttribute('aria-selected', b.dataset.t===nombre));
+  ['panorama','consultar','analisis'].forEach(v=>
+    $('v-'+v).classList.toggle('hidden', v!==nombre));
+  if(nombre==='panorama' && mapa) setTimeout(()=>mapa.invalidateSize(), 60);
+}
+document.querySelectorAll('.tab').forEach(b=> b.onclick = ()=> tab(b.dataset.t));
+
+let deb;
+$('q').oninput = e=>{ clearTimeout(deb);
+  deb = setTimeout(()=>{ F.q=e.target.value; refrescar(); }, 220); };
+const LINKS = {fUT:'ut',fDep:'dep',fProv:'prov',fDist:'dist',fCond:'cond',fTipo:'tipo',
+  fTen:'ten',fAlerta:'alerta',fDoc:'doc',fEsp:'esp',fTitular:'titular',fAnio:'anio'};
+Object.entries(LINKS).forEach(([id,k])=>{
+  $(id).onchange = e=>{
+    F[k] = e.target.value;
+    if(k==='dep'){ F.prov=''; F.dist=''; cascada(); }
+    if(k==='prov'){ F.dist=''; cascada(); }
+    refrescar();
+  };
+});
+$('btnMas').onclick = e=>{
+  const on = $('mas').classList.toggle('on');
+  e.currentTarget.setAttribute('aria-expanded', on);
+};
+$('capas').querySelectorAll('.capa').forEach(b=>{
+  b.onclick = ()=>{
+    capa = b.dataset.c;
+    $('capas').querySelectorAll('.capa').forEach(x=>
+      x.setAttribute('aria-pressed', x===b));
+    cerrarPanel(); pintarMapa();
+  };
+});
+
+/* ══════════════════════════════════════════════════════
+   ARRANQUE
+   ══════════════════════════════════════════════════════ */
+(function init(){
+  const t0 = performance.now();
+  $('hPadron').textContent = `${META.padron.slice(0,4)} · ${MESES[+META.padron.slice(5,7)-1].toUpperCase()}`;
+  $('hCorte').textContent  = `corte ${fC(META.corte)}`;
+
+  pintarHero();
+  pintarAcciones();
+  initSelects();
+  refrescar();
+  pintarAnalisis();
+
+  const nAlq = DATA.filter(r=>r[C.tenencia]===1).length;
+  $('aviso').innerHTML = `<b>Nota metodológica.</b> Cinco campos no existen en la base entregada y
+    se recalculan aquí: <b>fecha final efectiva</b>, <b>alerta de vencimiento</b>,
+    <b>tenencia</b>, <b>número de adendas</b> y <b>días restantes</b>. La versión original sólo los
+    conserva dentro de las cachés de las tablas dinámicas del Excel, y se pierden si alguien las
+    actualiza. <b>Contrastado con el reporte oficial:</b> cobertura legal (2,333 con / 1,033 sin),
+    alerta roja (56) y gasto mensual (${solD(NAC.monto)}) coinciden exactamente; ámbar y verde
+    difieren en 4 de 2,333 casos por el día de referencia. La tenencia reconstruida da
+    ${nf(nAlq)} alquilados frente a 610 oficiales (~2%, por locales sin monto ni tipo de documento).
+    El ubigeo se completó para ${nf(META.conUbigeo)} de ${nf(NAC.n)} locales cruzando con el
+    listado distrital del INEI: el padrón traía 697 vacíos.`;
+
+  const ms = ((performance.now()-t0)/1000).toFixed(1).replace('.',',');
+  $('pie').innerHTML =
+    `<div>📅 <em>Padrón:</em> <strong>${META.padron}</strong>
+      <span style="color:#d1d5db;margin:0 7px">|</span>
+      ✂️ <em>Corte:</em> <strong>${fC(META.corte)}</strong>
+      <span style="color:#d1d5db;margin:0 7px">|</span>
+      🏘 <em>Locales:</em> <strong>${nf(META.totalLocales)}</strong>
+      <span style="color:#d1d5db;margin:0 7px">|</span>
+      🗺 <em>Distritos:</em> <strong>${nf(POR_DIST.size)}</strong></div>
+     <div>🗄️ <em>Fuente:</em> <strong>${esc(META.fuente)}</strong>
+      <span style="color:#d1d5db;margin:0 7px">|</span>
+      ⚡ <em>Carga:</em> <strong>${ms} s</strong></div>
+     <div style="margin-top:7px">Diseñado y desarrollado por <strong>Phillyps BRAV[O]</strong></div>`;
+
+  /* El mapa se arma después del primer pintado: los titulares y la cola de
+     acciones aparecen de inmediato y la geometría entra cuando el hilo está
+     libre, en vez de bloquear la carga. */
+  const armarMapa = ()=>{ const t=performance.now(); initMapa();
+    console.info(`mapa listo en ${Math.round(performance.now()-t)} ms`); };
+  'requestIdleCallback' in window
+    ? requestIdleCallback(armarMapa, {timeout:1200})
+    : setTimeout(armarMapa, 60);
+})();
+</script>
+</body>
+</html>
