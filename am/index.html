@@ -116,6 +116,46 @@ body{
   gap:16px;
   flex-wrap:wrap;
 }
+/* ── Buscador en vivo (dentro de Búsqueda avanzada) ───────────────── */
+.busca-wrap{position:relative;flex:1 1 320px;min-width:240px;max-width:520px}
+.busca-input{
+  width:100%;padding:11px 38px 11px 38px;border:1px solid #d1d5db;border-radius:10px;
+  font-size:.92rem;font-family:inherit;color:#1e293b;background:#fff;transition:border-color .15s,box-shadow .15s;
+}
+.busca-input:focus{outline:none;border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.12)}
+.busca-lupa{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.95rem;pointer-events:none}
+.busca-limpiar{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;
+  color:#94a3b8;font-size:1rem;cursor:pointer;padding:4px 6px;border-radius:6px;display:none;
+}
+.busca-limpiar:hover{background:#f1f5f9;color:#475569}
+.busca-sug{
+  /* Cuelga del <body> y va en position:fixed a propósito: el contenedor de los
+     filtros tiene overflow:hidden para su animación de plegado y recortaba el
+     desplegable. */
+  position:fixed;z-index:9000;background:#fff;
+  border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.14);
+  max-height:320px;overflow-y:auto;display:none;
+}
+.busca-sug.abierta{display:block}
+.busca-item{
+  display:flex;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;
+  border-bottom:1px solid #f1f5f9;font-size:.86rem;color:#1e293b;
+}
+.busca-item:last-child{border-bottom:none}
+.busca-item:hover,.busca-item.activa{background:#eff6ff}
+.busca-nivel{
+  flex:0 0 auto;font-size:.6rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 7px;border-radius:50px;background:#eef2ff;color:#4338ca;
+}
+.busca-nivel[data-n="Departamento"]{background:#eff6ff;color:#1d4ed8}
+.busca-nivel[data-n="Provincia"]{background:#ecfdf5;color:#047857}
+.busca-nivel[data-n="Distrito"]{background:#fef3c7;color:#b45309}
+.busca-nivel[data-n="Centro poblado"]{background:#fae8ff;color:#a21caf}
+.busca-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.busca-txt b{color:#1d4ed8}
+.busca-vacio{padding:14px 13px;font-size:.84rem;color:#94a3b8;text-align:center}
+@media (max-width:820px){ .busca-wrap{flex:1 1 100%;max-width:none} }
 .select-group{display:flex;flex-direction:column;gap:6px;flex:1;min-width:160px}
 .select-group label{
   font-size:.75rem;
@@ -496,9 +536,31 @@ section#resultadosArea{margin-top:4px;}
   }
   .export-bar .btn span{display:block;line-height:1.2}
 }
+/* Embebida en Web_UPPM (?embebido=1): el periodo lo fija la web que la
+   contiene, así que la cabecera propia (con su selector de corte) no se muestra. */
+html.embebido .app-header{display:none}
+html.embebido body{min-height:0}
 </style>
 </head>
 <body>
+<script>
+// Embebida en Web_UPPM: se marca antes de pintar y se informa la altura al
+// contenedor para que el iframe crezca con el contenido (sin barra interna).
+if (/[?&]embebido=1(&|$)/.test(location.search) && window.parent !== window) {
+  document.documentElement.classList.add('embebido');
+  (function () {
+    let ultima = 0;
+    const avisar = () => {
+      const h = document.body.scrollHeight;
+      if (Math.abs(h - ultima) < 2) return;
+      ultima = h;
+      parent.postMessage({ am_altura: h }, '*');
+    };
+    new ResizeObserver(avisar).observe(document.body);
+    addEventListener('load', avisar);
+  })();
+}
+</script>
 
 <!-- HEADER -->
 <header class="app-header">
@@ -573,7 +635,18 @@ section#resultadosArea{margin-top:4px;}
         </div>
       </div>
       <!-- Ámbito especial: se muestra al activar "Búsqueda avanzada" (pill del header) -->
-      <div id="avanzadaBox" class="filter-row" style="display:none;margin-top:16px;padding-top:16px;border-top:1px dashed #e2e8f0;">
+      <div id="avanzadaBox" class="filter-row" style="display:none;margin-top:16px;padding-top:16px;border-top:1px dashed #e2e8f0;flex-wrap:wrap;gap:18px;">
+      <!-- Buscador en vivo: escribe y filtra sobre todos los ámbitos del corte -->
+      <div class="busca-wrap">
+        <label for="buscadorAmbito" style="display:block;font-size:.7rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Buscar por nombre</label>
+        <span class="busca-lupa" style="top:calc(50% + 11px);">🔍</span>
+        <input id="buscadorAmbito" class="busca-input" type="text" autocomplete="off"
+               placeholder="Escribe un departamento, provincia, distrito o centro poblado…"
+               aria-label="Buscar ámbito por nombre" aria-autocomplete="list" aria-controls="buscadorSug">
+        <button type="button" class="busca-limpiar" id="buscadorLimpiar" aria-label="Limpiar búsqueda">✕</button>
+        <div id="buscadorSug" class="busca-sug" role="listbox"></div>
+      </div>
+
         <div class="select-group" style="max-width:220px;">
           <label for="selectEspecial" style="display:flex;align-items:center;gap:6px;">
             <span style="background:#1d4ed8;color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:50px;letter-spacing:.05em;">ESPECIAL</span>
@@ -634,14 +707,17 @@ section#resultadosArea{margin-top:4px;}
 <!-- Las librerías de exportación (≈1,5 MB) ya no bloquean el render: se
      descargan la primera vez que se pide un Word, Excel, PPT o imagen. -->
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <script>
 (function () {
   const URLS = {
     filesaver:  'https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js',
-    xlsx:       'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+    // SheetJS Community ignora los estilos de celda; xlsx-js-style es la misma
+    // API y sí los escribe (la misma que usa Web_UPPM).
+    xlsx:       'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js',
     html2canvas:'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-    frontera:   '/am/frontera_modelo.js',  // 74 KB: solo al exportar FRONTERAS
-    pptmodelo:  '/am/modelo_ppt.js'        // 2,5 MB: el deck modelo, solo al exportar PPT
+    frontera:   '../DATOS_PNCM/plantillas/frontera_modelo.js',  // 74 KB: solo al exportar FRONTERAS
+    pptmodelo:  '../DATOS_PNCM/plantillas/modelo_ppt.js'        // 2,5 MB: el deck modelo, solo al exportar PPT
   };
   const pedidas = {};
   function una(k) {
@@ -661,15 +737,29 @@ section#resultadosArea{margin-top:4px;}
 })();
 </script>
 
-<!-- DATA -->
-<!-- Datos por corte: solo se descarga el mes consultado,
-     en vez de los 30 meses juntos. -->
-<script src="/am/data/manifest.js"></script>
+<!-- DATA — la fuente única es la carpeta hermana DATOS_PNCM (ver su LEEME.md).
+     Un archivo por corte: solo se lee el mes consultado, no los 31 juntos.
+     Para sumar un mes se actualiza DATOS_PNCM; este HTML no se toca.
+     La misma ruta relativa sirve en el laboratorio (DEVELOPER\AM → DEVELOPER\DATOS_PNCM)
+     y publicado (AM_REPO/am → AM_REPO/DATOS_PNCM). -->
+<script>window.AM_DATOS = '../DATOS_PNCM/';</script>
+<script src="../DATOS_PNCM/mensual/BD/manifest.js"></script>
+<script src="../DATOS_PNCM/parametros/parametros.js"></script>
 <script>
 (function () {
+  if (!window.AM_MESES || !window.AM_CAMPOS || !window.PNCM_PARAMETROS) {   // la fuente no cargo
+    document.write('<div style="font:16px/1.6 system-ui;padding:40px;max-width:640px;margin:auto">'
+      + '<h1 style="font-size:20px">No se encuentra la carpeta de datos</h1>'
+      + '<p>Esta página lee <code>../DATOS_PNCM/</code>: la carpeta <b>DATOS_PNCM</b> debe estar '
+      + 'al lado de la carpeta de la aplicación (en el laboratorio, dentro de DEVELOPER).</p>'
+      + '<p>Faltó: ' + [!window.AM_MESES && 'mensual/BD/manifest.js', !window.PNCM_PARAMETROS && 'parametros/parametros.js']
+          .filter(Boolean).join(', ') + '</p></div>');
+    return;
+  }
   const C = window.AM_CAMPOS, GEO = C.geo, NUM = C.num, nN = NUM.length;
   window.AM_DATA = [];
-  // Rehidrata un mes al formato de registros que usa el resto de la app
+  // Rehidrata un mes al formato de registros que usa el resto de la app.
+  // No se llama desde aqui: la llama cada mensual/BD/m_YYYYMM.js al final.
   window.AM_cargarMes = function (m) {
     const g = m.g, a = m.a, b = m.b, out = window.AM_DATA;
     for (let i = 0; i < m.r.length; i++) {
@@ -682,21 +772,38 @@ section#resultadosArea{margin-top:4px;}
       out.push(o);
     }
   };
-  const meses = window.AM_MESES;
+  const meses  = window.AM_MESES;
   const pedido = new URLSearchParams(location.search).get('corte');
-  const sel = meses.find(m => m.f === pedido) || meses[meses.length - 1];
-  window.AM_CORTE_SEL = sel.f;
+  const sel    = meses.find(m => m.f === pedido) || meses[meses.length - 1];
+  window.AM_CORTE_SEL  = sel.f;
   window.AM_EN_MEMORIA = new Set([sel.f]);   // cortes ya rehidratados
   window.AM_PEDIDOS    = {};                 // descargas en curso
-  document.write('<script src="/am/data/' + sel.a + '"><\/script>');
+  // Los tres insumos de corte unico se nombran por anio-mes. Si el archivo de
+  // este corte no existe, el <script> falla en silencio y la app sigue sin el.
+  const ym = sel.f.slice(0, 4) + sel.f.slice(5, 7);
+  const M = window.AM_DATOS + 'mensual/';
+  document.write(
+    '<script src="' + M + 'BD/' + sel.a + '"><\/script>' +
+    '<script src="' + M + 'CPP/ccpp_' + ym + '.js"><\/script>' +
+    '<script src="' + M + 'ACTORES/actores_' + ym + '.js"><\/script>' +
+    '<script src="' + M + 'SA/sa_' + ym + '.js"><\/script>'
+  );
 })();
 </script>
-<script>var dataset = window.AM_DATA;</script>
-<script src="/am/actores_julio26.js"></script>
-<script src="/am/sa_julio26.js"></script>
-<script src="/am/frontera_distritos.js"></script>
-<script src="/am/frontera_export.js"></script>
-<script src="/am/ut.js"></script>
+<script>
+var dataset = window.AM_DATA;
+// Cada insumo de corte unico queda guardado bajo su propio periodo, para que
+// cambiar de mes no deje colgados los datos del mes anterior.
+window.ACT_STORE = {}; window.SA_STORE = {};
+if (window.ACTORES && window.ACTORES.periodo)
+  window.ACT_STORE[window.ACTORES.periodo] = window.ACTORES;
+if (window.SERVICIOS_ALIMENTARIOS && window.SERVICIOS_ALIMENTARIOS.periodo)
+  window.SA_STORE[window.SERVICIOS_ALIMENTARIOS.periodo] = window.SERVICIOS_ALIMENTARIOS;
+</script>
+<script src="../DATOS_PNCM/fijo/ut.js"></script>
+<script src="../DATOS_PNCM/fijo/frontera_distritos.js"></script>
+<script src="../DATOS_PNCM/fijo/ambitos_especiales.js"></script>
+<script src="lib/frontera_export.js"></script>
 
 <script>
 // ══════════════════════════════════════════════════
@@ -704,29 +811,36 @@ section#resultadosArea{margin-top:4px;}
 // ══════════════════════════════════════════════════
 const FECHA_CORTE = window.AM_CORTE_SEL;
 
-const _fcDate  = new Date(FECHA_CORTE + "T12:00:00");
-const _nxtDate   = new Date(_fcDate.getFullYear(), _fcDate.getMonth() + 2, 1); // fecha próx. actualización
-const _datosDate = new Date(_fcDate.getFullYear(), _fcDate.getMonth() + 1, 1); // mes de datos incluidos
-const _ML = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 const _MC = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
-const DATOS_CORTE_LABEL        = _ML[_fcDate.getMonth()]    + " " + _fcDate.getFullYear();
-const DATOS_CORTE_LABEL_CORTO  = _MC[_fcDate.getMonth()]    + " " + _fcDate.getFullYear();
-const PROX_DATOS_LABEL         = _ML[_datosDate.getMonth()] + " " + _datosDate.getFullYear();
-const PROX_DATOS_LABEL_CORTO   = _MC[_datosDate.getMonth()] + " " + _datosDate.getFullYear();
-const PROX_ACTUALIZACION       = "16 de " + _ML[_nxtDate.getMonth()];
-const PROX_ACTUALIZACION_CORTO = "16 " + _MC[_nxtDate.getMonth()];
-// ── VERSIÓN ─ formato: v[AÑO].[MES]-r1  (año/mes de publicación)
-const _pubDate    = new Date();
-const APP_VERSION = "v" + _pubDate.getFullYear() + "." + String(_pubDate.getMonth() + 1).padStart(2, '0') + "-r1";
+// «Datos actualizados a» y «Próxima actualización» describen el corte que se
+// está mirando. Se recalculan al cambiar de corte (ver selectCorte).
+let DATOS_CORTE_LABEL_CORTO, PROX_DATOS_LABEL_CORTO, PROX_ACTUALIZACION_CORTO;
+function fijarEtiquetasCorte(fechaISO) {
+  const fc    = new Date(fechaISO + "T12:00:00");
+  const nxt   = new Date(fc.getFullYear(), fc.getMonth() + 2, 1);   // fecha próx. actualización
+  const datos = new Date(fc.getFullYear(), fc.getMonth() + 1, 1);   // mes de datos que traerá
+  DATOS_CORTE_LABEL_CORTO  = _MC[fc.getMonth()]    + " " + fc.getFullYear();
+  PROX_DATOS_LABEL_CORTO   = _MC[datos.getMonth()] + " " + datos.getFullYear();
+  PROX_ACTUALIZACION_CORTO = "16 " + _MC[nxt.getMonth()];
+  const fTxt = document.getElementById('appFooterText');
+  if (fTxt) fTxt.innerHTML = buildFooterLine();
+}
 // Mostrar el enlace "Ayudas generadas" en pantalla. En producción se deja en false
 // hasta validarlo en el laboratorio (donde va en true).
-const MOSTRAR_ESTADISTICAS = false;
+const MOSTRAR_ESTADISTICAS = true;
 
 // Helpers de footer (reutilizados para pantalla y Word)
 function _fmtFechaHora(d = new Date()) {
   const pad = n => String(n).padStart(2, '0');
   return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+// Fuente de los datos: una sola frase para pantalla, Word y Excel (parametros.js).
+const FUENTE_DATOS = (window.PNCM_PARAMETROS && window.PNCM_PARAMETROS.fuente) || 'Padrones oficiales UOAI';
+// «14:43 del 16/09/2026» — para «Generado a las …»
+function _generadoALas(d = new Date()) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())} del ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
 }
 // Tiempo transcurrido desde que se pidió la página hasta que la app quedó lista
 function _tiempoCarga() {
@@ -746,16 +860,16 @@ function buildFooterLine(fechaHora) {
   const linea1 =
     seg(`📅 ${it('Datos actualizados a:')} ${st(DATOS_CORTE_LABEL_CORTO)}`) + sep +
     seg(`🔄 ${it('Próxima actualización:')} ${st(PROX_ACTUALIZACION_CORTO)} <span style="color:#9ca3af;">(incluye ${PROX_DATOS_LABEL_CORTO})</span>`);
-  const linea2 =
-    seg(`🗄️ ${it('Fuente:')} ${st('SISTEMA INTEGRADO')}`) + sep +
-    seg(fechaHora ? `🕒 ${it('Fecha y hora:')} ${st(fh)}`
-                  : `⚡ ${it('Tiempo de carga:')} ${st(_tiempoCarga())}`);
+  // Documentos exportados (Word): fuente en una línea y la hora de generación
+  // en otra. Sin versión ni «generado por».
+  const linea2 = fechaHora
+    ? seg(`🗄️ ${it('Fuente:')} ${st(FUENTE_DATOS)}`)
+    : seg(`🗄️ ${it('Fuente:')} ${st(FUENTE_DATOS)}`) + sep +
+      seg(`⚡ ${it('Tiempo de carga:')} ${st(_tiempoCarga())}`);
 
   let linea3;
   if (fechaHora) {
-    // Documentos exportados (Word): crédito institucional
-    linea3 = seg(`📊 ${it('Versión:')} ${st(APP_VERSION)}`) + sep +
-             seg(`⚙️ ${it('Generado por:')} ${st('UPPM–PNCM–MIDIS')}`);
+    linea3 = seg(`🕒 ${it('Generado a las')} ${st(fh)}`);
   } else {
     // Pantalla: crédito de autor (+ estadísticas si están habilitadas)
     linea3 = seg(`Diseñado y desarrollado por <a href="https://phillyps-bravo.vercel.app/" target="_blank" rel="noopener" style="${linkStyle}">Phillyps BRAV[O]</a>`);
@@ -768,17 +882,19 @@ function buildFooterLine(fechaHora) {
          `<div>${linea3}</div>`;
 }
 // Inyecta la información del footer en pantalla
-document.addEventListener('DOMContentLoaded', () => {
-  const fTxt = document.getElementById('appFooterText');
-  if (fTxt) fTxt.innerHTML = buildFooterLine();
-});
+document.addEventListener('DOMContentLoaded', () => fijarEtiquetasCorte(fechaCorteActual() || FECHA_CORTE));
 
 // ══════════════════════════════════════════════════
 //  Estadísticas de uso (locales a este dispositivo)
 // ══════════════════════════════════════════════════
 const AM_STATS_KEY = 'am_stats_v1';
 function _leerStats() { try { return JSON.parse(localStorage.getItem(AM_STATS_KEY)) || {}; } catch (e) { return {}; } }
+// Etiquetas válidas. Toda acción que produzca una salida debe registrar una
+// de estas, y solo una: es lo que cuenta el panel y lo que viaja a Vercel.
+const AM_STATS_TAGS = ['consultas', 'word', 'excel', 'ppt', 'wa', 'imagen'];
+
 function registrarStat(tipo) {
+  if (AM_STATS_TAGS.indexOf(tipo) < 0) { console.warn('etiqueta de estadística desconocida:', tipo); return; }
   try {
     const s = _leerStats();
     s[tipo] = (s[tipo] || 0) + 1;
@@ -787,12 +903,29 @@ function registrarStat(tipo) {
     s.ultima = hoy;
     localStorage.setItem(AM_STATS_KEY, JSON.stringify(s));
   } catch (e) { /* localStorage no disponible: se ignora */ }
+  // Vercel Web Analytics: el contador local es por dispositivo; este envío es
+  // el que deja ver el uso agregado en el panel de Vercel. Si el script no
+  // está (por ejemplo abriendo el archivo con file://), no pasa nada.
+  try {
+    if (typeof window.va === 'function') {
+      window.va('event', { name: 'am_' + tipo, data: { corte: fechaCorteActual() } });
+    }
+  } catch (e) { /* analítica caída: nunca debe romper la descarga */ }
+}
+
+// El script de analítica solo existe cuando la página se sirve por HTTP
+// (Vercel lo publica en esa ruta). En el laboratorio, con file://, no se pide.
+if (location.protocol === 'http:' || location.protocol === 'https:') {
+  const _sa = document.createElement('script');
+  _sa.defer = true;
+  _sa.src = '/_vercel/insights/script.js';
+  document.head.appendChild(_sa);
 }
 function cerrarEstadisticas() { const o = document.getElementById('statsOverlay'); if (o) o.remove(); }
 function abrirEstadisticas() {
   const s = _leerStats();
   const n = k => s[k] || 0;
-  const total = n('word') + n('excel') + n('ppt');
+  const total = n('word') + n('excel') + n('ppt') + n('imagen');
   const fFecha = iso => iso ? new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
   const tile = (lbl, val, color) =>
     `<div style="flex:1;min-width:84px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 8px;text-align:center;">
@@ -821,6 +954,7 @@ function abrirEstadisticas() {
            ${tile('Word', n('word'), '#1d4ed8')}
            ${tile('Excel', n('excel'), '#15803d')}
            ${tile('PPT', n('ppt'), '#c2410c')}
+           ${tile('Imagen', n('imagen'), '#7c3aed')}
            ${tile('WhatsApp', n('wa'), '#16a34a')}
          </div>
          <div style="display:flex;flex-wrap:wrap;gap:8px;">
@@ -845,6 +979,7 @@ const LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAg0AAABaCAYAA
 //  INIT
 // ══════════════════════════════════════════════════
 let   ultimaFecha      = new Date(FECHA_CORTE);
+fijarEtiquetasCorte(FECHA_CORTE);
 const opciones         = { month: 'long' };
 let   mesNombre        = ultimaFecha.toLocaleDateString('es-PE', opciones).toUpperCase();
 let   año              = ultimaFecha.getFullYear();
@@ -870,8 +1005,8 @@ function _traerCorte(f) {
   if (!window.AM_PEDIDOS[f]) {
     window.AM_PEDIDOS[f] = new Promise((ok, mal) => {
       const sc = document.createElement('script');
-      sc.src = '/am/data/' + m.a;
-      sc.onload = () => { window.AM_EN_MEMORIA.add(f); ok(); };
+      sc.src = window.AM_DATOS + 'mensual/BD/' + m.a;
+      sc.onload  = () => { window.AM_EN_MEMORIA.add(f); ok(); };
       sc.onerror = mal;
       document.head.appendChild(sc);
     });
@@ -879,9 +1014,8 @@ function _traerCorte(f) {
   return window.AM_PEDIDOS[f];
 }
 
-// Precarga en segundo plano SOLO los meses del año en curso (~1,3 MB).
-// Los cortes de años anteriores se traen cuando se piden: son consulta
-// ocasional y no justifican gastar la banda de todos al entrar.
+// Precarga en segundo plano los meses del año en curso, para que cambiar de
+// corte dentro del año sea instantáneo. Los años anteriores se traen al pedirlos.
 function precargarCortes() {
   const añoActual = FECHA_CORTE.slice(0, 4);
   const orden = window.AM_MESES
@@ -901,16 +1035,16 @@ selectCorte.addEventListener('change', () => {
     ultimaFecha = new Date(f);
     mesNombre   = ultimaFecha.toLocaleDateString('es-PE', { month: 'long' }).toUpperCase();
     año         = ultimaFecha.getFullYear();
+    fijarEtiquetasCorte(f);
+    aplicarInsumos(f);
     poblarCentrosPoblados();   // reevalúa el filtro CCPP según el nuevo corte
     if (selectDep.value) filtrar(); else mostrarResumenNacional();
   };
-  // carga el CCPP del corte (si existe) antes de renderizar
-  const cargarYAplicar = () => cargarCCPP(f).finally(aplicar);
-  if (window.AM_EN_MEMORIA.has(f)) return cargarYAplicar();
   selectCorte.disabled = true;
   _traerCorte(f)
-    .then(cargarYAplicar)
-    .catch(() => {   // respaldo: recargar pidiendo ese corte
+    .then(() => Promise.all([cargarCCPP(f), cargarACT(f), cargarSA(f)]))
+    .then(aplicar)
+    .catch(() => {   // respaldo: recargar la página pidiendo ese corte
       const url = new URL(location.href);
       url.searchParams.set('corte', f);
       location.href = url.toString();
@@ -947,7 +1081,7 @@ const selectDist = document.getElementById('selectDistrito');
 const selectCP   = document.getElementById('selectCentroPoblado');
 
 // ── Datos por CENTRO POBLADO — carga mensual auto-detectada ──
-// Cada mes se genera /am/data/ccpp_YYYYMM.js que se autorregistra en
+// Cada mes se genera DATOS_PNCM/mensual/CPP/ccpp_YYYYMM.js, que se autorregistra en
 // window.CCPP_STORE[fecha] = { saf, scd }. La app intenta cargar el archivo
 // del corte seleccionado; si existe, habilita el filtro CCPP; si no, lo omite.
 const CCPP_IDX = {
@@ -965,12 +1099,51 @@ function cargarCCPP(fecha) {
   if (_ccppIntentos[fecha]) return _ccppIntentos[fecha];
   _ccppIntentos[fecha] = new Promise(resolve => {
     const s = document.createElement('script');
-    s.src = '/am/data/ccpp_' + _fechaAWmes(fecha) + '.js';
+    s.src = window.AM_DATOS + 'mensual/CPP/ccpp_' + _fechaAWmes(fecha) + '.js';
     s.onload  = () => resolve(!!window.CCPP_STORE[fecha]);
     s.onerror = () => resolve(false);   // no hay CCPP para ese corte
     document.head.appendChild(s);
   });
   return _ccppIntentos[fecha];
+}
+
+// ── Insumos de corte único: ACTORES y SERVICIOS ALIMENTARIOS ──
+// Mismo trato que el CCPP: se piden por año-mes y, si el archivo de ese corte
+// no existe, la promesa resuelve en falso y la app sigue sin ese detalle.
+const _insIntentos = {};
+function _cargarInsumo(carpeta, prefijo, fecha) {
+  const clave = carpeta + '@' + fecha;
+  if (_insIntentos[clave]) return _insIntentos[clave];
+  _insIntentos[clave] = new Promise(resolve => {
+    const s = document.createElement('script');
+    s.src = window.AM_DATOS + 'mensual/' + carpeta + '/' + prefijo + _fechaAWmes(fecha) + '.js';
+    s.onload  = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+  return _insIntentos[clave];
+}
+function cargarACT(f) {
+  if (window.ACT_STORE[f]) return Promise.resolve(true);
+  return _cargarInsumo('ACTORES', 'actores_', f).then(() => {
+    if (window.ACTORES && window.ACTORES.periodo === f) window.ACT_STORE[f] = window.ACTORES;
+    return !!window.ACT_STORE[f];
+  });
+}
+function cargarSA(f) {
+  if (window.SA_STORE[f]) return Promise.resolve(true);
+  return _cargarInsumo('SA', 'sa_', f).then(() => {
+    const m = window.SERVICIOS_ALIMENTARIOS;
+    if (m && m.periodo === f) window.SA_STORE[f] = m;
+    return !!window.SA_STORE[f];
+  });
+}
+// Deja en pie los insumos del corte elegido y descarta los del anterior
+function aplicarInsumos(f) {
+  window.ACTORES = window.ACT_STORE[f] || null;
+  window.SERVICIOS_ALIMENTARIOS = window.SA_STORE[f] || null;
+  if (window.AM__resetIdx) window.AM__resetIdx();
+  if (typeof invalidarBusqueda === 'function') invalidarBusqueda();
 }
 
 function fechaCorteActual() { try { return ultimaFecha.toISOString().split('T')[0]; } catch (e) { return null; } }
@@ -1051,7 +1224,11 @@ function toggleAvanzada() {
   if (abrir && card && card.classList.contains('plegado')) toggleFiltros(true);
   box.style.display = abrir ? 'flex' : 'none';
   btn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
-  if (abrir) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  if (abrir) {
+    box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    const caja = document.getElementById('buscadorAmbito');
+    if (caja && !esMovil()) setTimeout(() => caja.focus(), 220);
+  }
 }
 
 // ── Móvil: la búsqueda NO es en vivo; se dispara con el botón "Consultar" ──
@@ -1109,6 +1286,231 @@ selectCP.addEventListener('change', () => {
 });
 
 // ══════════════════════════════════════════════════
+//  BUSCADOR EN VIVO  (Búsqueda avanzada)
+// ══════════════════════════════════════════════════
+// Escribe y filtra sobre todos los ámbitos del corte vigente: departamentos,
+// provincias, distritos y —si el corte tiene archivo CCPP— centros poblados.
+// El índice se arma la primera vez que se escribe y se bota al cambiar de
+// corte, porque los distritos y los centros poblados varían entre meses.
+const BUSCA_MAX = 40;
+let _IDX_BUSCA = null;
+
+function _sinTildes(t) {
+  return (t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+}
+
+function _indiceBusqueda() {
+  if (_IDX_BUSCA) return _IDX_BUSCA;
+  const f = fechaCorteActual();
+  const filas = dataset.filter(d => d.fecha === f);
+  const vistos = new Set();
+  const out = [];
+  const geo = {};
+  filas.forEach(d => {
+    geo[d.ubigeo] = d;
+    if (!vistos.has('D|' + d.departamento)) {
+      vistos.add('D|' + d.departamento);
+      out.push({ t: d.departamento, sub: 'Departamento', nivel: 'Departamento', dep: d.departamento });
+    }
+    const kp = 'P|' + d.departamento + '|' + d.provincia;
+    if (!vistos.has(kp)) {
+      vistos.add(kp);
+      out.push({ t: d.provincia, sub: d.departamento, nivel: 'Provincia', dep: d.departamento, prov: d.provincia });
+    }
+    out.push({ t: d.distrito, sub: d.provincia + ' · ' + d.departamento, nivel: 'Distrito',
+               dep: d.departamento, prov: d.provincia, dist: d.distrito });
+  });
+  const store = ccppDelCorte();
+  if (store) {
+    const agregado = new Set();
+    ['saf', 'scd'].forEach(bloque => {
+      Object.keys(store[bloque]).forEach(ub => {
+        const g = geo[ub];
+        if (!g) return;
+        store[bloque][ub].forEach(r => {
+          const k = ub + r[0];
+          if (agregado.has(k)) return;
+          agregado.add(k);
+          out.push({ t: r[1], sub: g.distrito + ' · ' + g.provincia + ', ' + g.departamento,
+                     nivel: 'Centro poblado', dep: g.departamento, prov: g.provincia,
+                     dist: g.distrito, cp: r[0] });
+        });
+      });
+    });
+  }
+  out.forEach(o => { o.k = _sinTildes(o.t); o.ks = _sinTildes(o.sub); });
+  _IDX_BUSCA = out;
+  return out;
+}
+
+// Al cambiar de corte cambian los distritos y los centros poblados
+function invalidarBusqueda() {
+  _IDX_BUSCA = null;
+  const caja = document.getElementById('buscadorAmbito');
+  if (caja && caja.value) { caja.value = ''; _pintarSugerencias([]); _verBotonLimpiar(); }
+}
+
+function _puntaje(o, q) {
+  const i = o.k.indexOf(q);
+  if (i === 0) return 0;              // empieza con lo escrito
+  if (i > 0)   return 1;              // lo contiene
+  return o.ks.indexOf(q) >= 0 ? 2 : -1;   // coincide por el ámbito que lo contiene
+}
+
+const _PESO_NIVEL = { 'Departamento': 0, 'Provincia': 1, 'Distrito': 2, 'Centro poblado': 3 };
+
+function _buscarAmbitos(texto) {
+  const q = _sinTildes(texto).trim();
+  if (q.length < 2) return [];
+  const res = [];
+  for (const o of _indiceBusqueda()) {
+    const p = _puntaje(o, q);
+    if (p >= 0) res.push({ o, p });
+  }
+  res.sort((a, b) => a.p - b.p
+    || _PESO_NIVEL[a.o.nivel] - _PESO_NIVEL[b.o.nivel]
+    || a.o.t.localeCompare(b.o.t, 'es'));
+  return res.slice(0, BUSCA_MAX).map(x => x.o);
+}
+
+function _resaltar(texto, q) {
+  const i = _sinTildes(texto).indexOf(q);
+  if (i < 0 || !q) return texto;
+  return texto.slice(0, i) + '<b>' + texto.slice(i, i + q.length) + '</b>' + texto.slice(i + q.length);
+}
+
+let _sugActual = [], _sugFoco = -1;
+
+function _pintarSugerencias(lista, q) {
+  const caja = document.getElementById('buscadorSug');
+  if (!caja) return;
+  _sugActual = lista; _sugFoco = -1;
+  if (!lista.length) {
+    const escrito = (document.getElementById('buscadorAmbito') || {}).value || '';
+    if (escrito.trim().length >= 2) {
+      caja.innerHTML = '<div class="busca-vacio">Sin coincidencias para “' + escrito.trim() + '”</div>';
+      caja.classList.add('abierta');
+      _colocarSugerencias();
+    } else {
+      caja.innerHTML = ''; caja.classList.remove('abierta');
+    }
+    return;
+  }
+  caja.innerHTML = lista.map((o, i) =>
+    `<div class="busca-item" role="option" data-i="${i}" onclick="irAAmbito(${i})">
+       <span class="busca-nivel" data-n="${o.nivel}">${o.nivel}</span>
+       <span class="busca-txt">${_resaltar(o.t, q)} <span style="color:#94a3b8;">· ${o.sub}</span></span>
+     </div>`).join('');
+  caja.classList.add('abierta');
+  _colocarSugerencias();
+}
+
+function _cerrarSugerencias() {
+  const caja = document.getElementById('buscadorSug');
+  if (caja) { caja.classList.remove('abierta'); }
+  _sugFoco = -1;
+}
+
+// Coloca el desplegable justo debajo del campo. Va en position:fixed y colgado
+// del <body> porque el contenedor de los filtros recorta lo que se le sale.
+function _colocarSugerencias() {
+  const caja = document.getElementById('buscadorAmbito');
+  const sug  = document.getElementById('buscadorSug');
+  if (!caja || !sug || !sug.classList.contains('abierta')) return;
+  const r = caja.getBoundingClientRect();
+  sug.style.left  = r.left + 'px';
+  sug.style.width = r.width + 'px';
+  sug.style.top   = (r.bottom + 6) + 'px';
+  sug.style.maxHeight = Math.max(140, Math.min(320, window.innerHeight - r.bottom - 16)) + 'px';
+}
+
+function _verBotonLimpiar() {
+  const caja = document.getElementById('buscadorAmbito');
+  const btn  = document.getElementById('buscadorLimpiar');
+  if (caja && btn) btn.style.display = caja.value ? 'block' : 'none';
+}
+
+// Llena un <select> sin disparar su onchange (evita filtrar tres veces seguidas)
+function _llenarSelect(sel, valores, vacio) {
+  sel.innerHTML = '<option value="">' + vacio + '</option>';
+  valores.forEach(v => { const o = document.createElement('option'); o.value = o.text = v; sel.add(o); });
+}
+
+// Salta al ámbito elegido: deja los cuatro selectores como si se hubieran
+// elegido a mano y consulta una sola vez.
+function irAAmbito(i) {
+  const o = _sugActual[i];
+  if (!o) return;
+  limpiarEspecialSelect();
+  const f = fechaCorteActual();
+  const delCorte = d => d.fecha === f;
+
+  selectDep.value = o.dep;
+  _llenarSelect(selectProv, [...new Set(dataset.filter(d => delCorte(d) && d.departamento === o.dep).map(d => d.provincia))]
+    .sort((a, b) => a.localeCompare(b, 'es')), '— Todas —');
+  selectProv.value = o.prov || '';
+
+  if (o.prov) {
+    _llenarSelect(selectDist, [...new Set(dataset.filter(d => delCorte(d) && d.departamento === o.dep && d.provincia === o.prov).map(d => d.distrito))]
+      .sort((a, b) => a.localeCompare(b, 'es')), '— Todas —');
+    selectDist.value = o.dist || '';
+  } else {
+    _llenarSelect(selectDist, [], '— Todas —');
+  }
+
+  if (o.dist) { poblarCentrosPoblados(); selectCP.value = o.cp || ''; }
+  else { resetCentrosPoblados(); }
+
+  document.getElementById('buscadorAmbito').value = o.t;
+  _cerrarSugerencias();
+  _verBotonLimpiar();
+  mostrarConsultar(false);
+  filtrar();
+}
+
+(function _armarBuscador() {
+  const caja = document.getElementById('buscadorAmbito');
+  const btn  = document.getElementById('buscadorLimpiar');
+  const sug  = document.getElementById('buscadorSug');
+  if (!caja) return;
+
+  document.body.appendChild(sug);   // fuera del contenedor que lo recorta
+  window.addEventListener('scroll', _colocarSugerencias, true);
+  window.addEventListener('resize', _colocarSugerencias);
+
+  let t = null;
+  caja.addEventListener('input', () => {
+    _verBotonLimpiar();
+    clearTimeout(t);
+    const v = caja.value;
+    t = setTimeout(() => _pintarSugerencias(_buscarAmbitos(v), _sinTildes(v).trim()), 120);
+  });
+
+  caja.addEventListener('keydown', e => {
+    if (!sug.classList.contains('abierta')) return;
+    const items = sug.querySelectorAll('.busca-item');
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!items.length) return;
+      _sugFoco = (_sugFoco + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+      items.forEach((el, i) => el.classList.toggle('activa', i === _sugFoco));
+      items[_sugFoco].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      irAAmbito(_sugFoco >= 0 ? _sugFoco : 0);
+    } else if (e.key === 'Escape') {
+      _cerrarSugerencias();
+    }
+  });
+
+  caja.addEventListener('focus', () => { if (caja.value.trim().length >= 2) _pintarSugerencias(_buscarAmbitos(caja.value), _sinTildes(caja.value).trim()); });
+  btn.addEventListener('click', () => { caja.value = ''; _verBotonLimpiar(); _cerrarSugerencias(); caja.focus(); });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.busca-wrap') && !e.target.closest('#buscadorSug')) _cerrarSugerencias();
+  });
+})();
+
+// ══════════════════════════════════════════════════
 //  HELPERS
 // ══════════════════════════════════════════════════
 function getEtiquetaFocalizacion(valor) {
@@ -1148,6 +1550,7 @@ async function descargarTarjeta(serv) {
     const amb = (card.querySelector('.card-chip-amb')?.textContent || 'NACIONAL').replace(/[\/ ]+/g, '_');
     const per = (card.querySelector('.card-chip')?.textContent || '').replace(/\s+/g, '_');
     const nombre = `Tarjeta_${serv.toUpperCase()}_${amb}_${per}.png`;
+    registrarStat('imagen');
     await new Promise(res => lienzo.toBlob(b => {
       if (typeof saveAs === 'function') saveAs(b, nombre);
       else {
@@ -1211,95 +1614,16 @@ function limpiar() {
 //  FILTRAR + RENDERIZAR KPIs
 // ══════════════════════════════════════════════════
 // ── Ámbitos especiales ────────────────────────────────────────────────────
+// Los distritos de cada ámbito viven en DATOS_PNCM/fijo: ambitos_especiales.js
+// (VRAEM, NOR-VRAEM) y frontera_distritos.js (FRONTERAS).
 const AMBITOS_ESPECIALES = {
   VRAEM: {
-    label: 'Valle de los Ríos Apurímac, Ene y Mantaro (VRAEM)',
-    ubigeos: new Set([
-  '030202',
-  '030208',
-  '030219',
-  '030604',
-  '030605',
-  '030606',
-  '030609',
-  '030610',
-  '030611',
-  '030612',
-  '050401',
-  '050402',
-  '050403',
-  '050404',
-  '050405',
-  '050406',
-  '050407',
-  '050408',
-  '050409',
-  '050410',
-  '050411',
-  '050412',
-  '050413',
-  '050501',
-  '050502',
-  '050503',
-  '050504',
-  '050505',
-  '050506',
-  '050507',
-  '050508',
-  '050509',
-  '050510',
-  '050511',
-  '050512',
-  '050513',
-  '050514',
-  '050515',
-  '080907',
-  '080910',
-  '080911',
-  '080912',
-  '080913',
-  '080916',
-  '080917',
-  '080918',
-  '090503',
-  '090507',
-  '090509',
-  '090510',
-  '090701',
-  '090702',
-  '090703',
-  '090704',
-  '090705',
-  '090706',
-  '090707',
-  '090709',
-  '090710',
-  '090711',
-  '090713',
-  '090714',
-  '090715',
-  '090716',
-  '090717',
-  '090718',
-  '090719',
-  '090720',
-  '090721',
-  '090722',
-  '090723',
-  '090724',
-  '090725',
-  '120124',
-  '120135',
-  '120203',
-  '120604',
-  '120606',
-  '120608',
-  '120609'
-    ])
+    label:   window.AMBITOS_UBIGEOS.VRAEM.label,
+    ubigeos: new Set(window.AMBITOS_UBIGEOS.VRAEM.ubigeos)
   },
   'NOR-VRAEM': {
-    label: 'Nor Valle del Río Apurímac y Ene (NOR-VRAEM)',
-    ubigeos: new Set(['120303', '120601', '120602', '120603', '120604', '120605', '120606', '120607', '120608', '250202', '250203', '250201'])
+    label:   window.AMBITOS_UBIGEOS['NOR-VRAEM'].label,
+    ubigeos: new Set(window.AMBITOS_UBIGEOS['NOR-VRAEM'].ubigeos)
   },
   FRONTERAS: {
     label: 'Distritos de frontera (SIRF \u2013 Ministerio de Relaciones Exteriores)',
@@ -1365,7 +1689,7 @@ function filtrarEspecial() {
 
   setTimeout(() => {
     // Render KPIs globales del ámbito
-    let htmlSalida = renderKPIsEspecial(resumen, ambito, datosAm, fStr);
+    let htmlSalida = renderKPIs(resumen, ambito, '', '');
     // Tabla de cobertura por departamento dentro del ámbito
     htmlSalida += generarTablaCoberturaEspecial(datosAm, ambito);
     document.getElementById('resultados').innerHTML = htmlSalida;
@@ -1376,13 +1700,6 @@ function filtrarEspecial() {
     resumirFiltros();
     if (window.matchMedia('(max-width:820px)').matches) toggleFiltros(false);
   }, 40);
-}
-
-function renderKPIsEspecial(res, ambito, datos, fStr) {
-  const fN = n => (n||0).toLocaleString('es-PE');
-  const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const crSAF = null; const crSCD = null;
-  return renderKPIs(res, ambito, '', '');
 }
 
 function generarTablaCoberturaEspecial(datosAm, titulo) {
@@ -1688,7 +2005,6 @@ function renderCCPP(c) {
 function renderKPIs(d, dep, prov, dist) {
   // Determinar nivel de consulta
   const nivelDistrito  = !!dist;
-  const nivelProvincia = !dist && !!prov;
   const nivelDepto     = !dist && !prov;
 
   const focSAF = nivelDistrito && d.CUMPLE_SAF != null ? getEtiquetaFocalizacion(d.CUMPLE_SAF) : null;
@@ -1840,7 +2156,7 @@ function compartirWhatsApp() {
   // Actores comunales: detalle real por rol cuando hay dato del distrito
   const _ac = actoresDe(d.ubigeos);
   const _wa = (b, roles) => {
-    let t = `🏛 Comités de Gestión: ${b.cg}  \n`;
+    let t = `🏛 Comités de Gestión: ${b.cg.toLocaleString('es-PE')}  \n`;
     roles.forEach(([k, e, n]) => { if (b[k]) t += `${e} ${n}: ${b[k].toLocaleString('es-PE')}  \n`; });
     return t + `🤝 Total actores comunales: ${b.total.toLocaleString('es-PE')}  \n`;
   };
@@ -1850,7 +2166,7 @@ function compartirWhatsApp() {
                       ['apoyo_admin','🗂','Apoyo administrativo'],
                       ['junta_directiva','🧑‍💼','Junta directiva'],
                       ['consejo_vigilancia','🔎','Consejo de vigilancia']])
-      : `🏛 Comités de Gestión: ${d.CG_SAF}  \n👥 Facilitadoras: ${d.FACILITADOR_SAF}  \n`;
+      : `🏛 Comités de Gestión: ${(d.CG_SAF || 0).toLocaleString('es-PE')}  \n👥 Facilitadoras: ${(d.FACILITADOR_SAF || 0).toLocaleString('es-PE')}  \n`;
   const scdCGLines = !nivelDistrito ? ''
     : (_ac.cubiertos && _ac.scd.total)
       ? _wa(_ac.scd, [['madres_cuidadoras','👩','Madres Cuidadoras'],
@@ -1862,12 +2178,20 @@ function compartirWhatsApp() {
                       ['apoyo_admin','🗂','Apoyo administrativo'],
                       ['junta_directiva','🧑‍💼','Junta directiva'],
                       ['consejo_vigilancia','🔎','Consejo de vigilancia']])
-      : `🏛 Comités de Gestión: ${d.CG_SCD}  \n👩 Madres Cuidadoras: ${d.MadresCuidadoras_SCD}  \n`;
+      : `🏛 Comités de Gestión: ${(d.CG_SCD || 0).toLocaleString('es-PE')}  \n👩 Madres Cuidadoras: ${(d.MadresCuidadoras_SCD || 0).toLocaleString('es-PE')}  \n`;
 
   const nombreUbicacion = dep ? [dep] : ['NACIONAL'];
   if (prov) nombreUbicacion.push(prov);
   if (dist) nombreUbicacion.push(dist);
   const encabezadoUbicacion = `(${nombreUbicacion.join(' / ')})`;
+  const fW = n => (n || 0).toLocaleString('es-PE');
+  // «Distritos/Provincias con atención» describen el ámbito de arriba: en un
+  // distrito no aplican, y en una provincia solo aplican los distritos.
+  const lineaTerr = (dists, provs) =>
+    (dist ? '' : `📌 Distritos con atención: ${fW(dists)}\n`) +
+    (dist || prov ? '' : `📌 Provincias con atención: ${fW(provs)}  \n`);
+  const foc = v => (dist && v != null) ? `${getEtiquetaFocalizacion(v).emoji} ${getEtiquetaFocalizacion(v).texto}` : '';
+  const _saW = d.esNacional ? saNacional() : saDe(d.ubigeos);
 
   const fecha = new Date().toLocaleDateString('es-PE', {
     day: '2-digit',
@@ -1893,23 +2217,17 @@ function compartirWhatsApp() {
 ${encabezadoUbicacion}  
 📅 *Reporte:* ${mesNombre} ${año}  
 
-*🔴 Servicio de Acompañamiento a Familias (SAF) -* ${dist && d.CUMPLE_SAF !== undefined ? `${getEtiquetaFocalizacion(d.CUMPLE_SAF).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SAF).texto}` : ''}  
-👨‍👩‍👧‍👦 Familias: ${d.familias_2025.toLocaleString('es-PE')}
-🤰 Gestantes: ${d.gestantes_SAF}
-🧒 Niños: ${d.niños_saf}
-${safCGLines}📌 Distritos con atención: ${d.dist_saf}
-📌 Provincias con atención: ${d.prov_saf}  
-💰 Ejecución acumulada: S/. ${d.ejec_saf.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}  
+*🔴 Servicio de Acompañamiento a Familias (SAF) -* ${foc(d.CUMPLE_SAF)}  
+👨‍👩‍👧‍👦 Familias: ${fW(d.familias_2025)}
+🤰 Gestantes: ${fW(d.gestantes_SAF)}
+🧒 Niños: ${fW(d.niños_saf)}
+${safCGLines}${lineaTerr(d.dist_saf, d.prov_saf)}💰 Ejecución acumulada: S/. ${d.ejec_saf.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}  
 
 
-*🟢 Servicio de Cuidado Diurno (SCD) -* ${dist && d.CUMPLE_SCD !== undefined ? `${getEtiquetaFocalizacion(d.CUMPLE_SCD).emoji} ${getEtiquetaFocalizacion(d.CUMPLE_SCD).texto}` : ''}  
-🧒 Niños: ${d.niños_2025.toLocaleString('es-PE')}
-🏘 CIAI: ${d.CIAI_SCD}
-${(() => { const s = d.esNacional ? saNacional() : saDe(d.ubigeos);
-           return s.servicios ? '🍲 Servicios alimentarios: ' + s.servicios : ''; })()}
-${scdCGLines}📌 Distritos con atención: ${d.dist_scd}
-📌 Provincias con atención: ${d.prov_scd}  
-💰 Ejecución acumulada: S/. ${d.ejec_scd.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+*🟢 Servicio de Cuidado Diurno (SCD) -* ${foc(d.CUMPLE_SCD)}  
+🧒 Niños: ${fW(d.niños_2025)}
+🏘 CIAI: ${fW(d.CIAI_SCD)}
+${_saW.servicios ? '🍲 Servicios alimentarios: ' + fW(_saW.servicios) + '\n' : ''}${scdCGLines}${lineaTerr(d.dist_scd, d.prov_scd)}💰 Ejecución acumulada: S/. ${d.ejec_scd.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 
 ${ccppBlock}
 🕐 Generado: ${fecha}
@@ -1988,8 +2306,11 @@ function calcularResumenNacional() {
   const provSCDnac = new Set(datos.filter(d => d.nniños_scd   > 0).map(d => d.departamento+'|'+d.provincia));
   // Unión de distritos con cobertura (SAF o SCD)
   const distUnion = new Set([...distSAF, ...distSCD]);
-  const TOTAL_DISTRITOS_PERU = 1891; // distritos oficiales según INEI
+  const TOTAL_DISTRITOS_PERU = window.PNCM_PARAMETROS.total_distritos_peru;   // INEI, en parametros.js
   const _nac = actoresNacional();
+  // Sin padrón de actores para este corte: los totales oficiales del reporte,
+  // que no cuentan doble a quien atiende dos distritos. Si tampoco hay, cero.
+  const _of  = _nac.cubiertos ? null : totalesOficiales(ultimaFechaStr);
   return {
     familias_2025: sumBy('nfamilia_saf'),
     gestantes_SAF: sumBy('ngestantes_saf'),
@@ -2009,8 +2330,10 @@ function calcularResumenNacional() {
     pct_scd: ((distSCD.size / TOTAL_DISTRITOS_PERU) * 100).toFixed(1),
     prov_saf: provSAFnac.size, prov_scd: provSCDnac.size,
     // actores reales del padrón (antes eran ceros fijos)
-    CG_SAF: _nac.saf.cg, FACILITADOR_SAF: _nac.saf.facilitadoras,
-    CG_SCD: _nac.scd.cg, MadresCuidadoras_SCD: _nac.scd.madres_cuidadoras,
+    CG_SAF:               _of ? (_of.saf.cg || 0)            : _nac.saf.cg,
+    FACILITADOR_SAF:      _of ? (_of.saf.facilitadoras || 0) : _nac.saf.facilitadoras,
+    CG_SCD:               _of ? (_of.scd.cg || 0)            : _nac.scd.cg,
+    MadresCuidadoras_SCD: _of ? (_of.scd.madres || 0)        : _nac.scd.madres_cuidadoras,
     ubigeos: [...new Set(datos.map(d => d.ubigeo))],
     esNacional: true
   };
@@ -2059,8 +2382,11 @@ function generarResumenNacional(resNac) {
   const pSCD = tot > 0 ? ((resNac.ejec_scd/tot)*100).toFixed(1) : '0.0';
   const fN   = n => (n||0).toLocaleString('es-PE');
   const fS   = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
-  // 24 departamentos + Provincia Constitucional del Callao = 25 jurisdicciones
-  const depLabel = '24 departamentos y la Provincia Constitucional del Callao';
+  // 24 departamentos + Provincia Constitucional del Callao = 25 jurisdicciones.
+  // Se cuenta del padrón; la frase larga solo cuando están las 25.
+  const depTxt = k => k === 25 ? '24 departamentos y la Provincia Constitucional del Callao'
+                               : fN(k) + (k === 1 ? ' departamento' : ' departamentos');
+  const depSub = k => k === 25 ? '24 dep. + Callao' : 'con cobertura';
 
   // ── Estilos tarjeta KPI mejorada ─────────────────────────────────────────
   const C = {
@@ -2112,8 +2438,8 @@ function generarResumenNacional(resNac) {
   return `
     <h2>COBERTURA NACIONAL — PNCM | ${mesNombre} ${año}</h2>
     <p style="margin-bottom:14px;line-height:1.7;">De enero a ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó a nivel nacional un monto total de <strong>S/ ${fN(Math.round(tot))}</strong>, de los cuales <strong>S/ ${fN(Math.round(resNac.ejec_saf))} (${pSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fN(Math.round(resNac.ejec_scd))} (${pSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
-    <p style="margin-bottom:14px;line-height:1.7;">Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fN(resNac.familias_2025)} familias</strong>, conformadas por <strong>${fN(resNac.niños_saf)} niñas y niños</strong> y <strong>${fN(resNac.gestantes_SAF)} gestantes</strong>, con presencia en <strong>${fN(resNac.dist_saf)} distritos</strong> de los <strong>${depLabel}</strong>.</p>
-    <p style="margin-bottom:14px;line-height:1.7;">Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> brinda atención a <strong>${fN(resNac.niños_2025)} niñas y niños</strong> en <strong>${fN(resNac.CIAI_SCD)} Centros Infantiles de Atención Integral (CIAI)</strong>, distribuidos en <strong>${fN(resNac.dist_scd)} distritos</strong> de los <strong>${depLabel}</strong>.</p>
+    <p style="margin-bottom:14px;line-height:1.7;">Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> alcanza una cobertura de <strong>${fN(resNac.familias_2025)} familias</strong>, conformadas por <strong>${fN(resNac.niños_saf)} niñas y niños</strong> y <strong>${fN(resNac.gestantes_SAF)} gestantes</strong>, con presencia en <strong>${fN(resNac.dist_saf)} distritos</strong> de los <strong>${depTxt(resNac.dep_saf)}</strong>.</p>
+    <p style="margin-bottom:14px;line-height:1.7;">Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> brinda atención a <strong>${fN(resNac.niños_2025)} niñas y niños</strong> en <strong>${fN(resNac.CIAI_SCD)} Centros Infantiles de Atención Integral (CIAI)</strong>, distribuidos en <strong>${fN(resNac.dist_scd)} distritos</strong> de los <strong>${depTxt(resNac.dep_scd)}</strong>.</p>
 
     ${bloqueTerritorioNacional}
     <p style="${C.sec}">Servicio de Acompañamiento a Familias (SAF)</p>
@@ -2122,7 +2448,7 @@ function generarResumenNacional(resNac) {
         ${card('Familias',         fN(resNac.familias_2025), 'beneficiarias del programa')}
         ${card('Niñas y niños',    fN(resNac.niños_saf),     'en el SAF')}
         ${card('Gestantes',        fN(resNac.gestantes_SAF), 'atendidas')}
-        ${card('Departamento',     depLabel.startsWith('24')?'25':'25', '24 dep. + Callao')}
+        ${card('Departamentos',    fN(resNac.dep_saf),       depSub(resNac.dep_saf))}
         ${card('Provincias',       fN(resNac.prov_saf),      'con cobertura SAF')}
         ${card('Distritos',        fN(resNac.dist_saf),      'con cobertura SAF')}
         ${card('Ejecución acumulada', fmtEjec(resNac.ejec_saf), 'enero–'+mesMin+' '+año, true)}
@@ -2134,7 +2460,7 @@ function generarResumenNacional(resNac) {
       <tr>
         ${card('Niñas y niños',    fN(resNac.niños_2025),    'usuarios del SCD')}
         ${card('CIAI',             fN(resNac.CIAI_SCD),      'centros de atención')}
-        ${card('Departamento',     '25',                      '24 dep. + Callao')}
+        ${card('Departamentos',    fN(resNac.dep_scd),       depSub(resNac.dep_scd))}
         ${card('Provincias',       fN(resNac.prov_scd),      'con cobertura SCD')}
         ${card('Distritos',        fN(resNac.dist_scd),      'con cobertura SCD')}
         ${card('Ejecución acumulada', fmtEjec(resNac.ejec_scd), 'enero–'+mesMin+' '+año, true)}
@@ -2145,9 +2471,6 @@ function generarResumenNacional(resNac) {
 
 // Estilos reutilizables celdas KPI Word
 // ── Paleta monocromática (grises) + amarillo para resaltado ───────────────
-const _KL = 'padding:4px 10px;border:1px solid #d1d5db;font-size:8.5pt;text-align:left;color:#374151;background:#f9fafb;width:65%;';
-const _KV = 'padding:4px 10px;border:1px solid #d1d5db;font-size:8.5pt;text-align:right;font-weight:700;color:#111827;width:35%;';
-const _KE = 'padding:4px 10px;border:1px solid #9ca3af;font-size:9pt;text-align:right;font-weight:700;color:#111827;background:#e5e7eb;width:35%;';
 
 // ──────────────────────────────────────────────────
 //  Tabla de Cobertura a nivel (Depto / Provincia / Distrito)
@@ -2215,39 +2538,21 @@ function obtenerDatosCobertura(nivel, dep, prov) {
 //  recién en ese momento.
 // ══════════════════════════════════════════════════════════════════════════
 
-// Metas POI y población objetivo. En Web_UPPM ya viven en PARAMS_ANUALES, que
-// es del shell; estos valores son para el laboratorio y la estable, que no lo
-// tienen. Donde el shell existe, manda el shell.
-const PPT_METAS = {
-  saf: { meta: 277283, po: 607215 },
-  scd: { meta: 67387,  po: 287259 }
-};
-// PIM 2026 por servicio. Mientras estén en null, la lámina 4 muestra el monto
-// ejecutado sin el porcentaje: preferible a arrastrar un porcentaje viejo.
-const PPT_PIM = { saf: null, scd: null };
-
-function _pptParam(serv, campo) {
-  if (typeof PARAMS_ANUALES !== 'undefined' && PARAMS_ANUALES[serv]) {
-    return campo === 'meta' ? PARAMS_ANUALES[serv].meta : PARAMS_ANUALES[serv].pob_obj;
-  }
-  return PPT_METAS[serv][campo === 'meta' ? 'meta' : 'po'];
+// Metas POI, población objetivo y PIM: DATOS_PNCM/parametros/parametros.js.
+// Se toman del AÑO DEL CORTE. Si ese año no tiene el dato, va null y la lámina
+// muestra «—»: nunca se usa la cifra de otro año.
+function parametroAnual(serv, campo) {
+  const A = (window.PNCM_PARAMETROS.anual || {})[año];
+  const v = A && A[serv] ? A[serv][campo] : null;
+  return (v === undefined) ? null : v;
+}
+// Totales del reporte oficial de un corte (comités, facilitadoras, madres), o null.
+function totalesOficiales(fechaISO) {
+  const T = window.PNCM_PARAMETROS.totales_oficiales || {};
+  return T[fechaISO] || null;
 }
 
-function _traerScript(src, listo) {
-  if (listo()) return Promise.resolve();
-  return new Promise((ok, mal) => {
-    const s = document.createElement('script');
-    s.src = src; s.async = false;
-    s.onload = ok; s.onerror = () => mal(new Error('No se pudo cargar ' + src));
-    document.head.appendChild(s);
-  });
-}
-// La estable y Web_UPPM tienen cargador perezoso y ahí viven las rutas; el
-// laboratorio no lo tiene y trae el modelo a mano.
-function _libsPPT() {
-  if (typeof asegurarLibs === 'function') return asegurarLibs(['pptmodelo']);
-  return _traerScript('modelo_ppt.js', () => typeof MOLDE_PPT_B64 !== 'undefined');
-}
+function _libsPPT() { return asegurarLibs(['pptmodelo']); }
 
 /* ---------- edición de los textos de una lámina ---------- */
 
@@ -2295,6 +2600,153 @@ function _pptPartir(xml, viejo, partes) {
   return xml.slice(0, ini) + runs + xml.slice(fin);
 }
 
+/* ---------- lámina del ámbito consultado ---------- */
+
+// Reemplazo por lotes a prueba de colisiones. Si se hiciera uno por uno, un
+// valor nuevo podría coincidir con un texto del modelo aún sin reemplazar
+// —muy probable con cifras chicas de un distrito— y se pisaría a sí mismo.
+// Por eso va en dos pasadas, con marcas intermedias que no existen en el XML.
+function _pptLote(xml, pares) {
+  const marca = i => '' + i + '';
+  pares.forEach((p, i) => {
+    const de = '<a:t>' + _pptEsc(p[0]) + '</a:t>';
+    if (xml.indexOf(de) < 0) throw new Error('el modelo no trae el texto «' + p[0].trim() + '»');
+    const izq = (p[0].match(/^\s*/) || [''])[0];
+    const der = (p[0].match(/\s*$/) || [''])[0];
+    xml = xml.split(de).join('<a:t>' + izq + marca(i) + der + '</a:t>');
+  });
+  pares.forEach((p, i) => { xml = xml.split(marca(i)).join(_pptEsc(String(p[1]))); });
+  return xml;
+}
+
+// Nombre corto del ámbito: el nivel más específico que se haya consultado.
+function _pptAmbitoNombre(d) {
+  if (d._esEspecial) return String(d._ambitoLabel || d._ambito || 'ÁMBITO').toUpperCase();
+  if (d.ccpp && d.ccpp.nombre) return String(d.ccpp.nombre).toUpperCase();
+  return String(d.distrito || d.provincia || d.departamento || '').toUpperCase();
+}
+
+// Los cambios de la lámina del ámbito, o null si la vista es la nacional
+// (en ese caso la lámina 5 ya dice lo mismo y sobra repetirla).
+function _pptCambiosAmbito() {
+  const d = window.ultimoResultado;
+  if (!d || d.esNacional) return null;
+  if (!d._esEspecial && !d.departamento) return null;
+
+  const fN = v => Math.round(v || 0).toLocaleString('es-PE');
+  const nombre = _pptAmbitoNombre(d);
+  if (!nombre) return null;
+
+  // Los actores salen del padrón cuando su corte coincide; si no, de bd.
+  const ac = (typeof actoresDe === 'function') ? actoresDe(d.ubigeos) : { cubiertos: 0 };
+  const hayPadron = ac && ac.cubiertos > 0;
+  let acSaf = hayPadron ? ac.saf.total : (d.FACILITADOR_SAF || 0);
+  let acScd = hayPadron ? ac.scd.total : (d.MadresCuidadoras_SCD || 0);
+  let cgSaf = hayPadron ? ac.saf.cg : (d.CG_SAF || 0);
+  let cgScd = hayPadron ? ac.scd.cg : (d.CG_SCD || 0);
+
+  const sa = (typeof saDe === 'function') ? saDe(d.ubigeos) : { servicios: 0 };
+  let servAlim = sa.servicios || d.SA_SCD || 0;
+  let fam = Math.round(d.familias_2025 || 0);
+  let usu = Math.round(d.niños_2025 || 0);
+  let gest = d.gestantes_SAF, ninosSaf = d.niños_saf, ciai = d.CIAI_SCD;
+
+  // Si lo consultado es un centro poblado, la lámina debe hablar de ESE centro
+  // poblado, no del distrito que lo contiene. Los comités, facilitadoras y
+  // madres cuidadoras salen del archivo de centro poblado; cuando ese archivo
+  // no los trae (van en null), se muestran en cero en vez de inventarlos.
+  if (d.ccpp) {
+    const s = d.ccpp.saf, c = d.ccpp.scd;
+    fam      = s ? (s.familias || 0) : 0;
+    gest     = s ? (s.gestantes || 0) : 0;
+    ninosSaf = s ? ((s.ninoV || 0) + (s.ninaM || 0)) : 0;
+    usu      = c ? (c.usuarios || 0) : 0;
+    ciai     = c ? (c.locales || 0) : 0;
+    cgSaf    = (s && s.cg  != null) ? s.cg  : 0;
+    acSaf    = (s && s.fac != null) ? s.fac : 0;
+    acScd    = (c && c.madres != null) ? c.madres : 0;
+    cgScd    = 0;
+    servAlim = 0;
+  }
+
+  return [
+    ['JUL 2026',          (mesNombre || '').slice(0, 3).toUpperCase() + ' ' + año],
+    ['usuarios a nivel\r\n', 'usuarios en'],
+    ['NACIONAL',          nombre],
+    ['341,339',           fN(fam + usu)],
+    ['78,005',            fN(acSaf + acScd)],
+    ['3,061',             fN(cgSaf + cgScd)],
+    ['276,720',           fN(fam)],
+    ['22,040',            fN(gest)],
+    ['256,347',           fN(ninosSaf)],
+    ['2,404',             fN(cgSaf)],
+    ['48,254',            fN(acSaf)],
+    ['64,619',            fN(usu)],
+    ['657',               fN(cgScd)],
+    ['29,751',            fN(acScd)],
+    ['2,542',             fN(ciai)],
+    ['807',               fN(servAlim)]
+  ];
+}
+
+// Deja una parte del paquete lista para escribir: comprime, y actualiza el
+// tamaño y el CRC que pide la cabecera del ZIP.
+async function _pptGuardarParte(e, texto) {
+  const bytes = new TextEncoder().encode(texto);
+  const comprimido = await frDeflar(bytes);
+  e.origSz = bytes.length;
+  e.crc = frCrc32(bytes);
+  if (comprimido && comprimido.length < bytes.length) { e.metodo = 8; e.datos = comprimido; }
+  else { e.metodo = 0; e.datos = bytes; }
+  return e;
+}
+
+async function _pptLeerParte(entradas, nombre) {
+  const e = entradas.find(x => x.nombre === nombre);
+  if (!e) throw new Error('el modelo no contiene ' + nombre + '.');
+  const crudo = (e.metodo === 0) ? e.datos : await frInflar(e.datos);
+  return { e: e, xml: new TextDecoder().decode(crudo) };
+}
+
+// Añade al paquete una lámina nueva clonada de la 5. Hay que tocar cuatro
+// piezas además del XML: el tipo de contenido, las relaciones de la lámina,
+// las relaciones de la presentación y la lista de láminas.
+async function _pptAgregarLamina(entradas, xmlNuevo) {
+  const NUM = 6, RID = 'rId100', SLD_ID = 7300;
+  const base = entradas.find(x => x.nombre === 'ppt/slides/slide5.xml');
+
+  // 1 · la lámina
+  entradas.push(await _pptGuardarParte({
+    nombre: 'ppt/slides/slide' + NUM + '.xml',
+    hora: base.hora, fecha: base.fecha, attrExt: base.attrExt
+  }, xmlNuevo));
+
+  // 2 · sus relaciones: las mismas de la 5, menos la nota (una nota no puede
+  //     pertenecer a dos láminas).
+  const rels = await _pptLeerParte(entradas, 'ppt/slides/_rels/slide5.xml.rels');
+  const sinNota = rels.xml.replace(/<Relationship[^>]*notesSlide[^>]*\/>/g, '');
+  entradas.push(await _pptGuardarParte({
+    nombre: 'ppt/slides/_rels/slide' + NUM + '.xml.rels',
+    hora: base.hora, fecha: base.fecha, attrExt: base.attrExt
+  }, sinNota));
+
+  // 3 · el tipo de contenido
+  const ct = await _pptLeerParte(entradas, '[Content_Types].xml');
+  await _pptGuardarParte(ct.e, ct.xml.replace('</Types>',
+    '<Override PartName="/ppt/slides/slide' + NUM + '.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/></Types>'));
+
+  // 4 · la relación desde la presentación
+  const pr = await _pptLeerParte(entradas, 'ppt/_rels/presentation.xml.rels');
+  await _pptGuardarParte(pr.e, pr.xml.replace('</Relationships>',
+    '<Relationship Id="' + RID + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide' + NUM + '.xml"/></Relationships>'));
+
+  // 5 · la lámina entra al final de la lista
+  const pp = await _pptLeerParte(entradas, 'ppt/presentation.xml');
+  if (pp.xml.indexOf('</p:sldIdLst>') < 0) throw new Error('el modelo no trae la lista de láminas.');
+  await _pptGuardarParte(pp.e, pp.xml.replace('</p:sldIdLst>',
+    '<p:sldId id="' + SLD_ID + '" r:id="' + RID + '"/></p:sldIdLst>'));
+}
+
 /* ---------- exportador ---------- */
 
 async function exportarPPT() {
@@ -2330,15 +2782,46 @@ async function _armarPPT() {
   const fam  = Math.round(d.familias_2025 || 0);
   const usu  = Math.round(d.niños_2025 || 0);
   const total = fam + usu;
-  const metaSaf = _pptParam('saf', 'meta'), poSaf = _pptParam('saf', 'po');
-  const metaScd = _pptParam('scd', 'meta'), poScd = _pptParam('scd', 'po');
-  const brSaf = Math.max(0, poSaf - fam), brScd = Math.max(0, poScd - usu);
+  const metaSaf = parametroAnual('saf', 'meta'), poSaf = parametroAnual('saf', 'poblacion_objetivo');
+  const metaScd = parametroAnual('scd', 'meta'), poScd = parametroAnual('scd', 'poblacion_objetivo');
+  const pimSaf  = parametroAnual('saf', 'pim'),  pimScd = parametroAnual('scd', 'pim');
+  // Un parámetro que falta se muestra «—» (y su brecha y cobertura también).
+  const fP  = v => v ? fN(v) : '—';
+  const brSaf = poSaf ? Math.max(0, poSaf - fam) : null;
+  const brScd = poScd ? Math.max(0, poScd - usu) : null;
   // La brecha % se calcula como complemento de la cobertura, no por separado:
   // asi las dos columnas siempre suman 100,00 como en el modelo.
-  const cobSaf = poSaf ? fam / poSaf * 100 : 0;
-  const cobScd = poScd ? usu / poScd * 100 : 0;
+  const cobSaf = poSaf ? fam / poSaf * 100 : null;
+  const cobScd = poScd ? usu / poScd * 100 : null;
+  const pctP   = v => v == null ? '—' : v.toFixed(2) + '%';
+  const brP    = v => v == null ? '—' : (100 - v).toFixed(2) + '%';
   const MES = (mesNombre || '').toUpperCase();
   const MESC = MES.slice(0, 3);
+
+  // El padrón de actores es de un solo corte. Si el corte elegido es otro, en
+  // vez de imprimir ceros se cae a lo que sí trae bd para ese mes: comités de
+  // gestión, facilitadoras y madres cuidadoras. Es el mismo respaldo que usan
+  // las tarjetas en pantalla.
+  // El respaldo se toma de bd directamente: los campos de actores del resumen
+  // nacional ya vienen del padrón, así que si el padrón no aplica valen cero y
+  // no sirven de respaldo.
+  // Antes que bd van los totales oficiales del corte (parametros.js), que no
+  // cuentan doble: bd suma distrito por distrito y repite a quien atiende dos.
+  const hayAct = ac.cubiertos > 0;
+  const _fBD = ultimaFecha.toISOString().split('T')[0];
+  const _bd  = dataset.filter(x => x.fecha === _fBD);
+  const _sBD = k => _bd.reduce((t, x) => t + (x[k] || 0), 0);
+  const _of  = hayAct ? null : totalesOficiales(_fBD);
+  const _res = (ofv, k) => (ofv != null) ? ofv : _sBD(k);
+  const nCgSaf  = hayAct ? ac.saf.cg    : _res(_of && _of.saf.cg, 'CG_SAF');
+  const nCgScd  = hayAct ? ac.scd.cg    : _res(_of && _of.scd.cg, 'CG_SCD');
+  const nFacil  = hayAct ? ac.saf.facilitadoras     : _res(_of && _of.saf.facilitadoras, 'FACILITADOR_SAF');
+  const nMadres = hayAct ? ac.scd.madres_cuidadoras : _res(_of && _of.scd.madres, 'MadresCuidadoras_SCD');
+  const nActSaf = hayAct ? ac.saf.total : nFacil;
+  const nActScd = hayAct ? ac.scd.total : nMadres;
+  // Total de actores: con padrón, personas únicas (quien está en los dos
+  // servicios cuenta una vez, como el reporte oficial); sin padrón, la suma.
+  const nActTot = hayAct ? ac.total : nActSaf + nActScd;
 
   // El monto ejecutado y su porcentaje del PIM. Mientras el PIM del anio no
   // este cargado, en lugar del porcentaje va un XX resaltado en amarillo:
@@ -2352,60 +2835,60 @@ async function _armarPPT() {
       ['2026', String(año)]
     ],
     'ppt/slides/slide3.xml': [
-      ['FUENTE: SISTEMA INTEGRADO JULIO 2026', 'FUENTE: SISTEMA INTEGRADO ' + MES + ' ' + año],
+      ['FUENTE: SISTEMA INTEGRADO JULIO 2026', 'FUENTE: ' + FUENTE_DATOS.toUpperCase() + ' ' + MES + ' ' + año],
       ['341,339 ',      fN(total)],
       ['276,720',       fN(fam)],
       [' (99.80%) ',    '(' + pc(fam, metaSaf) + ')'],
       ['64,619',        fN(usu)],
       ['(95.89%)',      '(' + pc(usu, metaScd) + ')'],
       ['ATENCIÓN JULIO', 'ATENCIÓN ' + MES],
-      ['        607,215', fN(poSaf)],
+      ['        607,215', fP(poSaf)],
       ['        276,720', fN(fam)],
-      ['45.57%',        cobSaf.toFixed(2) + '%'],
-      ['      330,495', fN(brSaf)],
-      ['54.43%',        (100 - cobSaf).toFixed(2) + '%'],
-      ['       287,259', fN(poScd)],
+      ['45.57%',        pctP(cobSaf)],
+      ['      330,495', fP(brSaf)],
+      ['54.43%',        brP(cobSaf)],
+      ['       287,259', fP(poScd)],
       ['           64,619 ', fN(usu)],
-      ['22.49%',        cobScd.toFixed(2) + '%'],
-      ['        222,640 ', fN(brScd)],
-      ['77.51%',        (100 - cobScd).toFixed(2) + '%'],
-      ['Meta: 277,283', 'Meta: ' + fN(metaSaf)],
-      ['Meta: 67,387',  'Meta: ' + fN(metaScd)]
+      ['22.49%',        pctP(cobScd)],
+      ['        222,640 ', fP(brScd)],
+      ['77.51%',        brP(cobScd)],
+      ['Meta: 277,283', 'Meta: ' + fP(metaSaf)],
+      ['Meta: 67,387',  'Meta: ' + fP(metaScd)]
     ],
     'ppt/slides/slide4.xml': [
       ['276,720', fN(fam)],
       ['256,347', fN(d.niños_saf)],
       ['22,040',  fN(d.gestantes_SAF)],
       ['99,80',   pcC(fam, metaSaf)],
-      ['(277,283 familias ', '(' + fN(metaSaf) + ' familias'],
-      ['335,850,669.26 - 61.68 % del PIM 2026', null, pres(d.ejec_saf, PPT_PIM.saf, '-', ' ')],
+      ['(277,283 familias ', '(' + fP(metaSaf) + ' familias'],
+      ['335,850,669.26 - 61.68 % del PIM 2026', null, pres(d.ejec_saf, pimSaf, '-', ' ')],
       ['64,619',  fN(usu)],
       ['2,542',   fN(d.CIAI_SCD)],
       ['95,89',   pcC(usu, metaScd)],
-      ['67,387',  fN(metaScd)],
-      ['268,135,315 – 59.17 % del PIM 2026', null, pres(d.ejec_scd, PPT_PIM.scd, '–', ' ')],
-      ['10,380',  fN(ac.scd.madres_cuidadoras)],
-      ['27,865',  fN(ac.saf.facilitadoras)],
-      ['2,404',   fN(ac.saf.cg)],
+      ['67,387',  fP(metaScd)],
+      ['268,135,315 – 59.17 % del PIM 2026', null, pres(d.ejec_scd, pimScd, '–', ' ')],
+      ['10,380',  fN(nMadres)],
+      ['27,865',  fN(nFacil)],
+      ['2,404',   fN(nCgSaf)],
       ['Con presencia en 25 departamentos, 188 provincias y 1,420 distritos',
        'Con presencia en ' + fN(d.dep_saf) + ' departamentos, ' + fN(d.prov_saf) + ' provincias y ' + fN(d.dist_saf) + ' distritos'],
-      ['657',     fN(ac.scd.cg)],
+      ['657',     fN(nCgScd)],
       ['Con presencia en 25 departamentos, 145 provincias y 535 distritos',
        'Con presencia en ' + fN(d.dep_scd) + ' departamentos, ' + fN(d.prov_scd) + ' provincias y ' + fN(d.dist_scd) + ' distritos']
     ],
     'ppt/slides/slide5.xml': [
       ['JUL 2026', MESC + ' ' + año],
       ['341,339', fN(total)],
-      ['78,005',  fN(ac.saf.total + ac.scd.total)],
-      ['3,061',   fN(ac.saf.cg + ac.scd.cg)],
+      ['78,005',  fN(nActTot)],
+      ['3,061',   fN(nCgSaf + nCgScd)],
       ['276,720', fN(fam)],
       ['22,040',  fN(d.gestantes_SAF)],
       ['256,347', fN(d.niños_saf)],
-      ['2,404',   fN(ac.saf.cg)],
-      ['48,254',  fN(ac.saf.total)],
+      ['2,404',   fN(nCgSaf)],
+      ['48,254',  fN(nActSaf)],
       ['64,619',  fN(usu)],
-      ['657',     fN(ac.scd.cg)],
-      ['29,751',  fN(ac.scd.total)],
+      ['657',     fN(nCgScd)],
+      ['29,751',  fN(nActScd)],
       ['2,542',   fN(d.CIAI_SCD)],
       ['807',     fN(sa.servicios)]
     ]
@@ -2414,6 +2897,13 @@ async function _armarPPT() {
   // Se reusa la maquinaria de ZIP de la exportación de FRONTERAS.
   const entradas = frLeerZip(frB64aBytes(MOLDE_PPT_B64));
   const dec = new TextDecoder(), enc = new TextEncoder();
+
+  // La lámina del ámbito se clona de la 5, pero a partir del XML ORIGINAL:
+  // si se tomara el ya modificado, los textos del modelo que hay que sustituir
+  // ya no estarían.
+  const cambiosAmbito = _pptCambiosAmbito();
+  let xmlLamina5 = null;
+  if (cambiosAmbito) xmlLamina5 = (await _pptLeerParte(entradas, 'ppt/slides/slide5.xml')).xml;
 
   for (const hoja of Object.keys(CAMBIOS)) {
     const e = entradas.find(x => x.nombre === hoja);
@@ -2432,8 +2922,15 @@ async function _armarPPT() {
     else { e.metodo = 0; e.datos = bytes; }
   }
 
+  // Lámina extra con el ámbito consultado, después de las cinco del modelo
+  let sufijo = 'NACIONAL';
+  if (cambiosAmbito) {
+    await _pptAgregarLamina(entradas, _pptLote(xmlLamina5, cambiosAmbito));
+    sufijo = _pptAmbitoNombre(window.ultimoResultado).replace(/[^A-Za-z0-9ÁÉÍÓÚÑ]+/g, '_').replace(/^_|_$/g, '');
+  }
+
   const salida = frEscribirZip(entradas);
-  const nom = 'Cobertura_NACIONAL_' + mesNombre + '_' + año + '.pptx';
+  const nom = 'Cobertura_' + sufijo + '_' + mesNombre + '_' + año + '.pptx';
   if (typeof saveAs !== 'function' && typeof asegurarLibs === 'function') {
     try { await asegurarLibs(['filesaver']); } catch (e) { /* queda el enlace */ }
   }
@@ -2450,6 +2947,63 @@ async function _armarPPT() {
 // ──────────────────────────────────────────────────
 //  EXPORTAR EXCEL — una pestaña por nivel consultado
 // ──────────────────────────────────────────────────
+// Estilos compartidos por las hojas sueltas del Excel (actores, servicios
+// alimentarios, información). Misma paleta que las hojas de cobertura.
+const XL_COL = { titulo:'FF0056B3', saf:'FFF8BBD0', scd:'FFA5D6A7', gris:'FFF1F5F9',
+                 totPink:'FFFCE4EC', totGreen:'FFC8E6C9', borde:'FFCBD5E1',
+                 blanco:'FFFFFFFF', texto:'FF1E293B', tenue:'FF64748B' };
+function _xlEst() {
+  const b = { style:'thin', color:{ rgb: XL_COL.borde } };
+  const borde = { top:b, bottom:b, left:b, right:b };
+  const f = (sz, bold, color, extra) => Object.assign({ name:'Calibri', sz, bold:!!bold, color:{ rgb: color || XL_COL.texto } }, extra || {});
+  const al = (h, wrap) => ({ horizontal:h, vertical:'center', wrapText:!!wrap });
+  const fill = c => ({ fgColor:{ rgb:c } });
+  return {
+    titulo: { font:f(13, true, XL_COL.blanco), fill:fill(XL_COL.titulo), alignment:al('left') },
+    lbl:    { font:f(10, true),  fill:fill(XL_COL.gris), alignment:al('left'), border:borde },
+    val:    { font:f(10),        alignment:al('left', true), border:borde },
+    head:   { font:f(10, true),  fill:fill(XL_COL.gris), alignment:al('center', true), border:borde },
+    headS:  { font:f(10, true),  fill:fill(XL_COL.saf),  alignment:al('center', true), border:borde },
+    headD:  { font:f(10, true),  fill:fill(XL_COL.scd),  alignment:al('center', true), border:borde },
+    txt:    { font:f(10),        alignment:al('left'),  border:borde },
+    num:    { font:f(10),        alignment:al('right'), border:borde },
+    totL:   { font:f(10, true),  fill:fill(XL_COL.gris),     alignment:al('left'),  border:borde },
+    totS:   { font:f(10, true),  fill:fill(XL_COL.totPink),  alignment:al('right'), border:borde },
+    totD:   { font:f(10, true),  fill:fill(XL_COL.totGreen), alignment:al('right'), border:borde },
+    totT:   { font:f(10, true),  fill:fill(XL_COL.gris),     alignment:al('right'), border:borde },
+    nota:   { font:f(9, false, XL_COL.tenue, { italic:true }), alignment:al('left', true) },
+    pieL:   { font:f(9, true,  XL_COL.tenue), alignment:al('left') },
+    pieV:   { font:f(9, false, XL_COL.tenue), alignment:al('left') }
+  };
+}
+// Pone estilo a una celda (la crea vacía si no existe) y, si es número, su formato.
+function _xlS(ws, r, c, st, fmt) {
+  const a = XLSX.utils.encode_cell({ r, c });
+  if (!ws[a]) ws[a] = { t:'s', v:'' };
+  ws[a].s = st;
+  if (fmt && ws[a].t === 'n') ws[a].z = fmt;
+}
+// Pie de toda hoja: fuente y hora de generación.
+function _xlPie(filas) {
+  filas.push([], ['Fuente', FUENTE_DATOS], ['Generado a las', _generadoALas()]);
+}
+function _xlEstiloPie(ws, filas, E) {
+  for (let r = filas.length - 2; r < filas.length; r++) { _xlS(ws, r, 0, E.pieL); _xlS(ws, r, 1, E.pieV); }
+}
+// Hoja «Información»: título y pares etiqueta/valor, ya con fuente y hora.
+function _xlHojaInfo(titulo, pares) {
+  const E = _xlEst();
+  const filas = [[titulo], []].concat(pares.map(p => [p[0], p[1] == null ? '' : p[1]]));
+  filas.push(['Fuente', FUENTE_DATOS], ['Generado a las', _generadoALas()]);
+  const ws = XLSX.utils.aoa_to_sheet(filas);
+  ws['!cols'] = [{ wch:22 }, { wch:48 }];
+  ws['!merges'] = [{ s:{ r:0, c:0 }, e:{ r:0, c:1 } }];
+  ws['!rows'] = [{ hpt:26 }];
+  _xlS(ws, 0, 0, E.titulo); _xlS(ws, 0, 1, E.titulo);
+  for (let r = 2; r < filas.length; r++) { _xlS(ws, r, 0, E.lbl); _xlS(ws, r, 1, E.val); }
+  return ws;
+}
+
 // Excel para ámbito especial (VRAEM / NOR-VRAEM): agrega SOLO el ámbito seleccionado
 async function exportarExcelEspecial(d) {
   await asegurarLibs(['xlsx']);
@@ -2479,7 +3033,6 @@ async function exportarExcelEspecial(d) {
     ws['!cols'] = [{wch:w0||30},{wch:12},{wch:12},{wch:12},{wch:18},{wch:12},{wch:10},{wch:18}];
     ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:7}},{s:{r:2,c:1},e:{r:2,c:4}},{s:{r:2,c:5},e:{r:2,c:7}},{s:{r:2,c:0},e:{r:3,c:0}}];
     ws['!rows'] = [{hpt:24},{hpt:6},{hpt:22},{hpt:22}];
-    ws['!freeze'] = { xSplit:1, ySplit:4 };
 
     const stTit  = { font:F(13,true,COL.blanco), fill:{fgColor:{rgb:COL.titulo}}, alignment:{horizontal:'left',vertical:'center'} };
     const stHSAF = { font:F(9.5,true), fill:{fgColor:{rgb:COL.saf}}, alignment:{horizontal:'center',vertical:'center',wrapText:true}, border:bordeThin };
@@ -2523,10 +3076,9 @@ async function exportarExcelEspecial(d) {
   datosAm.forEach(r => acumular(mDist, r.ubigeo, r, `${r.departamento} / ${r.provincia} / ${r.distrito}`));
   armarHoja('Por distrito', 'Distrito', Object.values(mDist).sort((a,b)=>a.label.localeCompare(b.label,'es')), 46);
 
-  const meta = [['REPORTE ÁMBITO ESPECIAL PNCM'],[],['Ámbito',ambito],['Detalle',d._ambitoLabel||''],
-                ['Mes del corte',`${mesNombre} ${año}`],['Distritos',Object.keys(mDist).length],
-                ['Generado',_fmtFechaHora()],['Fuente','UPPM–PNCM–MIDIS 🇵🇪']];
-  const wsM = XLSX.utils.aoa_to_sheet(meta); wsM['!cols']=[{wch:20},{wch:48}];
+  const wsM = _xlHojaInfo('REPORTE ÁMBITO ESPECIAL PNCM', [
+    ['Ámbito', ambito], ['Detalle', d._ambitoLabel || ''],
+    ['Mes del corte', `${mesNombre} ${año}`], ['Distritos', String(Object.keys(mDist).length)]]);
   XLSX.utils.book_append_sheet(wb, wsM, 'Información');
 
   registrarStat('excel');
@@ -2570,6 +3122,7 @@ async function exportarExcel() {
   const wb = XLSX.utils.book_new();
 
   function setCell(ws, addr, value, style, numFmt, type) {
+    if (value == null) value = '';   // un null escrito en la celda corrompe el libro
     if (!ws[addr]) ws[addr] = { t: type || 's', v: value };
     else { ws[addr].v = value; if (type) ws[addr].t = type; }
     if (numFmt) ws[addr].z = numFmt;
@@ -2580,7 +3133,7 @@ async function exportarExcel() {
     const data = obtenerDatosCobertura(nivel, dep, prov);
     const aoa = [];
     aoa.push([`COBERTURA A NIVEL ${nivel.toUpperCase()} — ${mesNombre.toUpperCase()} ${año}`]);
-    aoa.push([`Selección: ${[dep, prov, dist].filter(Boolean).join(' / ')}`]);
+    aoa.push([`Selección: ${[dep, prov, dist].filter(Boolean).join(' / ') || 'Nacional'}`]);
     aoa.push([]);
     aoa.push([
       data.tituloCol,
@@ -2690,14 +3243,13 @@ async function exportarExcel() {
       }
     }
 
-    // Freeze panes debajo de la cabecera
-    ws['!freeze'] = { xSplit:1, ySplit:5 };
     ws['!autofilter'] = { ref: `A5:H${nFilas-1}` };
 
     XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
   }
 
-  if (dep) agregarHoja('departamento', 'Departamental', dep);
+  // La vista nacional también lleva la tabla por departamento (sin fila resaltada)
+  agregarHoja('departamento', 'Departamental', dep);
   if (prov) agregarHoja('provincia', 'Provincia_' + prov.slice(0,20), prov);
   if (dist) agregarHoja('distrito',  'Distrito_'  + dist.slice(0,20), dist);
 
@@ -2816,15 +3368,45 @@ async function exportarExcel() {
       if (a || b) filas.push([t, a, b, a + b]);
     });
     const totS = okS ? ac.saf.total : 0, totD = okD ? ac.scd.total : 0;
-    if (okS && okD) filas.push(['TOTAL ACTORES COMUNALES', totS, totD, totS + totD]);
+    // En el país, quien está en SAF y en SCD cuenta una vez (total oficial).
+    const totT = (res.esNacional && ac.total) ? ac.total : totS + totD;
+    if (okS && okD) filas.push(['TOTAL ACTORES COMUNALES', totS, totD, totT]);
+    if (okS && okD && totT !== totS + totD) filas.push(['Nota', 'El total general cuenta una sola vez a las ' +
+      (totS + totD - totT).toLocaleString('es-PE') + ' personas que trabajan en los dos servicios.']);
     if (!okS || !okD) {
       filas.push([]);
       filas.push(['Nota', 'El detalle por rol de ' + (!okS ? 'SAF' : 'SCD') +
                   ' no está disponible: el comité que atiende este distrito tiene sede en otro. ' +
                   'Se muestran las cifras del registro de cobertura.']);
     }
+    const finDatos = filas.length;            // hasta aquí van título, datos y nota
+    _xlPie(filas);
     const wsA = XLSX.utils.aoa_to_sheet(filas);
     wsA['!cols'] = [{wch:46},{wch:12},{wch:12},{wch:12}];
+    wsA['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:3} }, { s:{r:2,c:1}, e:{r:2,c:3} },
+                      { s:{r:3,c:1}, e:{r:3,c:3} }, { s:{r:4,c:1}, e:{r:4,c:3} }];
+    wsA['!rows'] = [{ hpt:24 }];
+    const E = _xlEst();
+    for (let c = 0; c < 4; c++) _xlS(wsA, 0, c, E.titulo);
+    for (let r = 2; r <= 4; r++) { _xlS(wsA, r, 0, E.lbl); for (let c = 1; c < 4; c++) _xlS(wsA, r, c, E.val); }
+    const HR = 6;                             // fila «Rol · SAF · SCD · Total»
+    [E.head, E.headS, E.headD, E.head].forEach((st, c) => _xlS(wsA, HR, c, st));
+    for (let r = HR + 1; r < finDatos; r++) {
+      const f = filas[r];
+      if (!f || !f.length) continue;
+      if (f[0] === 'Nota') {
+        wsA['!merges'].push({ s:{r,c:1}, e:{r,c:3} });
+        _xlS(wsA, r, 0, E.lbl); for (let c = 1; c < 4; c++) _xlS(wsA, r, c, E.nota);
+        wsA['!rows'][r] = { hpt:42 };
+        continue;
+      }
+      const tot = f[0] === 'TOTAL ACTORES COMUNALES';
+      _xlS(wsA, r, 0, tot ? E.totL : E.txt);
+      _xlS(wsA, r, 1, tot ? E.totS : E.num, '#,##0');
+      _xlS(wsA, r, 2, tot ? E.totD : E.num, '#,##0');
+      _xlS(wsA, r, 3, tot ? E.totT : E.num, '#,##0');
+    }
+    _xlEstiloPie(wsA, filas, E);
     XLSX.utils.book_append_sheet(wb, wsA, 'Actores comunales');
   })();
 
@@ -2842,52 +3424,27 @@ async function exportarExcel() {
       ['Departamento','Provincia','Distrito','Ubigeo','Comité de Gestión','Cód. CG','Servicio alimentario','Cód. SA']];
     lista.forEach(o => filas.push([o.departamento, o.provincia, o.distrito, o.ubigeo,
                                    o.cg_nombre, o.cg_codigo, o.sa_nombre, o.sa_codigo]));
-    filas.push([], ['Total de servicios', lista.length]);
-    filas.push(['Fuente', window.SERVICIOS_ALIMENTARIOS.fuente + ' (hoja ' + window.SERVICIOS_ALIMENTARIOS.hoja + ')']);
+    const filaTot = filas.length;
+    filas.push(['Total de servicios', '', '', '', '', '', '', lista.length]);
+    _xlPie(filas);
     const wsS = XLSX.utils.aoa_to_sheet(filas);
     wsS['!cols'] = [{wch:16},{wch:18},{wch:20},{wch:9},{wch:34},{wch:9},{wch:34},{wch:9}];
+    wsS['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:7} }, { s:{r:filaTot,c:0}, e:{r:filaTot,c:6} }];
+    wsS['!rows'] = [{ hpt:24 }];
+    const E = _xlEst();
+    for (let c = 0; c < 8; c++) { _xlS(wsS, 0, c, E.titulo); _xlS(wsS, 2, c, E.head); }
+    for (let r = 3; r < filaTot; r++)
+      for (let c = 0; c < 8; c++) _xlS(wsS, r, c, (c === 3 || c === 5 || c === 7) ? E.num : E.txt);
+    for (let c = 0; c < 7; c++) _xlS(wsS, filaTot, c, E.totL);
+    _xlS(wsS, filaTot, 7, E.totD, '#,##0');
+    _xlEstiloPie(wsS, filas, E);
     XLSX.utils.book_append_sheet(wb, wsS, 'Servicios alimentarios');
   })();
 
-  // Hoja de información con diseño
-  const meta = [
-    ['REPORTE DE COBERTURA PNCM'],
-    [],
-    ['Departamento', dep],
-    ['Provincia',    prov || '—'],
-    ['Distrito',     dist || '—'],
-    ['Mes del corte', `${mesNombre} ${año}`],
-    ['Generado',     _fmtFechaHora()],
-    ['Versión',      APP_VERSION],
-    ['Fuente',       'UPPM–PNCM–MIDIS 🇵🇪']
-  ];
-  const wsMeta = XLSX.utils.aoa_to_sheet(meta);
-  wsMeta['!cols'] = [{wch:22},{wch:46}];
-  wsMeta['!merges'] = [{s:{r:0,c:0},e:{r:0,c:1}}];
-  wsMeta['!rows'] = [{hpt:28}];
-  const stMetaTit = {
-    font:{name:'Calibri', sz:14, bold:true, color:{rgb:COL.blanco}},
-    alignment:{horizontal:'center', vertical:'center'},
-    fill:{fgColor:{rgb:COL.titulo}}
-  };
-  const stMetaLbl = {
-    font:{name:'Calibri', sz:11, bold:true, color:{rgb:COL.textoOsc}},
-    alignment:{horizontal:'left', vertical:'center'},
-    fill:{fgColor:{rgb:COL.gris}},
-    border: bordeThin
-  };
-  const stMetaVal = {
-    font:{name:'Calibri', sz:11, color:{rgb:COL.textoOsc}},
-    alignment:{horizontal:'left', vertical:'center'},
-    border: bordeThin
-  };
-  setCell(wsMeta, 'A1', meta[0][0], stMetaTit);
-  setCell(wsMeta, 'B1', '', stMetaTit);
-  for (let r=2; r<meta.length; r++) {
-    if (!meta[r][0]) continue;
-    setCell(wsMeta, XLSX.utils.encode_cell({r, c:0}), meta[r][0], stMetaLbl);
-    setCell(wsMeta, XLSX.utils.encode_cell({r, c:1}), meta[r][1], stMetaVal);
-  }
+  // Hoja de información (fuente y hora de generación; sin versión)
+  const wsMeta = _xlHojaInfo('REPORTE DE COBERTURA PNCM', [
+    ['Departamento', dep || 'Nacional'], ['Provincia', prov || '—'],
+    ['Distrito', dist || '—'], ['Mes del corte', `${mesNombre} ${año}`]]);
   XLSX.utils.book_append_sheet(wb, wsMeta, 'Información');
 
   const nombreArchivo = `Cobertura_${(dep||'Nacional').replace(/\s+/g,'_')}${prov?'_'+prov.replace(/\s+/g,'_'):''}${dist?'_'+dist.replace(/\s+/g,'_'):''}_${mesNombre}_${año}.xlsx`;
@@ -3078,7 +3635,7 @@ function generarIntroNarrativa(nivel, dep, prov, dist, d) {
 
 // ── Genera los párrafos narrativos del SAF ─────────────────────────────────
 // ── ACTORES COMUNALES ──────────────────────────────────────────────────────
-// Padron a nivel de persona (actores_julio26.js). Los conteos de bd.js inflan
+// Padron a nivel de persona (DATOS_PNCM/mensual/ACTORES). Los conteos de bd inflan
 // porque atribuyen cada comite a todos los distritos que atiende; aqui cada
 // persona se cuenta una sola vez.
 // OJO: el padron es de un solo corte. Si el usuario elige otro mes en el
@@ -3113,7 +3670,7 @@ function _actVigente() {
 }
 
 // ── SERVICIOS ALIMENTARIOS ─────────────────────────────────────────────────
-// Directorio por distrito (sa_julio26.js). Es un padron de un solo corte:
+// Directorio por distrito (DATOS_PNCM/mensual/SA). Es un padron de un solo corte:
 // si el selector apunta a otro mes, no se muestra. El campo SA_SCD de bd.js
 // llega vacio en todos los cortes, asi que la cifra sale de aqui.
 let _SA_IDX = null;
@@ -3175,6 +3732,9 @@ function saNacional() {
 }
 
 let _ACT_IDX = null;
+// Los indices de ACTORES y SA se arman una vez por corte: al cambiar de mes
+// hay que botarlos, o el mes nuevo se leeria con el padron del mes viejo.
+window.AM__resetIdx = function () { _ACT_IDX = null; _SA_IDX = null; };
 function _actIndex() {
   if (_ACT_IDX) return _ACT_IDX;
   _ACT_IDX = {};
@@ -3390,7 +3950,10 @@ function generarBloqueTerritorioNivel(nivel, dep, prov, resumen) {
 
   const pctSAF = ((resumen.dist_saf / totalDistAmbito) * 100).toFixed(1);
   const pctSCD = ((resumen.dist_scd / totalDistAmbito) * 100).toFixed(1);
-  const distUnion = Math.min(resumen.dist_saf + resumen.dist_scd, totalDistAmbito);
+  // Unión real: un distrito con SAF y SCD cuenta una vez (antes se sumaban).
+  const enAmbito = d => d.departamento === dep && (nivel === 'departamento' || d.provincia === prov);
+  const distUnion = new Set(datos.filter(d => enAmbito(d) && (d.nfamilia_saf > 0 || d.nniños_scd > 0))
+                                 .map(d => d.ubigeo)).size;
   const pctUnion  = ((distUnion / totalDistAmbito) * 100).toFixed(1);
 
   return `
@@ -3427,7 +3990,6 @@ function generarTarjetasKPI(d, nivel, servicio) {
   // misma fuente que la pantalla: el directorio, no el campo vacio de bd.js
   const _saT = d.esNacional ? saNacional() : saDe(d.ubigeos);
   const nivelDep   = nivel === 'departamento';
-  const nivelProv  = nivel === 'provincia';
   const fN = n => (n||0).toLocaleString('es-PE');
   const fS = n => 'S/. '+Math.round(n||0).toLocaleString('es-PE');
   const mesMin = (mesNombre||'').toLowerCase();
@@ -3484,218 +4046,6 @@ function generarTarjetasKPI(d, nivel, servicio) {
   }
 }
 
-// ── Narrativa SAF/SCD para ámbito especial ────────────────────────────────
-function generarNarrativaEspecialSAF(d, ambitoLabel) {
-  const fmt = n => (n||0).toLocaleString('es-PE', {maximumFractionDigits:0});
-  const mesMin = (mesNombre||'').toLowerCase();
-  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🔴 Servicio de Acompañamiento a Familias (SAF)</h3>
-    <p>Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Acompañamiento a Familias (SAF)</strong> en el ámbito del <strong>${ambitoLabel}</strong> alcanza una cobertura de <strong>${fmt(d.familias_2025)} familias</strong>, conformadas por <strong>${fmt(d.niños_saf)} niñas y niños</strong> y <strong>${fmt(d.gestantes_SAF)} gestantes</strong>, quienes reciben atención y acompañamiento a través de la intervención del programa.</p>
-    <p>La prestación del servicio se extiende a <strong>${fmt(d.dist_saf)} distritos</strong> distribuidos en <strong>${d.prov_saf} provincias</strong> de <strong>${d.dep_saf} departamentos</strong> que conforman el ámbito, contribuyendo al desarrollo integral de la primera infancia.</p>`;
-}
-
-function generarNarrativaEspecialSCD(d, ambitoLabel) {
-  const fmt = n => (n||0).toLocaleString('es-PE', {maximumFractionDigits:0});
-  const mesMin = (mesNombre||'').toLowerCase();
-  if (d.niños_2025 === 0 && d.CIAI_SCD === 0) {
-    return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🟢 Servicio de Cuidado Diurno (SCD)</h3>
-      <p>Al mes de <strong>${mesMin} de ${año}</strong>, el ámbito del <strong>${ambitoLabel}</strong> no registra cobertura a través del <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>`;
-  }
-  return `<h3 style="color:#374151;margin-top:14px;margin-bottom:5px;">🟢 Servicio de Cuidado Diurno (SCD)</h3>
-    <p>Al mes de <strong>${mesMin} de ${año}</strong>, el <strong>Servicio de Cuidado Diurno (SCD)</strong> en el ámbito del <strong>${ambitoLabel}</strong> brinda atención a <strong>${fmt(d.niños_2025)} niñas y niños</strong> a través de <strong>${fmt(d.CIAI_SCD)} Centros Infantiles de Atención Integral (CIAI)</strong>.</p>
-    <p>El servicio tiene presencia en <strong>${fmt(d.dist_scd)} distritos</strong> de <strong>${d.dep_scd} departamentos</strong> del ámbito, contribuyendo al cuidado integral de la primera infancia en zonas focalizadas.</p>`;
-}
-
-// ── Bloque territorial para ámbito especial ───────────────────────────────
-function generarBloqueTerritorioEspecial(d, ambito) {
-  const fN = n => (n||0).toLocaleString('es-PE');
-  const cfg = AMBITOS_ESPECIALES[ambito];
-  const totalUbigeos = cfg ? cfg.ubigeos.size : 0;
-  const pctSAF = totalUbigeos > 0 ? ((d.dist_saf/totalUbigeos)*100).toFixed(1) : '0.0';
-  const pctSCD = totalUbigeos > 0 ? ((d.dist_scd/totalUbigeos)*100).toFixed(1) : '0.0';
-  const distUnion = Math.min(d.dist_saf + d.dist_scd, totalUbigeos);
-  const pctUnion  = totalUbigeos > 0 ? ((distUnion/totalUbigeos)*100).toFixed(1) : '0.0';
-  return `
-    <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:10px 0 14px 0;border:none;">
-      <tr>
-        <td style="width:38%;padding:0 12px 0 0;vertical-align:top;border:none;">
-          <div style="border-top:3px solid #374151;padding:11px 13px;background:#f9fafb;text-align:center;">
-            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Cobertura territorial ${ambito}</div>
-            <div style="font-size:26pt;font-weight:800;color:#111827;line-height:1;">${pctUnion}%</div>
-            <div style="font-size:7.5pt;color:#6b7280;margin-top:2px;">${fN(distUnion)} de ${fN(totalUbigeos)} distritos del ámbito</div>
-          </div>
-        </td>
-        <td style="width:31%;padding:0 12px 0 0;vertical-align:top;border:none;">
-          <div style="border-top:3px solid #6b7280;padding:11px 12px;background:#f9fafb;text-align:center;">
-            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">SAF — Presencia</div>
-            <div style="font-size:20pt;font-weight:800;color:#374151;line-height:1;">${pctSAF}%</div>
-            <div style="font-size:7.5pt;color:#6b7280;margin-top:2px;"><strong style="color:#111827;">${fN(d.dist_saf)}</strong> distritos con SAF</div>
-          </div>
-        </td>
-        <td style="width:31%;padding:0;vertical-align:top;border:none;">
-          <div style="border-top:3px solid #9ca3af;padding:11px 12px;background:#f9fafb;text-align:center;">
-            <div style="font-size:6.5pt;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">SCD — Presencia</div>
-            <div style="font-size:20pt;font-weight:800;color:#374151;line-height:1;">${pctSCD}%</div>
-            <div style="font-size:7.5pt;color:#6b7280;margin-top:2px;"><strong style="color:#111827;">${fN(d.dist_scd)}</strong> distritos con SCD</div>
-          </div>
-        </td>
-      </tr>
-    </table>`;
-}
-
-// ── Tabla cobertura ámbito especial (Word) por departamento ───────────────
-function generarTablaCoberturaEspecialWord(datosAm, ambito) {
-  const mapa = {};
-  datosAm.forEach(r => {
-    const k = r.departamento;
-    if (!mapa[k]) mapa[k] = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
-    mapa[k].fam  += r.nfamilia_saf  ||0;
-    mapa[k].nSaf += r.nniños_saf    ||0;
-    mapa[k].gest += r.ngestantes_saf||0;
-    mapa[k].eSaf += r.ejecucion_saf ||0;
-    mapa[k].uScd += r.nniños_scd    ||0;
-    mapa[k].ciai += r.CIAI_SCD      ||0;
-    mapa[k].eScd += r.ejecucion_scd ||0;
-  });
-  const deps = Object.keys(mapa).sort((a,b)=>a.localeCompare(b,'es'));
-  const fmt  = n => Math.round(n).toLocaleString('es-PE');
-  const fmtS = n => n>0?'S/. '+Math.round(n).toLocaleString('es-PE'):'S/ 0';
-  let tot = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
-  let filas = '';
-  const brd = '1px solid #374151';
-  const brdL= '1px solid #d1d5db';
-  deps.forEach((dep,i) => {
-    const m = mapa[dep];
-    Object.keys(tot).forEach(k => tot[k]+=m[k]);
-    const bg = i%2===1?'background:#f9fafb;':'';
-    filas += `<tr style="${bg}">
-      <td style="text-align:left;padding:2px 5px;border:${brdL};font-size:7pt;font-weight:600;">${dep}</td>
-      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;">${fmt(m.fam)}</td>
-      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;">${fmt(m.nSaf)}</td>
-      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;">${fmt(m.gest)}</td>
-      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;font-weight:600;">${fmtS(m.eSaf)}</td>
-      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;">${fmt(m.uScd)}</td>
-      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;">${fmt(m.ciai)}</td>
-      <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;font-weight:600;">${fmtS(m.eScd)}</td>
-    </tr>`;
-  });
-  const TH = `padding:3px 5px;border:${brd};font-size:7pt;font-weight:700;text-align:center;`;
-  return `
-    <h2>COBERTURA ${ambito} — POR DEPARTAMENTO</h2>
-    <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;font-family:'Segoe UI',sans-serif;">
-      <thead>
-        <tr>
-          <th rowspan="2" style="${TH}background:#4b5563;color:#fff;text-align:left;">DEPARTAMENTO</th>
-          <th colspan="4" style="${TH}background:#6b7280;color:#fff;">Servicio de Acompañamiento a Familias (SAF)</th>
-          <th colspan="3" style="${TH}background:#9ca3af;color:#fff;">Servicio de Cuidado Diurno (SCD)</th>
-        </tr>
-        <tr>
-          <th style="${TH}background:#e5e7eb;color:#374151;">FAMILIAS</th>
-          <th style="${TH}background:#e5e7eb;color:#374151;">NIÑAS/OS</th>
-          <th style="${TH}background:#e5e7eb;color:#374151;">GESTANTES</th>
-          <th style="${TH}background:#e5e7eb;color:#374151;">S/. EJEC.</th>
-          <th style="${TH}background:#f3f4f6;color:#374151;">USUARIOS</th>
-          <th style="${TH}background:#f3f4f6;color:#374151;">CIAI</th>
-          <th style="${TH}background:#f3f4f6;color:#374151;">S/. EJEC.</th>
-        </tr>
-      </thead>
-      <tbody>${filas}</tbody>
-      <tfoot>
-        <tr style="font-weight:700;">
-          <td style="text-align:left;padding:2px 5px;border:${brdL};font-size:7pt;background:#e5e7eb;">Total ${ambito}</td>
-          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#e5e7eb;">${fmt(tot.fam)}</td>
-          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#e5e7eb;">${fmt(tot.nSaf)}</td>
-          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#e5e7eb;">${fmt(tot.gest)}</td>
-          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#e5e7eb;font-weight:600;">${fmtS(tot.eSaf)}</td>
-          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#f3f4f6;">${fmt(tot.uScd)}</td>
-          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#f3f4f6;">${fmt(tot.ciai)}</td>
-          <td style="text-align:right;padding:2px 5px;border:${brdL};font-size:7pt;background:#f3f4f6;font-weight:600;">${fmtS(tot.eScd)}</td>
-        </tr>
-      </tfoot>
-    </table>`;
-}
-
-// ── Tabla cobertura por DISTRITO para ámbito especial (Word) ─────────────
-function generarTablaDistritosEspecialWord(datosAm, ambito) {
-  const mapa = {};
-  datosAm.forEach(r => {
-    const k = r.departamento + '||' + r.provincia + '||' + r.distrito;
-    if (!mapa[k]) mapa[k] = {dep:r.departamento, prov:r.provincia, dist:r.distrito,
-      fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
-    mapa[k].fam  += r.nfamilia_saf  ||0;
-    mapa[k].nSaf += r.nniños_saf    ||0;
-    mapa[k].gest += r.ngestantes_saf||0;
-    mapa[k].eSaf += r.ejecucion_saf ||0;
-    mapa[k].uScd += r.nniños_scd    ||0;
-    mapa[k].ciai += r.CIAI_SCD      ||0;
-    mapa[k].eScd += r.ejecucion_scd ||0;
-  });
-  const rows = Object.values(mapa)
-    .sort((a,b) => a.dep.localeCompare(b.dep,'es') || a.prov.localeCompare(b.prov,'es') || a.dist.localeCompare(b.dist,'es'));
-  const fmt  = n => Math.round(n).toLocaleString('es-PE');
-  const fmtS = n => n>0 ? 'S/. '+Math.round(n).toLocaleString('es-PE') : 'S/ 0';
-  const brd  = '1px solid #374151';
-  const brdL = '1px solid #d1d5db';
-  const TH   = `padding:2px 4px;border:${brd};font-size:6.5pt;font-weight:700;text-align:center;`;
-
-  let tot = {fam:0,nSaf:0,gest:0,eSaf:0,uScd:0,ciai:0,eScd:0};
-  let filas = '';
-  let prevDep = '';
-  rows.forEach((r,i) => {
-    Object.keys(tot).forEach(k => tot[k]+=r[k]);
-    // Subtítulo de departamento cuando cambia
-    if (r.dep !== prevDep) {
-      filas += `<tr><td colspan="9" style="background:#374151;color:#fff;font-size:6.5pt;font-weight:700;padding:2px 5px;border:${brd};">${r.dep}</td></tr>`;
-      prevDep = r.dep;
-    }
-    const bg = i%2===1 ? 'background:#f9fafb;' : '';
-    filas += `<tr style="${bg}">
-      <td style="text-align:left;padding:1px 4px;border:${brdL};font-size:6.5pt;color:#6b7280;">${r.prov}</td>
-      <td style="text-align:left;padding:1px 4px;border:${brdL};font-size:6.5pt;font-weight:600;">${r.dist}</td>
-      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;">${fmt(r.fam)}</td>
-      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;">${fmt(r.nSaf)}</td>
-      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;">${fmt(r.gest)}</td>
-      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;font-weight:600;">${fmtS(r.eSaf)}</td>
-      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;">${fmt(r.uScd)}</td>
-      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;">${fmt(r.ciai)}</td>
-      <td style="text-align:right;padding:1px 4px;border:${brdL};font-size:6.5pt;font-weight:600;">${fmtS(r.eScd)}</td>
-    </tr>`;
-  });
-
-  return `
-    <h2>COBERTURA ${ambito} — POR DISTRITO</h2>
-    <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;font-family:'Segoe UI',sans-serif;">
-      <thead>
-        <tr>
-          <th colspan="2" rowspan="2" style="${TH}background:#4b5563;color:#fff;text-align:left;">PROVINCIA / DISTRITO</th>
-          <th colspan="4" style="${TH}background:#6b7280;color:#fff;">Serv. Acompañamiento a Familias (SAF)</th>
-          <th colspan="3" style="${TH}background:#9ca3af;color:#fff;">Serv. Cuidado Diurno (SCD)</th>
-        </tr>
-        <tr>
-          <th style="${TH}background:#e5e7eb;color:#374151;">FAM.</th>
-          <th style="${TH}background:#e5e7eb;color:#374151;">NIÑAS/OS</th>
-          <th style="${TH}background:#e5e7eb;color:#374151;">GEST.</th>
-          <th style="${TH}background:#e5e7eb;color:#374151;">S/. EJEC.</th>
-          <th style="${TH}background:#f3f4f6;color:#374151;">USUAR.</th>
-          <th style="${TH}background:#f3f4f6;color:#374151;">CIAI</th>
-          <th style="${TH}background:#f3f4f6;color:#374151;">S/. EJEC.</th>
-        </tr>
-      </thead>
-      <tbody>${filas}</tbody>
-      <tfoot>
-        <tr style="font-weight:700;">
-          <td colspan="2" style="text-align:left;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#e5e7eb;">Total ${ambito}</td>
-          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#e5e7eb;">${fmt(tot.fam)}</td>
-          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#e5e7eb;">${fmt(tot.nSaf)}</td>
-          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#e5e7eb;">${fmt(tot.gest)}</td>
-          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#e5e7eb;font-weight:600;">${fmtS(tot.eSaf)}</td>
-          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#f3f4f6;">${fmt(tot.uScd)}</td>
-          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#f3f4f6;">${fmt(tot.ciai)}</td>
-          <td style="text-align:right;padding:2px 4px;border:${brdL};font-size:6.5pt;background:#f3f4f6;font-weight:600;">${fmtS(tot.eScd)}</td>
-        </tr>
-      </tfoot>
-    </table>`;
-}
-
 // Sección de Centro Poblado para el documento Word (solo datos del CCPP)
 function generarSeccionCCPPWord(c) {
   const fN  = n => (n || 0).toLocaleString('es-PE');
@@ -3737,18 +4087,11 @@ async function exportarWord(opts = {}) {
   const logoBase64 = LOGO_BASE64;
   const d = window.ultimoResultado;
   if (!d) return alert('Primero realice una consulta.');
+  if (d._esEspecial) return alert('En ámbito especial solo se genera Excel.');
 
   const dep = d.departamento;
   const prov = d.provincia;
   const dist = d.distrito;
-
-  const ultimaFechaStr = ultimaFecha.toISOString().split('T')[0];
-  const fechaObj = new Date(ultimaFechaStr);
-  const mesNombreLocal = fechaObj.toLocaleString('es-PE', { month: 'long' });
-  const añoLocal = fechaObj.getFullYear();
-
-  const hoy = new Date();
-  const fechaFormateada = `${hoy.getDate().toString().padStart(2, '0')}/${(hoy.getMonth() + 1).toString().padStart(2, '0')}/${hoy.getFullYear()}`;
 
   const nombreUbicacion = dep ? [dep] : ['NACIONAL'];
   if (prov) nombreUbicacion.push(prov);
@@ -3854,68 +4197,6 @@ async function exportarWord(opts = {}) {
       <div class="Section1">
   `;
 
-  // ── ÁMBITO ESPECIAL (VRAEM u otro) ──────────────────────────────────────
-  if (d._esEspecial) {
-    const ambito     = d._ambito;
-    const ambitoLbl  = d._ambitoLabel;
-    const datosAm    = d._datos;
-    const fN = n => (n||0).toLocaleString('es-PE');
-    const fS = n => 'S/. '+(n||0).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});
-    const mesMin = (mesNombre||'').toLowerCase();
-    const tot = d.ejec_saf + d.ejec_scd;
-    const pSAF = tot>0?((d.ejec_saf/tot)*100).toFixed(1):'0.0';
-    const pSCD = tot>0?((d.ejec_scd/tot)*100).toFixed(1):'0.0';
-
-    // Intro narrativa del ámbito
-    contenido += `
-      <h2>${ambito} — ÁMBITO ESPECIAL PNCM</h2>
-      <p><em style="color:#6b7280;font-size:8.5pt;">${ambitoLbl}</em></p>
-      <p>De enero a ${mesMin} de ${año}, el <strong>Programa Nacional Cuna Más (PNCM)</strong> ejecutó en el ámbito del <strong>${ambito}</strong> un monto total de <strong>S/ ${fN(Math.round(tot))}</strong>, de los cuales <strong>S/ ${fN(Math.round(d.ejec_saf))} (${pSAF}%)</strong> corresponden al <strong>Servicio de Acompañamiento a Familias (SAF)</strong> y <strong>S/ ${fN(Math.round(d.ejec_scd))} (${pSCD}%)</strong> al <strong>Servicio de Cuidado Diurno (SCD)</strong>.</p>
-      <p>Al mes de <strong>${mesMin} de ${año}</strong>, la intervención abarca <strong>${fN(d.dist_saf + d.dist_scd)} distritos</strong> en <strong>${d.dep_saf || d.dep_scd} departamentos</strong> del ámbito focalizado.</p>`;
-
-    // Bloque territorial
-    contenido += generarBloqueTerritorioEspecial(d, ambito);
-
-    // SAF
-    contenido += generarNarrativaEspecialSAF(d, ambito);
-    contenido += generarTarjetasKPI(d, 'departamento', 'SAF');
-
-    // SCD
-    contenido += generarNarrativaEspecialSCD(d, ambito);
-    contenido += generarTarjetasKPI(d, 'departamento', 'SCD');
-
-    // Tabla por departamento
-    contenido += generarTablaCoberturaEspecialWord(datosAm, ambito);
-    // Tabla por distrito (página nueva dentro del mismo documento)
-    contenido += generarTablaDistritosEspecialWord(datosAm, ambito);
-
-    // Footer
-    contenido += `
-        </div>
-        <div style="mso-element:footer" id="f1">
-          <hr style="border:none;border-top:1px solid #d1d5db;margin:0 0 4px 0;">
-          <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#f8f9fa;border-radius:3px;border:none;">
-            <tr>
-              <td style="padding:6px 12px;font-size:7pt;color:#6b7280;line-height:1.7;width:76%;vertical-align:middle;border:none;text-align:left;">
-                ${buildFooterLine(_fmtFechaHora())}
-              </td>
-              <td style="width:4%;border:none;"></td>
-              <td style="padding:6px 14px 6px 0;font-size:9pt;font-weight:700;color:#374151;text-align:right;white-space:nowrap;vertical-align:middle;width:20%;border:none;letter-spacing:.01em;">
-                Página <span style="mso-field-code:'PAGE \* MERGEFORMAT'">1</span>
-                de <span style="mso-field-code:'NUMPAGES \* MERGEFORMAT'">1</span>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </body>
-      </html>`;
-
-    const base = `AM_${ambito}_${mesNombre}_${año}`;
-    if (opts.soloHTML) return { html: contenido, base };
-    registrarStat('word');
-    saveAs(new Blob([contenido], { type: 'application/msword' }), base + '.doc');
-    return;
-  }
 
   // ── RESUMEN NACIONAL ──
   const resumenNac = calcularResumenNacional();
@@ -3923,10 +4204,12 @@ async function exportarWord(opts = {}) {
   contenido += generarResumenNacional(resumenNac);
   contenido += `<div class="page-break"></div>`;
 
-  // ── DEPARTAMENTO ──
-  const resumenDep = calcularResumen(dep);
   // Tabla cobertura nacional → aquí, después de tarjetas nacionales (punto 4)
   contenido += generarTablaCobertura('departamento', dep, prov, dist, {forWord:true});
+
+  // ── DEPARTAMENTO ── (la vista nacional termina en la tabla de arriba)
+  if (dep) {
+  const resumenDep = calcularResumen(dep);
   contenido += `<div class="page-break"></div>`;
   contenido += generarIntroNarrativa('departamento', dep, null, null, resumenDep);
   contenido += generarBloqueTerritorioNivel('departamento', dep, null, resumenDep);
@@ -3936,6 +4219,7 @@ async function exportarWord(opts = {}) {
   contenido += generarTarjetasKPI(resumenDep, 'departamento', 'SCD');
   // Tabla cobertura provincial → después de tarjetas departamento (punto 5)
   if (prov) contenido += generarTablaCobertura('provincia', dep, prov, dist, {forWord:true});
+  }
 
   // ── PROVINCIA ──
   if (prov) {
@@ -3973,7 +4257,7 @@ async function exportarWord(opts = {}) {
         <table cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#f8f9fa;border-radius:3px;border:none;">
           <tr>
             <td style="padding:6px 12px;font-size:7pt;color:#6b7280;line-height:1.7;width:76%;vertical-align:middle;border:none;text-align:left;">
-              ${buildFooterLine(_fmtFechaHora())}
+              ${buildFooterLine(_generadoALas())}
             </td>
             <td style="width:4%;border:none;"></td>
             <td style="padding:6px 14px 6px 0;font-size:9pt;font-weight:700;color:#374151;text-align:right;white-space:nowrap;vertical-align:middle;width:20%;border:none;letter-spacing:.01em;">
@@ -4001,7 +4285,7 @@ try {
   if (window.matchMedia('(max-width:820px)').matches) toggleFiltros(false);
 } catch (e) { console.warn('Filtros:', e.message); }
 
-// Los demás cortes se traen después, sin estorbar la primera pintura
+// Los demás cortes del año se leen después, sin estorbar la primera pintura
 if (typeof precargarCortes === 'function') {
   const arranca = () => precargarCortes();
   if (window.requestIdleCallback) requestIdleCallback(arranca, { timeout: 2500 });

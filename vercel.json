@@ -1,6 +1,11 @@
 {
   "redirects": [
     {
+      "source": "/am",
+      "destination": "/am/",
+      "permanent": false
+    },
+    {
       "source": "/uppm",
       "destination": "/uppm/",
       "permanent": false
