@@ -1,0 +1,1430 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MAIA · ¿Dónde prepararnos primero?</title>
+<!--
+  LABORATORIO — no es un producto. Sirve para decidir cómo se ve el mapa común
+  del 0.1 y del 0.2 (ver docs/MAPA_DEL_PROYECTO.md, «Dirección compartida»).
+  v03 · el mapa premium de la v02 con los FILTROS, la MATRIZ y la METODOLOGÍA del
+  0.1 (v30), con su misma regla: índice = exposición × peso + impacto × (100 − peso);
+  crítico desde 4.5, alto desde 3.5, medio desde 2.5; matriz 5 × 5.
+  Textos para alcaldes, municipalidades y público: lenguaje simple y los términos
+  técnicos en ayudas que aparecen al pasar el cursor (data-tip).
+  Usuarios = familias del SAF + niñas y niños del SCD.
+  TODO EN DISCO: motor (lib/maplibre-gl-5.24.0), fuentes (lib/fuentes), relieve,
+  países y límites (DATOS_PNCM/territorio). Con internet suma el fondo de
+  OpenFreeMap; si no responde en 4 s o la red lo bloquea, usa el fondo en disco.
+  Datos: DATOS_PNCM, último corte del manifiesto (?corte=AAAAMM abre otro).
+  Ninguna cifra está escrita a mano.
+-->
+<link href="lib/fuentes/fuentes.css" rel="stylesheet">
+<link href="lib/maplibre-gl-5.24.0/maplibre-gl.css" rel="stylesheet">
+<script src="lib/maplibre-gl-5.24.0/maplibre-gl.js"></script>
+<script src="DATOS_PNCM/derivados/MAIA/manifest.js"></script>
+<script>
+(function () {
+  var L = window.MAIA_CORTES || [];
+  var q = new URLSearchParams(location.search).get('corte');
+  var c = L.filter(function (x) { return x.ym === q; })[0] || L[L.length - 1];
+  if (!c) { document.write('<p style="font:16px sans-serif;padding:24px">No hay cortes en DATOS_PNCM/derivados/MAIA/manifest.js</p>'); return; }
+  window.CORTE = c;
+  document.write('<script src="DATOS_PNCM/derivados/MAIA/' + c.d01 + '"><\/script>'
+    + '<script src="DATOS_PNCM/derivados/MAIA/' + c.geo01 + '"><\/script>'
+    + '<script src="DATOS_PNCM/territorio/geo_distritos.js"><\/script>'
+    + '<script src="DATOS_PNCM/territorio/limites_peru.js"><\/script>'
+    + '<script src="DATOS_PNCM/territorio/relieve_peru.js"><\/script>'
+    + '<script src="DATOS_PNCM/territorio/paises_sudamerica.js"><\/script>');
+})();
+</script>
+<style>
+:root{
+  --mg:#FF0A6C; --mg6:#D9005A; --mg7:#A8004A;
+  --ink:#120C15; --ink2:#3A2F40; --ink3:#6E6175; --ink4:#9A8F95; --ink5:#C6BEC9;
+  --glass:rgba(255,255,255,.88); --glassB:rgba(18,12,21,.08); --suave:rgba(18,12,21,.045);
+  --sh:0 1px 2px rgba(18,12,21,.05),0 18px 48px -12px rgba(18,12,21,.18);
+  --e:cubic-bezier(.16,1,.3,1);
+  --t:'Archivo Black',system-ui,sans-serif; --f:'Manrope',system-ui,sans-serif;
+  --anch:372px; --barra:110px;
+}
+body.oscuro{ --glass:rgba(16,12,19,.82); --glassB:rgba(255,255,255,.1); --suave:rgba(255,255,255,.06);
+  --ink:#F6F1F5; --ink2:#D9D0DB; --ink3:#A99DAD; --ink4:#7D7282; --ink5:#4A4150;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 18px 48px -12px rgba(0,0,0,.6); }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#FAF7F9;color:var(--ink);font-family:var(--f);-webkit-font-smoothing:antialiased;overflow:hidden}
+body.oscuro{background:#0D0A0F}
+button,select,input{font-family:inherit}
+#mapa{position:fixed;inset:0}
+.velo{position:fixed;inset:0;pointer-events:none;z-index:1;
+  background:linear-gradient(90deg,rgba(250,247,249,.9) 0,rgba(250,247,249,.45) 320px,rgba(250,247,249,0) 480px)}
+body.oscuro .velo{background:linear-gradient(90deg,rgba(13,10,15,.9) 0,rgba(13,10,15,.45) 320px,rgba(13,10,15,0) 480px)}
+.card{background:var(--glass);backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);
+  border:1px solid var(--glassB);border-radius:24px;box-shadow:var(--sh)}
+.rail{position:fixed;z-index:3;top:20px;bottom:20px;width:var(--anch);display:flex;flex-direction:column;gap:12px;overflow:auto;scrollbar-width:none;padding-bottom:4px;pointer-events:none}
+.rail>*{pointer-events:auto;flex:none}
+.rail::-webkit-scrollbar{display:none}
+.rail-i{left:20px;bottom:56px}
+.rail-d{right:20px;align-items:flex-end;transition:opacity .35s var(--e)}
+body.conFicha .rail-d{opacity:0}
+body.conFicha .rail-d>*{pointer-events:none}
+.tt{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.ceja{font-size:10px;font-weight:800;letter-spacing:.2em;color:var(--mg6);text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.ceja:before{content:"";width:20px;height:2px;background:var(--mg6);border-radius:2px}
+/* términos con ayuda: subrayado punteado, discreto */
+.ter{text-decoration:underline dotted;text-decoration-color:var(--ink4);text-underline-offset:3px;cursor:help}
+/* ── relato ── */
+.relato{padding:20px 22px 18px}
+.marca{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.marca i{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--mg),var(--mg7));display:grid;place-items:center;
+  color:#fff;font:13px var(--t);font-style:normal;box-shadow:0 6px 18px -6px rgba(217,0,90,.7)}
+.marca b{font:14px var(--t);letter-spacing:.02em}
+.marca span{display:block;font-size:9.5px;font-weight:700;letter-spacing:.18em;color:var(--ink3);text-transform:uppercase}
+h1{font:27px/1.04 var(--t);letter-spacing:-.01em;margin:10px 0 8px}
+h1 em{font-style:normal;color:var(--mg6)}
+.sub{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);line-height:1.6}
+.cuando{font-size:11.5px;color:var(--ink3);font-weight:600;line-height:1.45;margin-top:4px}
+.nhz{font-size:11.5px;color:var(--ink2);line-height:1.45;margin-top:10px;padding:8px 11px;border-radius:12px;background:rgba(217,0,90,.07);display:none}
+.nhz.on{display:block}
+.base{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:8px;margin-top:14px;padding:11px 12px;border-radius:14px;background:var(--suave)}
+.base div{min-width:0;transition:opacity .25s;cursor:help}
+.base div.off{opacity:.4}
+.base b{display:block;font:17px/1 var(--t);letter-spacing:-.01em}
+.base span{display:block;font-size:10px;font-weight:700;color:var(--ink3);margin-top:5px;line-height:1.25}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px;margin:16px 0 12px}
+.kpi{appearance:none;border:0;background:none;text-align:left;color:inherit;font:inherit;padding:0;cursor:help}
+button.kpi{cursor:pointer;border-radius:10px}
+button.kpi:hover span{color:var(--ink)}
+button.kpi:hover b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.kpi b{display:block;font:36px/1 var(--t);letter-spacing:-.02em;color:var(--mg6)}
+.kpi.n b{color:var(--ink);font-size:24px}
+.kpi span{display:block;margin-top:5px;font-size:11.5px;font-weight:600;color:var(--ink3);line-height:1.3}
+.kpi small{display:block;font-size:10.5px;color:var(--ink4);font-weight:600;margin-top:2px}
+.insight{font-size:12.8px;line-height:1.55;color:var(--ink2);padding-top:12px;border-top:1px solid var(--glassB)}
+.insight b{color:var(--ink)}
+.acc{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.btn{appearance:none;border:0;cursor:pointer;font:700 12px var(--f);border-radius:999px;padding:10px 14px;display:inline-flex;align-items:center;gap:7px;transition:transform .2s var(--e),box-shadow .2s}
+.btn.p{background:var(--ink);color:#fff}
+body.oscuro .btn.p{background:#fff;color:#120C15}
+.btn.p:hover{box-shadow:0 10px 26px -10px rgba(18,12,21,.6)}
+.btn.s{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--glassB)}
+.btn svg{width:14px;height:14px}
+.soloMovil{display:none}
+/* ── arriba al centro: estilos, barra de filtros y búsqueda avanzada ── */
+.centro{position:fixed;z-index:4;top:14px;left:50%;transform:translateX(-50%);width:min(640px,calc(100vw - 2 * var(--anch) - 64px));
+  display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+.centro>*{pointer-events:auto}
+.estilos{padding:5px;display:flex;align-items:center;gap:3px;border-radius:999px}
+.estilos button[data-e]{appearance:none;border:0;background:transparent;cursor:pointer;font:700 11.5px var(--f);color:var(--ink3);padding:8px 13px;border-radius:999px;transition:.25s var(--e);white-space:nowrap}
+.estilos button[data-e][aria-pressed=true]{background:var(--ink);color:#fff}
+body.oscuro .estilos button[data-e][aria-pressed=true]{background:#fff;color:#120C15}
+.estilos .sep{width:1px;height:18px;background:var(--glassB);margin:0 3px}
+.fbar{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 8px;padding:6px;border-radius:22px;max-width:100%}
+.fbar .chip{box-shadow:inset 0 0 0 1.5px var(--glassB)}
+.fbar .chip[aria-pressed=true]{box-shadow:inset 0 0 0 1.5px var(--mg6)}
+.seg{display:flex;background:var(--suave);border-radius:999px;padding:3px;gap:2px}
+.seg button{flex:1;appearance:none;border:0;background:transparent;cursor:pointer;font:700 11px var(--f);color:var(--ink3);padding:6px 11px;border-radius:999px;white-space:nowrap;transition:.2s var(--e)}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+body.oscuro .seg button[aria-pressed=true]{background:#fff;color:#120C15}
+select,.bus{appearance:none;width:100%;min-width:0;border:1px solid var(--glassB);background:var(--glass);color:var(--ink);font:600 11.5px var(--f);border-radius:999px;padding:7px 12px}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--ink3) 50%),linear-gradient(135deg,var(--ink3) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 50%,calc(100% - 11px) 50%;background-size:4px 4px;background-repeat:no-repeat;padding-right:26px;cursor:pointer}
+select:disabled{opacity:.45;cursor:default}
+.fbar select{width:126px;flex:none}
+.bavz{appearance:none;border:0;cursor:pointer;background:transparent;color:var(--ink);font:700 11px var(--f);display:inline-flex;align-items:center;gap:6px;padding:7px 10px 7px 12px;border-radius:999px;white-space:nowrap}
+.bavz:hover,.bavz[aria-expanded=true]{background:var(--suave)}
+.bavz svg{width:14px;height:14px;transition:transform .3s var(--e)}
+.bavz[aria-expanded=true] svg{transform:rotate(180deg)}
+.bavz b{min-width:17px;height:17px;border-radius:99px;background:var(--mg6);color:#fff;font-size:10px;display:none;place-items:center;padding:0 5px}
+.bavz b.on{display:inline-grid}
+.avz{width:100%;padding:14px 16px 12px;border-radius:20px;display:none}
+.avz.on{display:block;animation:baja .35s var(--e)}
+@keyframes baja{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.fg{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fg>span{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);padding-left:4px}
+.avz-g{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.avz-g .ancho{grid-column:1/-1}
+.peso{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;font-size:11px;font-weight:600;color:var(--ink3);height:31px;white-space:nowrap}
+.peso b{color:var(--ink)}
+input[type=range]{accent-color:var(--mg6);width:100%}
+.tog{display:flex;gap:6px;flex-wrap:wrap}
+.avz-p{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--glassB);font-size:11px;color:var(--ink3);font-weight:600;gap:10px}
+.lnk{appearance:none;border:0;background:none;cursor:pointer;font:700 11px var(--f);color:var(--mg6);padding:4px 2px;white-space:nowrap}
+.lnk:hover{text-decoration:underline;text-underline-offset:3px}
+/* ── capas: abajo, al centro ── */
+.capas{position:fixed;z-index:3;bottom:14px;left:50%;transform:translateX(-50%);padding:5px;display:flex;align-items:center;gap:4px;border-radius:999px;white-space:nowrap;max-width:calc(100vw - 2 * var(--anch) - 64px);overflow-x:auto;scrollbar-width:none}
+.capas::-webkit-scrollbar{display:none}
+.chip{appearance:none;border:0;cursor:pointer;font:700 10.5px var(--f);padding:7px 11px;border-radius:999px;color:var(--ink3);background:transparent;display:inline-flex;gap:6px;align-items:center;transition:.2s var(--e);white-space:nowrap;flex:none}
+.chip[aria-pressed=true]{color:var(--mg6);background:rgba(217,0,90,.08)}
+.chip i{width:7px;height:7px;border-radius:50%;box-shadow:inset 0 0 0 1.5px currentColor}
+.chip[aria-pressed=true] i{background:currentColor}
+.leyP{display:none;align-items:center;gap:6px;font-size:10.5px;font-weight:700;color:var(--ink2);padding:0 10px 0 8px;border-left:1px solid var(--glassB);flex:none;cursor:help}
+body.zPts .leyP{display:inline-flex}
+.leyP i{width:9px;height:9px;border-radius:50%;background:#FF7FAE;box-shadow:0 0 0 1.5px #fff,0 0 0 2px rgba(18,12,21,.15)}
+.leyP i.scd{box-shadow:0 0 0 2px var(--ink)}
+.leyP i+span{margin-right:4px}
+/* ── matriz: plegada, una mención ── */
+.matriz{width:auto;max-width:100%;padding:0;overflow:hidden}
+.matriz.abierta{width:100%}
+.mres{appearance:none;border:0;background:none;cursor:pointer;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;text-align:left;color:var(--ink)}
+.mini{display:grid;grid-template-columns:repeat(5,8px);gap:2px;flex:none}
+.mini i{width:8px;height:8px;border-radius:2px}
+.mtx{flex:1;min-width:0}
+.mtx b{display:block;font:13.5px/1.15 var(--t);margin-top:5px}
+.mtx small{display:block;font-size:11px;color:var(--ink3);font-weight:600;margin-top:3px;white-space:nowrap}
+.chev{width:18px;height:18px;flex:none;color:var(--ink3);transition:transform .3s var(--e)}
+.matriz.abierta .chev{transform:rotate(180deg)}
+.matriz.abierta .mini{display:none}
+.msel{display:none;align-items:center;justify-content:space-between;gap:10px;margin:0 12px 12px;padding:8px 10px;border-radius:12px;background:rgba(217,0,90,.07);font-size:11.5px;font-weight:700}
+.matriz:not(.abierta) .msel.on{display:flex}
+.mcuerpo{display:none;padding:0 18px 18px}
+.matriz.abierta .mcuerpo{display:block;animation:baja .35s var(--e)}
+.mh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.mh small{font-size:11px;color:var(--ink3);font-weight:600}
+.seg.mini2{flex:none}
+.seg.mini2 button{font-size:10px;padding:5px 9px}
+.mxw{display:grid;grid-template-columns:14px 1fr;gap:6px}
+.yt{writing-mode:vertical-rl;transform:rotate(180deg);font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);text-align:center;cursor:help}
+.mx{display:grid;grid-template-columns:34px repeat(5,1fr);gap:4px}
+.yl,.xl{font-size:10px;font-weight:700;color:var(--ink3);display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1.1;text-align:center}
+.yl b,.xl b{font-size:12px;color:var(--ink)}
+.yl i,.xl i{font-style:normal;font-size:8.5px;font-weight:600;color:var(--ink4)}
+.cel{appearance:none;border:0;cursor:pointer;aspect-ratio:1.12;border-radius:9px;background:var(--bg);color:var(--fg);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:transform .2s var(--e),box-shadow .2s,opacity .25s;position:relative}
+.cel b{font:15px/1 var(--t)}
+.cel small{font-size:8.5px;font-weight:700;opacity:.85;margin-top:2px}
+.cel.vacia{opacity:.26;cursor:default}
+.cel:not(.vacia):hover{transform:translateY(-2px);box-shadow:0 8px 18px -8px rgba(18,12,21,.5)}
+.cel.on{box-shadow:0 0 0 2.5px var(--ink),0 10px 22px -8px rgba(18,12,21,.5);transform:scale(1.04);z-index:1}
+.mx.conSel .cel:not(.on):not(.vacia){opacity:.45}
+.xt{text-align:center;font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:6px 0 0 54px;cursor:help}
+.tally{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:14px}
+.ty{appearance:none;border:0;cursor:pointer;background:var(--suave);border-radius:14px;padding:9px 6px;text-align:center;color:var(--ink);transition:.2s var(--e)}
+.ty b{display:block;font:18px/1 var(--t)}
+.ty span{display:flex;align-items:center;justify-content:center;gap:5px;font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-top:5px}
+.ty span i{width:8px;height:8px;border-radius:3px;background:var(--c)}
+.ty.on{box-shadow:inset 0 0 0 2px var(--ink);background:transparent}
+.lee{font-size:11.5px;line-height:1.5;color:var(--ink2);margin-top:12px}
+.slst{margin-top:12px;border-top:1px solid var(--glassB);padding-top:10px;display:none}
+.slst.on{display:block}
+.slh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+.slh b{font-size:12.5px}
+.sli{appearance:none;border:0;background:none;width:100%;cursor:pointer;display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:center;padding:7px 4px;border-radius:10px;text-align:left;color:var(--ink)}
+.sli:hover{background:var(--suave)}
+.sli i{width:9px;height:9px;border-radius:50%}
+.sli span{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sli small{display:block;font-size:10px;font-weight:600;color:var(--ink3)}
+.sli em{font-style:normal;font-size:11px;font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums;text-align:right}
+/* metodología, debajo de la matriz desplegada */
+.meto{margin-top:16px;padding-top:14px;border-top:1px solid var(--glassB)}
+.pasos{list-style:none;margin-top:8px}
+.pasos li{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:11px 0;border-top:1px solid var(--suave)}
+.pasos li:first-child{border-top:0}
+.pasos li>b{font:13px/1.25 var(--t);color:var(--mg6)}
+.pasos h4{font:12.5px/1.25 var(--t);margin-bottom:9px}
+.pasos p{font-size:11px;line-height:1.45;color:var(--ink3);font-weight:600;margin-top:8px}
+.vis{display:flex;align-items:center;gap:6px;min-height:30px;cursor:help}
+.vis .fl{width:16px;height:16px;color:var(--ink4);flex:none}
+.fu{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:var(--ink2);padding:5px 7px;border-radius:8px;background:var(--suave);white-space:nowrap}
+.fu svg{width:13px;height:13px;color:var(--mg6);flex:none}
+.pt{width:12px;height:12px;border-radius:50%;background:var(--mg6);box-shadow:0 0 0 2px #fff,0 0 0 3.5px rgba(217,0,90,.3);flex:none;margin-left:2px}
+.res{min-width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font:14px var(--t);flex:none;padding:0 6px}
+.g2{display:grid;grid-template-columns:auto 1fr auto;gap:5px 8px;align-items:center;flex:1}
+.g2 span{font-size:10px;font-weight:700;color:var(--ink3)}
+.g2 b{font:11px var(--t)}
+.m5{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
+.m5 i{height:6px;border-radius:3px;background:var(--glassB)}
+.g3{flex:1;justify-content:space-between}
+.g3 .cs{display:flex;align-items:flex-end;gap:10px}
+.g3 .c{display:flex;flex-direction:column;align-items:center;gap:3px}
+.g3 .c i{border-radius:50%;box-shadow:0 0 0 1.5px #fff,0 0 0 2px rgba(18,12,21,.1)}
+.g3 small{font-size:8.5px;font-weight:700;color:var(--ink4);white-space:nowrap}
+.g4{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;align-items:end;flex:1}
+.g4 div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.g4 i{width:100%;border-radius:5px 5px 2px 2px}
+.g4 small{font-size:8.5px;font-weight:700;color:var(--ink3);white-space:nowrap}
+.g5{flex:1;display:block}
+.g5f{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:10.5px;font-weight:700;color:var(--ink3)}
+.g5f .ch{padding:4px 7px;border-radius:8px;background:var(--suave);color:var(--ink2);white-space:nowrap}
+.g5f .ch b{font:11px var(--t);color:var(--ink);margin-left:3px}
+.g5f .v{font:16px var(--t);margin-left:2px}
+.esc{position:relative;display:flex;height:8px;margin-top:11px}
+.esc i{height:100%}
+.esc i:first-child{border-radius:4px 0 0 4px}
+.esc i:nth-child(4){border-radius:0 4px 4px 0}
+.esc u{position:absolute;top:-4px;width:4px;height:16px;border-radius:2px;background:var(--ink);transform:translateX(-50%);box-shadow:0 0 0 2px #fff;transition:left .35s var(--e)}
+.escl{position:relative;height:12px;margin-top:5px;font-size:8.5px;font-weight:700;color:var(--ink4)}
+.escl span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.escl span:first-child{transform:none}
+.escl span:last-child{transform:translateX(-100%)}
+.leer{margin-top:10px;width:100%;justify-content:center}
+/* modal de la metodología completa */
+.fondoM{position:fixed;inset:0;z-index:20;background:rgba(18,12,21,.34);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .25s}
+.fondoM.on{opacity:1;pointer-events:auto}
+.modal{width:min(700px,100%);max-height:calc(100vh - 48px);overflow:auto;padding:30px 32px 26px;position:relative;background:#fff;border-radius:26px;box-shadow:0 30px 80px -20px rgba(18,12,21,.45);transform:translateY(10px);transition:transform .35s var(--e)}
+body.oscuro .modal{background:#17121B}
+.fondoM.on .modal{transform:none}
+.modal .x{position:absolute;right:16px;top:16px;appearance:none;border:0;background:transparent;cursor:pointer;color:var(--ink3);padding:7px;border-radius:50%}
+.modal .x:hover{color:var(--ink);background:var(--suave)}
+.modal h2{font:26px/1.1 var(--t);margin:10px 0 6px}
+.modal .lead{font-size:13.5px;color:var(--ink3);font-weight:600;margin-bottom:10px}
+.paso{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:18px 0;border-top:1px solid var(--glassB)}
+.paso>b{font:24px/1 var(--t);color:var(--mg6)}
+.paso h3{font:15px/1.2 var(--t);margin-bottom:7px}
+.paso p{font-size:13px;line-height:1.6;color:var(--ink2)}
+.paso code{display:block;margin-top:9px;padding:9px 12px;border-radius:10px;background:rgba(217,0,90,.06);font:600 11.5px/1.5 ui-monospace,Consolas,monospace;color:var(--mg7);white-space:pre-wrap}
+.paso .ej{font-size:12px;color:var(--ink3);margin-top:9px;line-height:1.5}
+.resul{margin-top:8px;padding:16px 18px;border-radius:16px;background:var(--suave)}
+.resul .tt{display:block;margin-bottom:8px;line-height:1.5}
+.resul div{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:12.5px;border-top:1px solid var(--glassB)}
+.resul div:first-of-type{border-top:0}
+.resul div b{font-variant-numeric:tabular-nums}
+.fuera{margin-top:14px;font-size:12.5px;line-height:1.6;color:var(--ink2);padding:14px 16px;border-radius:14px;box-shadow:inset 0 0 0 1.5px var(--glassB)}
+/* ── ficha del distrito ── */
+.ficha{position:fixed;z-index:4;right:20px;top:20px;width:var(--anch);max-height:calc(100% - 40px);overflow:auto;padding:20px;
+  transform:translateX(24px);opacity:0;pointer-events:none;transition:transform .5s var(--e),opacity .35s;scrollbar-width:none}
+.ficha::-webkit-scrollbar{display:none}
+.ficha.on{transform:none;opacity:1;pointer-events:auto}
+.ficha .x{position:absolute;right:14px;top:14px;appearance:none;border:0;background:transparent;cursor:pointer;color:var(--ink3);padding:6px;border-radius:50%}
+.ficha .x:hover{color:var(--ink);background:var(--glassB)}
+.ficha .loc{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);padding-right:30px}
+.lk{appearance:none;border:0;background:none;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;padding:0}
+.lk:hover{color:var(--mg6);text-decoration:underline;text-underline-offset:3px}
+.ficha h2{font:25px/1.05 var(--t);margin:6px 0 2px}
+.ficha .que{font-size:11.5px;font-weight:600;color:var(--ink3);line-height:1.4}
+.riesgo{margin-top:14px;padding:14px;border-radius:18px;background:var(--suave)}
+.rtop{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.rtop .tt{display:inline-block;margin-bottom:6px}
+.rtop b{display:block;font:34px/1 var(--t);letter-spacing:-.02em}
+.clase{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:6px 11px;border-radius:99px;white-space:nowrap;cursor:help}
+.eje{display:grid;grid-template-columns:1fr auto;gap:5px 10px;margin-top:13px;align-items:baseline}
+.eje>span{font-size:11.5px;font-weight:800}
+.eje>em{font-style:normal;font-size:11px;font-weight:700;color:var(--ink3);text-align:right;white-space:nowrap}
+.cinco{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.cinco i{height:6px;border-radius:3px;background:var(--glassB)}
+.cinco i.on{background:var(--c)}
+.eje p{grid-column:1/-1;font-size:11px;color:var(--ink3);line-height:1.4;font-weight:600}
+.formula{font-size:10.5px;color:var(--ink3);margin-top:12px;font-weight:600;line-height:1.45}
+.bloque{margin-top:16px;padding-top:12px;border-top:1px solid var(--glassB)}
+.bloque>.tt{display:block;margin-bottom:8px}
+.ins{display:flex;gap:9px;align-items:flex-start;padding:4px 0;font-size:12px;line-height:1.4;color:var(--ink2)}
+.ins svg{width:16px;height:16px;flex:none;margin-top:1px}
+.ins.si svg{color:var(--mg6)}
+.ins.no svg{color:var(--ink4)}
+.ins b{color:var(--ink)}
+.veredicto{font-size:12px;font-weight:800;margin-top:6px;line-height:1.4}
+.srv2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sv{padding:11px 12px;border-radius:14px;box-shadow:inset 0 0 0 1.5px var(--glassB)}
+.sv.act{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.sv.off{opacity:.5}
+.sv h3{font:16px/1 var(--t);cursor:help}
+.sv h3 small{display:block;font:600 10px/1.3 var(--f);color:var(--ink3);margin-top:4px}
+.sv dl{display:grid;grid-template-columns:1fr auto;gap:4px 6px;margin-top:9px;font-size:11px}
+.sv dt{color:var(--ink3);font-weight:600}
+.sv dt:first-of-type,.sv dd:first-of-type{color:var(--ink);font-weight:800;font-size:12px}
+.sv dd{font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.sv .no{font-size:11px;color:var(--ink3);margin-top:9px;font-weight:600}
+.cph,.cp{display:grid;grid-template-columns:10px 1fr 36px 48px;gap:9px;align-items:center}
+.cph{padding-bottom:4px}
+.cph .tt{font-size:9px}
+.cph .tt:first-child{grid-column:1/3}
+.cph .r,.cp .u{text-align:right}
+.cp{padding:6px 0;font-size:12px;font-weight:600;cursor:help}
+.cp .d{width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1.5px #fff,0 0 0 2px rgba(18,12,21,.12)}
+.cp .d.scd{box-shadow:0 0 0 2px var(--ink)}
+.cp .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cp .st{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-align:center;border-radius:6px;padding:2px 0;box-shadow:inset 0 0 0 1.2px var(--glassB);color:var(--ink2)}
+.cp .u{font-variant-numeric:tabular-nums}
+.ley{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:10px;color:var(--ink3);font-weight:600;margin-top:8px;line-height:1.4}
+.ley i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.ley i.scd{background:transparent;box-shadow:inset 0 0 0 2px var(--ink)}
+/* ── ayudas: una sola tarjeta flotante para todos los términos ── */
+.ayuda{position:fixed;z-index:30;max-width:290px;padding:11px 14px;border-radius:14px;font-size:12px;line-height:1.5;color:var(--ink2);pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .16s,transform .2s var(--e)}
+.ayuda.on{opacity:1;transform:none}
+.ayuda b{color:var(--ink);font-weight:800}
+/* ── varios ── */
+.tip{position:fixed;z-index:5;pointer-events:none;padding:10px 12px;border-radius:14px;font-size:12px;line-height:1.4;opacity:0;transition:opacity .15s;max-width:290px}
+.tip b{display:block;font:14px var(--t);margin-bottom:3px}
+.tip span{display:block;color:var(--ink3);font-weight:600}
+.pie{position:fixed;z-index:3;left:20px;bottom:14px;width:var(--anch);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);line-height:1.7}
+.pie i{color:var(--mg6);font-style:normal;margin:0 6px}
+.cap{position:fixed;z-index:4;left:50%;bottom:66px;transform:translate(-50%,20px);opacity:0;padding:14px 20px;text-align:center;transition:.5s var(--e);pointer-events:none;min-width:280px}
+.cap.on{transform:translate(-50%,0);opacity:1}
+.cap small{display:block;font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--mg6)}
+.cap b{font:19px var(--t)}
+.maplibregl-ctrl-attrib{font-size:10px;background:rgba(255,255,255,.6)!important;border-radius:8px 0 0 0}
+body.oscuro .maplibregl-ctrl-attrib{background:rgba(13,10,15,.6)!important}
+body.oscuro .maplibregl-ctrl-attrib a{color:#A99DAD}
+.maplibregl-ctrl-group{border-radius:14px!important;box-shadow:var(--sh)!important;overflow:hidden}
+.aviso{position:fixed;inset:0;display:none;place-items:center;z-index:9;font:15px var(--f);padding:24px;text-align:center}
+.carga{position:fixed;z-index:2;left:50%;top:50%;transform:translate(-50%,-50%);padding:14px 18px;display:flex;align-items:center;gap:12px;
+  font-size:13px;font-weight:700;color:var(--ink2);max-width:380px;line-height:1.45;transition:opacity .4s}
+.carga.off{opacity:0;pointer-events:none}
+.carga i{width:10px;height:10px;border-radius:50%;background:var(--mg6);flex:none;animation:latido 1.1s var(--e) infinite}
+.carga.err i{animation:none;background:var(--ink)}
+@keyframes latido{0%{transform:scale(.6);opacity:.5}50%{transform:scale(1.15);opacity:1}100%{transform:scale(.6);opacity:.5}}
+/* etiquetas en HTML: países y críticos (sin internet) y límites (siempre) */
+.eti{font:800 10px var(--f);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);pointer-events:none;white-space:nowrap;
+  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 6px #fff}
+body.oscuro .eti{color:#F6F1F5;text-shadow:0 0 3px #0D0A0F,0 0 6px #0D0A0F}
+.eti.pais{font-weight:700;color:var(--ink4);letter-spacing:.32em;font-size:10.5px}
+body.cerca .eti.crit{display:none}
+.eti.lim{appearance:none;border:0;background:none;pointer-events:auto;cursor:pointer;color:var(--ink3);font-weight:800;padding:2px 4px;border-radius:6px;transition:color .2s}
+.eti.lim.d{font-size:10px;letter-spacing:.24em}
+.eti.lim.p{font-size:9px;letter-spacing:.14em;font-weight:700}
+.eti.lim:hover{color:var(--mg6)}
+body:not(.vDep) .eti.lim.d,body.zDepOff .eti.lim.d{display:none}
+body:not(.vProv) .eti.lim.p,body:not(.zProv) .eti.lim.p{display:none}
+@media (max-width:1440px){ :root{--anch:340px} }
+@media (max-width:1180px){ :root{--anch:318px} h1{font-size:24px} .kpi b{font-size:30px} .fbar select{width:116px} }
+/* pantallas bajas (laptop de 768 px con la barra del navegador): el relato se compacta */
+@media (max-height:820px) and (min-width:761px){
+  .marca{display:none}
+  .relato{padding:16px 20px 14px}
+  h1{font-size:23px;margin:8px 0 6px}
+  .kpis{margin:12px 0 10px;gap:10px 12px}
+  .kpi b{font-size:30px}
+  .insight{font-size:12.2px;padding-top:10px}
+  .acc{margin-top:10px}
+  .cel{aspect-ratio:1.3}
+}
+@media (max-width:760px){
+  .velo{background:linear-gradient(0deg,rgba(250,247,249,.95) 0,rgba(250,247,249,0) 55%)}
+  body.oscuro .velo{background:linear-gradient(0deg,rgba(13,10,15,.95) 0,rgba(13,10,15,0) 55%)}
+  .rail-i{left:10px;right:10px;top:auto;bottom:10px;width:auto;max-height:50vh}
+  .rail-d{display:none}
+  body.verMx .rail-d{display:flex;left:10px;right:10px;top:60px;bottom:10px;width:auto;z-index:6}
+  body.verMx .matriz{width:100%} body.verMx .mcuerpo{display:block} body.verMx .mini{display:none}
+  .centro{left:10px;right:10px;width:auto;transform:none;top:10px}
+  .estilos{max-width:100%;overflow:auto}
+  .fbar{display:none}
+  body.verF .fbar{display:flex;flex-wrap:wrap;border-radius:20px;justify-content:center}
+  body.verF .avz{display:block;max-height:calc(100vh - 170px);overflow:auto}
+  body.verF .bavz{display:none}
+  .avz-g{grid-template-columns:1fr}
+  .soloMovil{display:inline-flex}
+  .pie{display:none}
+  .capas{top:56px;bottom:auto;left:10px;right:10px;transform:none;max-width:none}
+  body.verF .capas{display:none}
+  .ficha{left:10px;right:10px;width:auto;top:60px;max-height:50%}
+  .carga{top:30%}
+  .modal{padding:24px 20px}
+  .maplibregl-ctrl-bottom-right{bottom:50vh}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="mapa" aria-label="Mapa de riesgos de MAIA"></div>
+<div class="velo"></div>
+
+<div class="centro">
+  <nav class="estilos card" aria-label="Estilo del mapa">
+    <button data-e="editorial" aria-pressed="true">Editorial</button>
+    <button data-e="relieve" aria-pressed="false">Relieve 3D</button>
+    <button data-e="noche" aria-pressed="false">Noche</button>
+    <button data-e="actual" aria-pressed="false">Actual</button>
+    <span class="sep"></span>
+    <button class="chip" id="fDisco" aria-pressed="false" data-tip="disco"><i></i>Sin internet</button>
+  </nav>
+  <section class="fbar card" aria-label="Filtros">
+    <div class="seg" id="fSrv" role="group" aria-label="Servicio">
+      <button data-v="INTEGRADA" aria-pressed="true" data-tip="usuarios">SAF + SCD</button><button data-v="SAF" aria-pressed="false" data-tip="SAF">SAF</button><button data-v="SCD" aria-pressed="false" data-tip="SCD">SCD</button></div>
+    <select id="fDep" aria-label="Departamento"></select>
+    <button class="chip" id="fDu" aria-pressed="false" data-tip="dsFiltro"><i></i><span id="dsCorto">Declaratoria</span></button>
+    <button class="bavz" id="bAvz" aria-expanded="false" aria-controls="avz">Búsqueda avanzada <b id="nAvz"></b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button>
+  </section>
+  <section class="avz card" id="avz" aria-label="Búsqueda avanzada">
+    <div class="avz-g">
+      <label class="fg ancho"><span>Ir a un distrito</span><input class="bus" id="fBus" type="search" list="fBusL" placeholder="Escribe el nombre de un distrito…" autocomplete="off"><datalist id="fBusL"></datalist></label>
+      <label class="fg"><span>Provincia</span><select id="fProv" disabled></select></label>
+      <div class="fg"><span>Peligro</span><div class="seg" id="fHz" role="group" aria-label="Peligro">
+        <button data-v="max" aria-pressed="true" data-tip="hzmax">Ambos</button><button data-v="inu" aria-pressed="false" data-tip="hzinu">Inundaciones</button><button data-v="mm" aria-pressed="false" data-tip="hzmm">Deslizamientos</button></div></div>
+      <div class="fg"><span class="ter" data-tip="pesos">Qué pesa más</span><div class="peso">
+        <span>Exposición <b id="pE">40</b>%</span><input type="range" id="fW" min="0" max="100" step="5" value="40" aria-label="Peso de la exposición"><span>Gente <b id="pI">60</b>%</span></div></div>
+      <div class="fg"><span>Solo distritos con</span><div class="tog">
+        <button class="chip" id="fFon" aria-pressed="false" data-tip="fondes"><i></i>FONDES</button></div></div>
+    </div>
+    <div class="avz-p"><span id="avzRes">—</span><span><button class="lnk" id="limpiar">Restablecer</button> · <button class="lnk" id="cerrarAvz">Cerrar</button></span></div>
+    <button class="btn p soloMovil" id="cerrarF" style="margin-top:10px">Ver en el mapa</button>
+  </section>
+</div>
+
+<div class="rail rail-i">
+  <section class="relato card" aria-live="polite">
+    <div class="marca"><i>M</i><div><b>MAIA</b><span>Mapa de preparación · Cuna Más</span></div></div>
+    <div class="ceja"><span class="ter" data-tip="producto">Preparación ante lluvias</span></div>
+    <h1>¿Dónde prepararnos <em>primero?</em></h1>
+    <div class="sub" id="sub">—</div>
+    <p class="cuando"><span class="ter" data-tip="cenepred" id="cuando">—</span></p>
+    <p class="nhz" id="nhz"></p>
+    <div class="base" aria-label="Atendidos por Cuna Más en el ámbito">
+      <div id="bU" data-tip="usuarios"><b>—</b><span>atendidos por Cuna Más</span></div>
+      <div id="bF" data-tip="SAF"><b>—</b><span>familias en el SAF</span></div>
+      <div id="bN" data-tip="SCD"><b>—</b><span>niñas y niños en el SCD</span></div>
+    </div>
+    <div class="kpis">
+      <button class="kpi" id="kCrit"><b id="k1">—</b><span id="k1t">—</span></button>
+      <div class="kpi" id="kUsu"><b id="k2">—</b><span id="k2t">—</span></div>
+      <button class="kpi n" id="kMax" data-tip="maxima"><b id="k3">—</b><span>distritos en lo más alto: exposición 5 y más de 600 atendidos</span></button>
+      <div class="kpi n" id="kDs"><b id="k4">—</b><span id="k4t">—</span><small id="k4v"></small></div>
+    </div>
+    <p class="insight" id="ins">—</p>
+    <div class="acc">
+      <button class="btn p" id="tour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 5l12 7-12 7z"/></svg><span>Ver recorrido</span></button>
+      <button class="btn s" id="pais"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Todo el país</button>
+      <button class="btn s soloMovil" id="verF">Filtros</button>
+      <button class="btn s soloMovil" id="verMx">Matriz</button>
+    </div>
+  </section>
+</div>
+
+<div class="rail rail-d">
+  <section class="matriz card" id="matriz" aria-label="Matriz de riesgos distritales">
+    <button class="mres" id="mAbrir" aria-expanded="false" aria-controls="mCuerpo">
+      <span class="mini" id="mMini" aria-hidden="true"></span>
+      <span class="mtx"><span class="ceja">Matriz de riesgos</span><b>Exposición × gente atendida</b><small id="mRes">—</small></span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="msel" id="mSel"></div>
+    <div class="mcuerpo" id="mCuerpo">
+      <div class="mh"><small id="mSub">—</small>
+        <div class="seg mini2" id="fEsq" role="group" aria-label="Colores"><button data-v="elegante" aria-pressed="true">Elegante</button><button data-v="clasico" aria-pressed="false" data-tip="Los colores de semáforo del producto 0.1.">Clásico</button></div></div>
+      <div class="mxw"><div class="yt" data-tip="impacto">Gente atendida ↑</div><div class="mx" id="mx"></div></div>
+      <div class="xt" data-tip="exposicion">Exposición a lluvias →</div>
+      <div class="tally" id="tally"></div>
+      <p class="lee" id="lee">—</p>
+      <div class="slst" id="slst"></div>
+      <div class="meto">
+        <span class="tt">Cómo se calcula · cinco pasos</span>
+        <ol class="pasos" id="pasos"></ol>
+        <button class="btn s leer" id="verMeto">Leer la metodología completa<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+    <button class="btn s soloMovil volver" id="cerrarMx" style="margin:0 16px 16px">Volver al mapa</button>
+  </section>
+</div>
+
+<nav class="capas card" aria-label="Capas del mapa">
+  <button class="chip" data-c="dep" aria-pressed="true" data-tip="Límites y nombres de los departamentos. Toca un nombre para centrar el mapa ahí."><i></i>Departamentos</button>
+  <button class="chip" data-c="prov" aria-pressed="false" data-tip="Límites y nombres de las provincias; los nombres aparecen al acercarse. Toca uno para centrar el mapa ahí."><i></i>Provincias</button>
+  <button class="chip" data-c="dist" aria-pressed="true" data-tip="Los distritos donde trabaja Cuna Más, coloreados por su riesgo."><i></i>Distritos</button>
+  <button class="chip" data-c="pts" aria-pressed="true" data-tip="Aparecen al acercarse: cada punto es un centro poblado atendido."><i></i>Centros poblados</button>
+  <button class="chip" data-c="du" aria-pressed="false" data-tip="Dibuja el borde de los distritos en emergencia, sin ocultar los demás."><i></i><span id="dsCapa">Declaratoria</span></button>
+  <span class="leyP" data-tip="Centros poblados: el color es su exposición; el anillo oscuro marca el SCD."><i></i><span>SAF</span><i class="scd"></i><span>SCD</span></span>
+</nav>
+
+<aside class="ficha card" id="ficha" aria-live="polite"></aside>
+<div class="fondoM" id="metoM" role="dialog" aria-modal="true" aria-labelledby="metoT">
+  <div class="modal" id="metoC">
+    <button class="x" id="metoX" aria-label="Cerrar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="ceja">Metodología · Producto 0.1</div>
+    <h2 id="metoT">¿Cómo se decide dónde prepararnos primero?</h2>
+    <p class="lead">Toda cifra de esta pantalla se puede rehacer con estos cinco pasos.</p>
+    <div id="metoB"></div>
+  </div>
+</div>
+<div class="ayuda card" id="ayuda" role="tooltip"></div>
+<div class="tip card" id="tip"></div>
+<div class="cap card" id="cap"><small id="capS"></small><b id="capB"></b></div>
+<div class="pie" id="pie"></div>
+<div class="aviso card" id="aviso"></div>
+<div class="carga card" id="carga" role="status"><i></i><span>Cargando el mapa…</span></div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const nf = n => (n == null ? '—' : Number(n).toLocaleString('es-PE'));
+if (typeof maplibregl === 'undefined' || typeof D === 'undefined' || typeof GEO2 === 'undefined') {
+  const a = $('#aviso'); a.style.display = 'grid';
+  a.textContent = typeof maplibregl === 'undefined'
+    ? 'No se pudo cargar el motor de mapas (lib/maplibre-gl-5.24.0).'
+    : 'No se encontraron los datos: DATOS_PNCM debe estar al lado de este archivo.';
+  throw new Error('sin motor o sin datos');
+}
+
+/* ── la lógica del 0.1 (v30), tal cual ─────────────────────────────────── */
+const MM = D.meta, C = {}, QQ = MM.cifras || {}, RI = D.resumen.INTEGRADA;
+D.cols.forEach((k, i) => C[k] = i);
+const DEC = (MM.declaratoria || [])[0], CEN = MM.cenepred || null;
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const fecha = iso => { const [a, m, d] = iso.split('-'); return +d + ' de ' + MESES[m - 1] + ' de ' + a; };
+const DS = DEC ? DEC.norma.replace(/N°\s*/, '') : 'Declaratoria';          // «D.S. 124-2026-PCM»
+const HZC = { max: ['expo', 'expoR', 'exp45'], inu: ['expoI', 'expRI', 'e45I'], mm: ['expoM', 'expRM', 'e45M'] };
+// En pantalla, palabras de todos los días; el término técnico va en la ayuda.
+const HZN = { max: 'inundaciones y deslizamientos', inu: 'inundaciones', mm: 'deslizamientos y huaicos' };
+const SRVN = { INTEGRADA: 'SAF y SCD', SAF: 'SAF', SCD: 'SCD' };
+// Usuarios: el SAF cuenta familias y el SCD niñas y niños. En «SAF + SCD», usuarios = familias SAF + niñas y niños SCD.
+const UNI = { INTEGRADA: 'usuarios', SAF: 'familias', SCD: 'niñas y niños' };
+const ART = { INTEGRADA: 'los', SAF: 'las', SCD: 'las' };
+const ATEND = { INTEGRADA: 'usuarios atendidos', SAF: 'familias atendidas', SCD: 'niñas y niños atendidos' };
+const CLSN = ['Críticos', 'Altos', 'Medios', 'Bajos'], CLS1 = ['Crítico', 'Alto', 'Medio', 'Bajo'];
+const CLSD = ['índice de 4.5 o más', 'de 3.5 a menos de 4.5', 'de 2.5 a menos de 3.5', 'menos de 2.5'];
+const EXW = ['Sin dato', 'Muy baja', 'Baja', 'Media', 'Alta', 'Muy alta'];
+const IMW = ['', 'hasta 50', '51 a 120', '121 a 300', '301 a 600', 'más de 600'];
+// Colores por clase (crítico · alto · medio · bajo): Elegante = identidad MAIA; Clásico = el semáforo del 0.1.
+const COL = { elegante: ['#D9005A', '#FF3F87', '#FF97BE', '#FFCFE1'], clasico: ['#D32F2F', '#F57C00', '#FBC02D', '#43A047'] };
+// Centros poblados por nivel de exposición (0 sin dato · 1 muy baja … 5 muy alta).
+const PCOL = { elegante: ['#C6BEC9', '#FFCFE1', '#FF97BE', '#FF3F87', '#D9005A', '#A8004A'], clasico: ['#C6BEC9', '#9CCC65', '#FBC02D', '#F57C00', '#D32F2F', '#B71C1C'] };
+const F = { srv: 'INTEGRADA', hz: 'max', wE: 40, dep: '', prov: '', du: false, fon: false, esq: 'elegante', sel: null };
+const EX = r => r[C[HZC[F.hz][0]]], E45 = r => r[C[HZC[F.hz][2]]];
+const idx = r => (EX(r) * F.wE + r[C.imp] * (100 - F.wE)) / 100;
+const cls = v => v >= 4.5 ? 0 : v >= 3.5 ? 1 : v >= 2.5 ? 2 : 3;
+const pasa = r => (!F.dep || r[C.dep] === F.dep) && (!F.prov || r[C.prov] === F.prov) && (!F.du || r[C.du]) && (!F.fon || r[C.fon]);
+const filas = () => D.distritos[F.srv].filter(pasa);
+const enSel = r => !F.sel || (F.sel.tipo === 'celda' ? r[C.imp] === F.sel.imp && EX(r) === F.sel.ex : cls(idx(r)) === F.sel.k);
+const nivelP = (i, m) => F.hz === 'inu' ? i || 0 : F.hz === 'mm' ? m || 0 : Math.max(i || 0, m || 0);
+const tinta = hx => { const n = parseInt(hx.slice(1), 16); return (.299 * (n >> 16) + .587 * (n >> 8 & 255) + .114 * (n & 255)) / 255 > .62 ? '#241000' : '#fff'; };
+const RW = {};
+for (const s of ['INTEGRADA', 'SAF', 'SCD']) { RW[s] = {}; D.distritos[s].forEach(r => RW[s][r[C.ubi]] = r); }
+// Territorio: nombre ↔ código, desde el padrón (los límites vienen con código).
+const DEPC = {}, PROVC = {}, DEPN = {}, PROVN = {};
+D.distritos.INTEGRADA.forEach(r => {
+  const u = r[C.ubi]; DEPC[r[C.dep]] = u.slice(0, 2); DEPN[u.slice(0, 2)] = r[C.dep];
+  PROVC[r[C.dep] + '|' + r[C.prov]] = u.slice(0, 4); PROVN[u.slice(0, 4)] = [r[C.dep], r[C.prov]];
+});
+const DEPS = Object.keys(DEPC).sort();
+const LIM = window.MAIA_LIMITES || null;
+$('#dsCorto').textContent = DS.replace(/-PCM$/, '');
+// Publicada en la web, «Sin internet» (una herramienta de prueba) no se muestra.
+if (/^https?:$/.test(location.protocol) && !/^(localhost|127\.|\[::1\])/.test(location.hostname)) $$('#fDisco, .estilos .sep').forEach(e => e.style.display = 'none'); $('#dsCapa').textContent = 'Contorno del ' + DS.replace(/-PCM$/, '');
+if (!LIM) $$('.capas .chip[data-c=dep], .capas .chip[data-c=prov]').forEach(b => b.remove());
+
+/* ── ayudas: los términos se explican al pasar el cursor, sin llenar la pantalla ── */
+const HZT = {
+  max: '<b>Ambos peligros por lluvias.</b> En cada centro poblado se toma el mayor de los dos que evalúa CENEPRED: inundación o movimientos en masa (huaicos, deslizamientos y derrumbes).',
+  inu: '<b>Solo inundaciones,</b> según CENEPRED.',
+  mm: '<b>Solo movimientos en masa,</b> según CENEPRED: huaicos, deslizamientos y derrumbes.',
+};
+const GLOS = {
+  producto: () => 'Producto 0.1 de MAIA: la matriz de riesgos para el momento de preparación, antes de que ocurra una emergencia.',
+  usuarios: () => '<b>Usuarios de Cuna Más.</b> Se suman las familias del SAF y las niñas y niños del SCD: cada servicio cuenta a quien atiende.',
+  SAF: () => '<b>SAF · Servicio de Acompañamiento a Familias.</b> Una facilitadora visita a la familia en su casa. Se cuenta por familia.',
+  SCD: () => '<b>SCD · Servicio de Cuidado Diurno.</b> Niñas y niños atendidos en un local por madres cuidadoras. Se cuenta por niña o niño.',
+  critico: () => '<b>Riesgo crítico.</b> El distrito junta alta exposición a lluvias y mucha gente atendida: su índice MAIA es de 4.5 o más, en una escala de 1 a 5. Toca para verlos en el mapa.',
+  maxima: () => '<b>Lo más alto en las dos cosas:</b> exposición 5 de 5 y más de 600 atendidos. Es la casilla de arriba a la derecha de la matriz. Toca para verlos en el mapa.',
+  ds: () => DEC ? '<b>' + DEC.norma + '.</b> Declara en emergencia ' + nf(DEC.distritos) + ' distritos del país ' + DEC.motivo + '. Rige ' + DEC.plazo_dias + ' días, hasta el ' + fecha(DEC.vence) + '.' : 'Declaratoria de emergencia.',
+  dsFiltro: () => GLOS.ds() + '<br><br>Actívalo para ver solo esos distritos en el mapa.',
+  fondes: () => '<b>FONDES.</b> Fondo para Intervenciones ante la Ocurrencia de Desastres Naturales, del Ministerio de Economía y Finanzas. Financia intervenciones ante desastres en los distritos de su relación.',
+  cenepred: () => '<b>CENEPRED</b> elabora cada trimestre un escenario de riesgo por lluvias para cada centro poblado, con el pronóstico del SENAMHI.' + (CEN ? ' Aquí se usa el escenario ' + CEN.escenario + ', para ' + CEN.periodo + (CEN.informe_tecnico ? ' (informe técnico ' + CEN.informe_tecnico + ' del SENAMHI)' : '') + '.' : '') + ' El padrón es la lista de familias, niñas y niños que atendió Cuna Más ese mes.',
+  hzmax: () => HZT.max, hzinu: () => HZT.inu, hzmm: () => HZT.mm,
+  exposicion: () => '<b>Exposición a lluvias.</b> Qué tan expuestos a ' + HZN[F.hz] + ' están los centros poblados donde atendemos, de 1 (muy baja) a 5 (muy alta), según CENEPRED. En el distrito se promedia según cuánta gente hay en cada centro poblado.',
+  impacto: () => '<b>Gente atendida.</b> Cuántos usuarios tiene Cuna Más en el distrito, en cinco tramos: hasta 50, 51 a 120, 121 a 300, 301 a 600 y más de 600.',
+  pesos: () => '<b>Qué pesa más en el índice.</b> Se suman la exposición y la gente atendida. Por defecto pesa más la gente: 60 %. Mueve el control para ver cómo cambia la prioridad.',
+  indice: () => '<b>Índice MAIA,</b> de 1 a 5. Suma la exposición a lluvias (' + F.wE + ' %) y la gente atendida (' + (100 - F.wE) + ' %). Desde 4.5 es riesgo crítico; desde 3.5, alto; desde 2.5, medio.',
+  disco: () => 'Simula una red sin internet: el mapa se dibuja solo con lo que está guardado en el equipo.',
+};
+const ayuda = $('#ayuda');
+let ayudaT = 0, ayudaEl = null;
+function textoAyuda(el) { const k = el.dataset.tip; return GLOS[k] ? GLOS[k]() : k; }
+function mostrarAyuda(el) {
+  ayudaEl = el; ayuda.innerHTML = textoAyuda(el);
+  const r = el.getBoundingClientRect(), w = ayuda.offsetWidth, h = ayuda.offsetHeight;
+  const x = Math.max(10, Math.min(r.left + r.width / 2 - w / 2, innerWidth - w - 10));
+  const y = r.bottom + 10 + h > innerHeight - 10 ? r.top - h - 10 : r.bottom + 10;
+  ayuda.style.left = x + 'px'; ayuda.style.top = Math.max(10, y) + 'px'; ayuda.classList.add('on');
+}
+function ocultarAyuda() { clearTimeout(ayudaT); ayudaEl = null; ayuda.classList.remove('on'); }
+document.addEventListener('mouseover', e => {
+  const el = e.target.closest && e.target.closest('[data-tip]');
+  if (el === ayudaEl) return;
+  ocultarAyuda();
+  if (el) ayudaT = setTimeout(() => mostrarAyuda(el), 260);
+});
+document.addEventListener('focusin', e => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el) mostrarAyuda(el); });
+document.addEventListener('focusout', ocultarAyuda);
+document.addEventListener('click', ocultarAyuda, true);
+addEventListener('scroll', ocultarAyuda, true);
+
+/* ── geometría ───────────────────────────────────────────────────────── */
+const featDist = [], featPts = [], BB = {};
+let caja = [180, 90, -180, -90];
+for (const [ubi, anillos] of Object.entries(GEO2)) {
+  const b = [180, 90, -180, -90];
+  for (const a of anillos) for (const [x, y] of a) { if (x < b[0]) b[0] = x; if (y < b[1]) b[1] = y; if (x > b[2]) b[2] = x; if (y > b[3]) b[3] = y; }
+  BB[ubi] = b;
+  caja = [Math.min(caja[0], b[0]), Math.min(caja[1], b[1]), Math.max(caja[2], b[2]), Math.max(caja[3], b[3])];
+  const r = RW.INTEGRADA[ubi];
+  featDist.push({ type: 'Feature', id: +ubi, geometry: { type: 'MultiPolygon', coordinates: anillos.map(a => [a]) },
+    properties: { ubi, du: r ? (r[C.du] || 0) : 0 } });
+}
+// Centros poblados: [nombre, lat, lon, niñas/niños, gestantes, usuarios, niv. inund., niv. mov. masa, SCD (1) o SAF (0), …]
+for (const [ubi, g] of Object.entries(GEO))
+  for (const p of g.p) if (p[1] != null) featPts.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [p[2], p[1]] },
+    properties: { n: p[0], u: p[5], i: p[6] || 0, m: p[7] || 0, s: p[8] === 1 ? 1 : 0, ubi } });
+const PERU = [[caja[0], caja[1]], [caja[2], caja[3]]];
+const cajaDe = ubis => { const b = [180, 90, -180, -90];
+  for (const u of ubis) { const x = BB[u]; if (!x) continue; b[0] = Math.min(b[0], x[0]); b[1] = Math.min(b[1], x[1]); b[2] = Math.max(b[2], x[2]); b[3] = Math.max(b[3], x[3]); }
+  return b[0] > b[2] ? PERU : [[b[0], b[1]], [b[2], b[3]]]; };
+
+/* ── metodología: la del 0.1 v30, con sus cifras tomadas del dato ─────── */
+const MDOC = [
+  { n: '01', t: 'Unimos tres fuentes', s: 'El padrón de Cuna Más, el pronóstico de CENEPRED y el decreto de emergencia, en cada centro poblado.',
+    p: 'El padrón de Cuna Más de ' + MM.corte + ' trae ' + nf(QQ.puntos) + ' puntos de atención: cada centro poblado atendido, una vez por servicio (SAF y SCD), ubicado con el directorio de centros poblados del INEI. CENEPRED aporta, para ese mismo centro poblado, dos niveles de exposición de 1 a 5. La declaratoria de emergencia (' + (DEC ? DEC.norma : 'sin dato') + ') se cruza por distrito.',
+    c: 'clave de cruce: UBIGEO del centro poblado (10 dígitos) → distrito (6 dígitos)',
+    e: QQ.ej && QQ.ej.cenepa ? 'Ejemplo · El Cenepa (Amazonas) atiende ' + nf(QQ.ej.cenepa.ccpp) + ' centros poblados; cada uno recibe su nivel de exposición de CENEPRED.' : '' },
+  { n: '02', t: 'Nos quedamos con el peor peligro', s: 'En cada centro poblado cuenta el peligro mayor: inundación o deslizamiento.',
+    p: 'Cada centro poblado tiene dos niveles: inundación y movimientos en masa (huaicos, deslizamientos y derrumbes). Se toma el mayor, no el promedio: una amenaza menor no compensa a la mayor. Si un lugar puede quedar sepultado, poco importa que no se inunde.',
+    c: 'nivel del centro poblado = máximo(inundación, movimientos en masa)',
+    e: 'Ejemplo · Un centro poblado con inundación 2 y movimientos en masa 5 queda en 5, no en 3.5.' },
+  { n: '03', t: 'Pesamos por nuestra gente', s: 'El distrito promedia sus centros poblados según cuánta gente atendemos en cada uno.',
+    p: 'El nivel del distrito es el promedio de sus centros poblados, ponderado por cuántos usuarios de Cuna Más hay en cada uno. Se probó tomar el máximo del distrito: eso deja ' + nf(QQ.max5) + ' de ' + nf(QQ.distritos) + ' distritos (' + QQ.max5_pct + ' %) en nivel 5, y una matriz con más de la mitad del país en rojo no prioriza nada.',
+    c: 'nivel del distrito = Σ(usuarios × nivel del centro poblado) / Σ(usuarios)',
+    e: (r => r ? 'Ejemplo · Río Santiago ' + (r.scd ? 'suma ' + nf(r.usu) + ' usuarios' : 'acompaña a ' + nf(r.fam) + ' familias') + '; ' + nf(r.e45) + ' están en centros poblados de exposición 4 o 5. Su nivel ponderado es ' + r.expoR.toFixed(2) + '.' : '')(QQ.ej && QQ.ej.rio_santiago) },
+  { n: '04', t: 'Medimos cuánto está en juego', s: 'Cuánta gente atendemos: familias del SAF y niñas y niños del SCD, en cinco tramos.',
+    p: 'El impacto es el volumen de atención del Programa en el distrito, en cinco tramos. Se cuenta a quien atiende cada servicio: en el SCD, la niña o el niño que asiste al local; en el SAF, la familia acompañada en su casa. Es la misma unidad con que el Programa fija su meta.',
+    c: 'tramos: hasta 50 · 51 a 120 · 121 a 300 · 301 a 600 · más de 600',
+    e: (n => n && n.nieva && n.colcamar ? 'Ejemplo · Nieva llega a ' + nf(n.nieva.usu) + ' (' + nf(n.nieva.saf) + ' familias SAF + ' + nf(n.nieva.scd) + ' niñas y niños SCD) y cae en el tramo ' + n.nieva.banda + '; Colcamar, con ' + nf(n.colcamar.usu) + ' familias, en el tramo ' + n.colcamar.banda + '.' : '')(QQ.ej) },
+  { n: '05', t: 'Ordenamos la prioridad', s: 'Exposición y gente se suman (40 % y 60 %) en un índice de 1 a 5. Desde 4.5 es crítico.',
+    p: 'Los dos valores, del 1 al 5, se combinan con los pesos elegidos. El resultado es un índice de 1 a 5 que clasifica cada distrito. Por defecto, 40 % exposición y 60 % gente atendida: se privilegia a la gente sobre el territorio.',
+    c: 'índice = (exposición × peso E + gente × peso G) / 100\ncrítico ≥ 4.5 · alto ≥ 3.5 · medio ≥ 2.5 · bajo < 2.5',
+    e: 'Ejemplo · Exposición 5 y gente 4 con pesos 40/60 dan 4.40: alto. Con pesos 60/40 dan 4.60: crítico.' },
+];
+// Los cinco pasos, dibujados con los mismos símbolos del mapa y de la matriz:
+// barras de 1 a 5, puntos por centro poblado y los colores de clase. El texto va en el modal.
+const attr = s => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const ICO = {
+  gente: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.3"/><path d="M15.8 14.3A4.8 4.8 0 0 1 20.5 19"/></svg>',
+  lluvia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14.5a4 4 0 0 1 .4-8 5.5 5.5 0 0 1 10.5 1.6 3.4 3.4 0 0 1-.6 6.4z"/><path d="M8.5 18l-1 2.5M12.5 18l-1 2.5M16.5 18l-1 2.5"/></svg>',
+  doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></svg>',
+  flecha: '<svg class="fl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+};
+function renderMeto() {
+  const col = COL[F.esq], P = PCOL[F.esq];
+  const m5 = (n, c) => '<span class="m5">' + [1, 2, 3, 4, 5].map(i => '<i' + (i <= n ? ' style="background:' + c + '"' : '') + '></i>').join('') + '</span>';
+  const res = (txt, c) => '<span class="res" style="background:' + c + ';color:' + tinta(c) + '">' + txt + '</span>';
+  // Paso 3: tres centros poblados de ejemplo; pesa más donde hay más gente.
+  const cp3 = [[10, 2], [40, 4], [80, 5]], n3 = cp3.reduce((a, [u, l]) => a + u * l, 0) / cp3.reduce((a, [u]) => a + u, 0);
+  // Paso 5: el ejemplo usa los pesos que están en pantalla.
+  const e5 = 4, g5 = 5, v5 = (e5 * F.wE + g5 * (100 - F.wE)) / 100, k5 = cls(v5), pos = v => ((v - 1) / 4 * 100).toFixed(1) + '%';
+  const V = [
+    '<div class="vis" data-tip="Tres fuentes, una sola clave: el código de cada centro poblado.">'
+      + '<span class="fu">' + ICO.gente + 'Padrón</span><span class="fu">' + ICO.lluvia + 'CENEPRED</span><span class="fu">' + ICO.doc + 'D.S.</span>' + ICO.flecha + '<span class="pt"></span></div>',
+    '<div class="vis" data-tip="Ejemplo: inundación 2 y deslizamientos 5. Cuenta el 5, no el promedio (3.5).">'
+      + '<div class="g2"><span>Inundación</span>' + m5(2, P[2]) + '<b>2</b><span>Deslizamiento</span>' + m5(5, P[5]) + '<b>5</b></div>' + ICO.flecha + res(5, P[5]) + '</div>',
+    '<div class="vis g3" data-tip="Ejemplo: centros poblados con 10, 40 y 80 usuarios, en niveles 2, 4 y 5. (10×2 + 40×4 + 80×5) ÷ 130 = ' + n3.toFixed(2) + ': el distrito queda en nivel ' + Math.round(n3) + '.">'
+      + '<span class="cs">' + cp3.map(([u, l]) => { const d = Math.round(7 + Math.sqrt(u) * 2.2); return '<span class="c"><i style="width:' + d + 'px;height:' + d + 'px;background:' + P[l] + '"></i><small>' + u + ' · nivel ' + l + '</small></span>'; }).join('') + '</span>'
+      + ICO.flecha + res(Math.round(n3), P[Math.round(n3)]) + '</div>',
+    '<div class="vis" data-tip="' + attr(GLOS.impacto()) + '"><div class="g4">' + [1, 2, 3, 4, 5].map(i => '<div><i style="height:' + (5 + i * 5) + 'px;background:' + P[i] + '"></i><small>' + IMW[i] + '</small></div>').join('') + '</div></div>',
+    '<div class="vis" data-tip="' + attr(GLOS.indice()) + '"><div class="g5">'
+      + '<div class="g5f"><span class="ch">Exposición<b>' + e5 + '</b></span>× ' + F.wE + ' % + <span class="ch">Gente<b>' + g5 + '</b></span>× ' + (100 - F.wE) + ' % =<b class="v" style="color:' + (F.esq === 'clasico' ? col[k5] : 'var(--mg6)') + '">' + v5.toFixed(2) + '</b></div>'
+      + '<div class="esc"><i style="width:37.5%;background:' + col[3] + '"></i><i style="width:25%;background:' + col[2] + '"></i><i style="width:25%;background:' + col[1] + '"></i><i style="width:12.5%;background:' + col[0] + '"></i><u style="left:' + pos(v5) + '"></u></div>'
+      + '<div class="escl"><span style="left:0">1 · bajo</span><span style="left:37.5%">2.5</span><span style="left:62.5%">3.5</span><span style="left:87.5%">4.5 crítico</span><span style="left:100%">5</span></div></div></div>',
+  ];
+  const T = [
+    'Padrón de Cuna Más, pronóstico de CENEPRED y decreto de emergencia, cruzados en cada centro poblado.',
+    'En cada centro poblado cuenta el peligro mayor, no el promedio.',
+    'El distrito promedia sus centros poblados: pesa más donde hay más gente.',
+    'Cuánta gente atendemos en el distrito, en cinco tramos.',
+    'Con los pesos de ahora, exposición ' + e5 + ' y gente ' + g5 + ' dan ' + v5.toFixed(2) + ': riesgo ' + CLS1[k5].toLowerCase() + '.',
+  ];
+  $('#pasos').innerHTML = MDOC.map((m, i) => '<li><b>' + m.n + '</b><div><h4>' + m.t + '</h4>' + V[i] + '<p>' + T[i] + '</p></div></li>').join('');
+}
+function abrirMeto() {
+  const R = filas(), crit = R.filter(r => cls(idx(r)) === 0), mx = R.filter(r => EX(r) === 5 && r[C.imp] === 5);
+  $('#metoB').innerHTML = MDOC.map(m => '<div class="paso"><b>' + m.n + '</b><div><h3>' + m.t + '</h3><p>' + m.p + '</p><code>' + m.c + '</code>'
+      + (m.e ? '<p class="ej">' + m.e + '</p>' : '') + '</div></div>').join('')
+    + '<div class="resul"><span class="tt">Resultado con lo que ves ahora · ' + ambito().join(' · ') + ' · pesos ' + F.wE + '/' + (100 - F.wE) + '</span>'
+    + '<div><span>Distritos donde trabaja Cuna Más</span><b>' + nf(R.length) + '</b></div>'
+    + '<div><span>Atendidos (familias SAF + niñas y niños SCD)</span><b>' + nf(R.reduce((a, r) => a + r[C.usu], 0)) + '</b></div>'
+    + '<div><span>Distritos en riesgo crítico</span><b>' + nf(crit.length) + '</b></div>'
+    + '<div><span>Distritos en la casilla más alta (5 × 5)</span><b>' + nf(mx.length) + '</b></div></div>'
+    + '<p class="fuera"><b>Lo que queda fuera, y se dice:</b> en todo el país, ' + nf(RI.sin_exposicion_ccpp) + ' centros poblados (' + nf(RI.sin_exposicion_usu) + ' usuarios, el ' + QQ.sin_exp_pct
+    + ' %) no tienen nivel de exposición en CENEPRED. No se les inventa uno: cuentan en el promedio del distrito sin subirlo.</p>';
+  $('#metoM').classList.add('on'); $('#metoX').focus();
+}
+function cerrarMeto() { $('#metoM').classList.remove('on'); }
+$('#verMeto').onclick = abrirMeto;
+$('#metoX').onclick = cerrarMeto;
+$('#metoM').onclick = e => { if (e.target === $('#metoM')) cerrarMeto(); };
+
+/* ── relato, matriz y lista: se recalculan con cada filtro ─────────────── */
+let CRIT = [], FK = 0, map = null;
+function ambito() {
+  return [F.prov ? F.prov + ' (' + F.dep + ')' : F.dep || 'Todo el país', SRVN[F.srv], HZN[F.hz]].concat(F.du ? ['solo ' + DS] : [], F.fon ? ['solo FONDES'] : []);
+}
+function renderRelato() {
+  const R = filas();
+  FK = 0; while (FK < 3 && !R.some(r => cls(idx(r)) === FK)) FK++;   // sin críticos, el escalón más alto que exista
+  const foco = R.filter(r => cls(idx(r)) === FK);
+  const usuF = foco.reduce((n, r) => n + r[C.usu], 0), usuT = R.reduce((n, r) => n + r[C.usu], 0);
+  // Totales del ámbito: usuarios = familias SAF + niñas y niños SCD.
+  const suma = srv => D.distritos[srv].filter(pasa).reduce((n, r) => n + r[C.usu], 0);
+  const tSaf = suma('SAF'), tScd = suma('SCD');
+  $('#bU b').textContent = nf(tSaf + tScd); $('#bF b').textContent = nf(tSaf); $('#bN b').textContent = nf(tScd);
+  $('#bU').classList.toggle('off', F.srv !== 'INTEGRADA'); $('#bF').classList.toggle('off', F.srv === 'SCD'); $('#bN').classList.toggle('off', F.srv === 'SAF');
+  $('#sub').textContent = ambito().join(' · ');
+  $('#cuando').textContent = 'Padrón de ' + MM.corte + ' · escenario de riesgo de CENEPRED ' + (CEN ? 'para ' + CEN.periodo.replace(' – ', ' a ') : 'vigente a ' + MM.vigencia);
+  $('#k1').textContent = nf(foco.length);
+  $('#k1t').innerHTML = FK === 0 ? 'distritos en <span class="ter">riesgo crítico</span>' : 'distritos en riesgo ' + CLS1[FK].toLowerCase() + ' (aquí no hay críticos)';
+  $('#kCrit').dataset.tip = FK === 0 ? 'critico' : 'Aquí ningún distrito llega a riesgo crítico: se muestra el escalón más alto que hay. Toca para verlos en el mapa.';
+  $('#k2').textContent = nf(usuF);
+  $('#k2t').textContent = ATEND[F.srv] + ' en esos distritos';
+  const famF = foco.reduce((n, r) => n + ((RW.SAF[r[C.ubi]] || [])[C.fam] || 0), 0), ninF = foco.reduce((n, r) => n + ((RW.SCD[r[C.ubi]] || [])[C.ninos] || 0), 0);
+  $('#kUsu').dataset.tip = F.srv === 'INTEGRADA' ? '<b>' + nf(usuF) + ' usuarios</b> = ' + nf(famF) + ' familias del SAF + ' + nf(ninF) + ' niñas y niños del SCD.' : F.srv;
+  $('#k3').textContent = nf(R.filter(r => EX(r) === 5 && r[C.imp] === 5).length);
+  const nDu = R.filter(r => r[C.du]).length;
+  $('#k4').textContent = nf(nDu);
+  $('#k4t').textContent = 'distritos en emergencia por lluvias';
+  $('#k4v').textContent = DEC ? DS + ' · vence el ' + fecha(DEC.vence).replace(/ de \d{4}$/, '') : '';
+  $('#kDs').dataset.tip = GLOS.ds() + (DEC ? '<br><br>En lo que ves ahora, <b>' + nf(nDu) + '</b> distritos con atención de Cuna Más están en esa lista.' : '');
+  $('#ins').innerHTML = R.length
+    ? (FK === 0
+      ? 'En <b>' + nf(foco.length) + ' de los ' + nf(R.length) + ' distritos</b> donde trabaja Cuna Más coinciden mucha exposición a ' + HZN[F.hz] + ' y mucha gente atendida. '
+      : 'En este ámbito ningún distrito llega a riesgo crítico; los <b>' + nf(foco.length) + '</b> de riesgo ' + CLS1[FK].toLowerCase() + ' son los primeros. ')
+      + 'Ahí está el <b>' + Math.round(100 * usuF / Math.max(usuT, 1)) + ' %</b> de ' + ART[F.srv] + ' ' + UNI[F.srv] + '. Es una lista para prepararse, no un reporte de daños.'
+    : 'No hay distritos de ' + SRVN[F.srv] + ' con estos filtros.';
+  $('#nhz').classList.toggle('on', F.hz !== 'max');
+  $('#nhz').innerHTML = F.hz === 'max' ? '' : 'Estás viendo solo <b>' + HZN[F.hz] + '</b>: la exposición y el riesgo se miden con ese peligro; la gente atendida no cambia.';
+  const n = (F.prov ? 1 : 0) + (F.hz !== 'max' ? 1 : 0) + (F.wE !== 40 ? 1 : 0) + (F.fon ? 1 : 0);
+  $('#nAvz').textContent = n; $('#nAvz').classList.toggle('on', n > 0);
+  $('#avzRes').textContent = nf(R.length) + ' distritos · ' + nf(usuT) + ' ' + UNI[F.srv];
+}
+function renderMatriz() {
+  const R = filas(), grid = {}, cnt = [0, 0, 0, 0], col = COL[F.esq];
+  R.forEach(r => { const k = r[C.imp] + '-' + EX(r); (grid[k] = grid[k] || { n: 0, u: 0 }); grid[k].n++; grid[k].u += r[C.usu]; cnt[cls(idx(r))]++; });
+  let h = '', mini = '';
+  for (let imp = 5; imp >= 1; imp--) {
+    h += '<div class="yl"><b>' + imp + '</b><i>' + IMW[imp] + '</i></div>';
+    for (let ex = 1; ex <= 5; ex++) {
+      const g = grid[imp + '-' + ex] || { n: 0, u: 0 }, k = cls((ex * F.wE + imp * (100 - F.wE)) / 100), bg = col[k];
+      const on = F.sel && F.sel.tipo === 'celda' && F.sel.imp === imp && F.sel.ex === ex;
+      const ayudaC = g.n ? '<b>' + g.n + ' distrito' + (g.n > 1 ? 's' : '') + ' · riesgo ' + CLS1[k].toLowerCase() + '</b><br>Exposición ' + EXW[ex].toLowerCase() + ' y ' + IMW[imp] + ' atendidos por distrito. En total, ' + nf(g.u) + ' ' + UNI[F.srv] + '. Toca para verlos.' : '';
+      h += '<button class="cel' + (g.n ? '' : ' vacia') + (on ? ' on' : '') + '" data-imp="' + imp + '" data-ex="' + ex + '" style="--bg:' + bg + ';--fg:' + tinta(bg) + '"'
+        + (g.n ? ' data-tip="' + ayudaC.replace(/"/g, '&quot;') + '"' : ' aria-hidden="true" tabindex="-1"') + '>'
+        + (g.n ? '<b>' + g.n + '</b><small>' + nf(g.u) + '</small>' : '') + '</button>';
+      mini += '<i style="background:' + bg + (g.n ? '' : ';opacity:.22') + '"></i>';
+    }
+  }
+  h += '<div></div>' + [1, 2, 3, 4, 5].map(ex => '<div class="xl"><b>' + ex + '</b><i>' + EXW[ex] + '</i></div>').join('');
+  $('#mx').innerHTML = h;
+  $('#mMini').innerHTML = mini;
+  $('#mRes').textContent = nf(cnt[0]) + ' críticos · ' + nf(cnt[1]) + ' altos · ' + nf(cnt[2]) + ' medios · ' + nf(cnt[3]) + ' bajos';
+  $('#mx').classList.toggle('conSel', !!(F.sel && F.sel.tipo === 'celda'));
+  $$('#mx .cel:not(.vacia)').forEach(el => el.onclick = () => elegir({ tipo: 'celda', imp: +el.dataset.imp, ex: +el.dataset.ex }));
+  $('#tally').innerHTML = cnt.map((n, k) => '<button class="ty' + (F.sel && F.sel.tipo === 'clase' && F.sel.k === k ? ' on' : '') + '" data-k="' + k + '" style="--c:' + col[k] + '"'
+    + ' data-tip="&lt;b&gt;' + nf(n) + ' distritos en riesgo ' + CLS1[k].toLowerCase() + '&lt;/b&gt;: ' + CLSD[k] + '. Toca para verlos en el mapa.">'
+    + '<b>' + nf(n) + '</b><span><i></i>' + CLSN[k] + '</span></button>').join('');
+  $$('#tally .ty').forEach(el => el.onclick = () => elegir({ tipo: 'clase', k: +el.dataset.k }));
+  $('#mSub').textContent = nf(R.length) + ' distritos · pesos ' + F.wE + ' / ' + (100 - F.wE);
+  $('#lee').innerHTML = 'Cada distrito está en <b>una sola</b> casilla: más a la derecha, más expuesto a ' + HZN[F.hz]
+    + '; más arriba, más gente atendida. Toca una casilla o un grupo para verlo en el mapa.';
+  renderMeto();
+  // la selección: lista (matriz abierta) o mención (matriz plegada)
+  const box = $('#slst'), ms = $('#mSel');
+  if (!F.sel) { box.classList.remove('on'); box.innerHTML = ''; ms.classList.remove('on'); ms.innerHTML = ''; return; }
+  const L = R.filter(enSel).sort((a, b) => idx(b) - idx(a) || b[C.usu] - a[C.usu]);
+  const tit = F.sel.tipo === 'celda' ? 'Exposición ' + F.sel.ex + ' · gente ' + F.sel.imp : 'Riesgo ' + CLS1[F.sel.k].toLowerCase();
+  ms.classList.add('on');
+  ms.innerHTML = '<span>En el mapa: ' + tit + ' · ' + nf(L.length) + ' distritos</span><button class="lnk">Quitar</button>';
+  ms.querySelector('button').onclick = () => elegir(null);
+  box.classList.add('on');
+  box.innerHTML = '<div class="slh"><b>' + tit + ' · ' + nf(L.length) + ' distritos</b><button class="lnk" id="quitarSel">Quitar</button></div>'
+    + L.slice(0, 12).map(r => '<button class="sli" data-u="' + r[C.ubi] + '"><i style="background:' + col[cls(idx(r))] + '"></i>'
+      + '<span>' + r[C.dist] + '<small>' + r[C.dep] + ' · ' + r[C.prov] + '</small></span><em>' + idx(r).toFixed(2) + '<br>' + nf(r[C.usu]) + ' ' + (F.srv === 'SAF' ? 'fam.' : F.srv === 'SCD' ? 'niñ.' : 'usu.') + '</em></button>').join('')
+    + (L.length > 12 ? '<p class="lee">y ' + nf(L.length - 12) + ' más: están resaltados en el mapa.</p>' : '');
+  $('#quitarSel').onclick = () => elegir(null);
+  $$('#slst .sli').forEach(el => el.onclick = () => abrir(el.dataset.u, true));
+}
+
+/* ── estilos del mapa ─────────────────────────────────────────────────── */
+const OFM = 'https://tiles.openfreemap.org/styles/positron';
+const GLYPHS = 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf';
+// Relieve del disco (territorio/relieve_peru.js), servido desde memoria: con doble clic
+// el navegador no deja leer archivos sueltos. Sin ese archivo, de internet.
+const REL = window.MAIA_RELIEVE || null, PAISES = window.MAIA_PAISES || null;
+if (REL) {
+  const memo = {};
+  maplibregl.addProtocol('relieve', async params => {
+    const k = params.url.slice('relieve://'.length);
+    if (!REL.teselas[k]) throw new Error('tesela de relieve fuera de la caja: ' + k);
+    if (!memo[k]) { const s = atob(REL.teselas[k]), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); memo[k] = u.buffer; }
+    return { data: memo[k].slice(0) };
+  });
+}
+const DEM = REL
+  ? { type: 'raster-dem', tiles: ['relieve://{z}/{x}/{y}'], encoding: 'terrarium', tileSize: 256, minzoom: 0, maxzoom: REL.zmax, bounds: REL.caja, attribution: REL.atribucion }
+  : { type: 'raster-dem', tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'], encoding: 'terrarium', tileSize: 256, maxzoom: 14, attribution: 'Relieve: AWS Terrain Tiles' };
+let enDisco = false;
+const LOCAL = oscuro => ({ version: 8, sources: {}, layers: [{ id: 'fondo', type: 'background', paint: { 'background-color': oscuro ? '#0D0A0F' : '#ECE8EF' } }] });
+const base = e => enDisco ? LOCAL(e.tema === 'oscuro') : (e.style || e.url);
+async function hayFondo() {
+  try {
+    const c = new AbortController(), t = setTimeout(() => c.abort(), 4000);
+    const r = await fetch(OFM, { signal: c.signal, cache: 'no-store' });
+    clearTimeout(t);
+    return r.ok && (await r.text()).trim().startsWith('{');
+  } catch (err) { return false; }
+}
+const ESTILOS = {
+  editorial: { url: OFM, tema: 'claro', relieve: .28, pitch: 0, bearing: 0, nota: 'Claro y sobrio. El relieve se insinúa.' },
+  relieve:   { url: OFM, tema: 'claro', relieve: .6, terreno: 1.5, pitch: 58, bearing: -14, nota: 'Los Andes en perspectiva. Clic derecho y arrastrar para girar.' },
+  noche:     { url: OFM, tema: 'oscuro', relieve: .35, pitch: 0, bearing: 0, nota: 'Para presentaciones. Ante el Estado, el fondo blanco manda.' },
+  actual:    { tema: 'claro', relieve: 0, pitch: 0, bearing: 0, nota: 'El fondo que usan hoy el 0.1 y el 0.2, como referencia. Sin internet se ve el fondo en disco.',
+               style: { version: 8, glyphs: GLYPHS, sources: { esri: { type: 'raster', tileSize: 256, attribution: 'Esri, HERE, Garmin, © OpenStreetMap',
+                 tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'] } },
+                 layers: [{ id: 'fondo', type: 'raster', source: 'esri' }] } },
+};
+$$('.estilos button[data-e]').forEach(b => b.dataset.tip = ESTILOS[b.dataset.e].nota);
+const ST = k => ['coalesce', ['feature-state', k], 0];
+function colorDist(oscuro) {
+  const fuera = oscuro ? '#2B2431' : '#EFEAEE', c = COL.clasico;
+  const val = F.esq === 'clasico'
+    ? ['step', ST('idx'), c[3], 2.5, c[2], 3.5, c[1], 4.5, c[0]]
+    : ['interpolate', ['linear'], ST('idx'), 0, '#F1EBEF', 1, '#F4EFF2', 2.6, '#F2E4EB', 3.4, '#FBCFE0', 4.1, '#FF7FAE', 4.49, '#FF4D94', 4.5, '#D9005A', 5, '#8F003F'];
+  return ['case', ['!=', ST('cm'), 1], fuera, val];
+}
+function opacDist(terreno) {
+  const caso = (fuera, tenue, normal) => ['case', ['!=', ST('cm'), 1], fuera, ['==', ST('dim'), 1], tenue, normal];
+  return ['interpolate', ['linear'], ['zoom'],
+    4, caso(.35, .2, terreno ? .8 : .9), 8, caso(.2, .12, terreno ? .38 : .55), 11, caso(.12, .07, terreno ? .14 : .18)];
+}
+function colorPts() {
+  const e = F.hz === 'inu' ? ['get', 'i'] : F.hz === 'mm' ? ['get', 'm'] : ['max', ['get', 'i'], ['get', 'm']], P = PCOL[F.esq];
+  return ['match', e, 5, P[5], 4, P[4], 3, P[3], 2, P[2], 1, P[1], P[0]];
+}
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MQ = matchMedia('(max-width:760px)'), movil = () => MQ.matches;
+const anchoRiel = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anch')) || 372;
+const alturaBarra = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--barra')) || 110;
+// Arriba, los estilos y la barra de filtros; abajo, las capas; a los costados, los rieles.
+const padPais = () => movil() ? { top: 100, bottom: Math.round(innerHeight * .5), left: 20, right: 20 }
+  : { top: alturaBarra() + 8, bottom: 64, left: anchoRiel() + 40, right: anchoRiel() + 40 };
+
+let estado = { estilo: 'editorial', capas: { dep: !!LIM, prov: false, dist: true, pts: true, du: false }, foco: null, tour: null };
+
+function estadoMapa(txt, error) {
+  const c = $('#carga'); c.querySelector('span').textContent = txt;
+  c.classList.toggle('err', !!error); c.classList.toggle('off', !txt);
+}
+function cuandoHayEspacio(fn) {
+  const el = $('#mapa'), listo = () => el.clientWidth > 0 && el.clientHeight > 0;
+  if (listo()) return fn();
+  estadoMapa('El mapa arranca cuando la ventana esté visible…');
+  const ro = new ResizeObserver(() => { if (listo()) { ro.disconnect(); fn(); } });
+  ro.observe(el);
+}
+
+// Etiquetas en HTML: países y críticos cuando el fondo es el del disco (no trae fuentes de mapa).
+let marcas = [], marcasLim = [];
+const VECINOS = [['Ecuador', -78.6, -1.4], ['Colombia', -73.6, .6], ['Brasil', -69.2, -8.2], ['Bolivia', -66.6, -16.6], ['Chile', -69.6, -19.6], ['Océano Pacífico', -81.4, -11.5]];
+function ponerEtiquetas() {
+  marcas.forEach(m => m.remove()); marcas = [];
+  if (!enDisco) return;
+  const marca = (txt, cl, ll, offset) => {
+    const el = document.createElement('div'); el.className = 'eti ' + cl; el.textContent = txt;
+    marcas.push(new maplibregl.Marker({ element: el, anchor: offset ? 'top' : 'center', offset: offset || [0, 0] }).setLngLat(ll).addTo(map));
+  };
+  VECINOS.forEach(([n, x, y]) => marca(n, 'pais', [x, y]));
+  CRIT.slice().sort((a, b) => b.properties.u - a.properties.u).slice(0, 14).forEach(f => marca(f.properties.n, 'crit', f.geometry.coordinates, [0, 8]));
+  requestAnimationFrame(sinChoques);
+}
+// Nombres de departamentos y provincias. Con internet son capas de texto del mapa:
+// el motor evita que se encimen con los nombres de los críticos, que tienen prioridad.
+// Sin internet (el fondo en disco no trae fuentes) son botones en HTML.
+const titulo = s => s.toLowerCase().replace(/(^|\s)\S/g, x => x.toUpperCase());
+const LIMPT = LIM ? { type: 'FeatureCollection', features: [['dep', 'd'], ['prov', 'p']].flatMap(([nv, v]) => LIM[nv].features.map(f => ({
+  type: 'Feature', geometry: { type: 'Point', coordinates: [f.properties.x, f.properties.y] },
+  properties: { c: f.properties.c, v, n: v === 'd' ? (DEPN[f.properties.c] || f.properties.n) : ((PROVN[f.properties.c] || [])[1] || f.properties.n) } }))) } : null;
+function ponerLimites() {
+  marcasLim.forEach(m => m.remove()); marcasLim = [];
+  if (!LIM || !enDisco) return;
+  const poner = (f, nivel) => {
+    const p = f.properties, el = document.createElement('button');
+    el.className = 'eti lim ' + (nivel === 'dep' ? 'd' : 'p'); el.type = 'button';
+    el.textContent = nivel === 'dep' ? (DEPN[p.c] || p.n) : ((PROVN[p.c] || [])[1] || p.n);
+    el.dataset.tip = 'Centrar el mapa en ' + (nivel === 'dep' ? 'el departamento de ' : 'la provincia de ') + titulo(el.textContent);
+    el.onclick = ev => { ev.stopPropagation(); centrarEn(nivel, p.c); };
+    marcasLim.push(new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([p.x, p.y]).addTo(map));
+  };
+  LIM.dep.features.forEach(f => poner(f, 'dep'));
+  LIM.prov.features.forEach(f => poner(f, 'prov'));
+}
+function sinChoques() {
+  // Prioridad: críticos, departamentos, provincias (igual que con internet). Lo que choca se esconde.
+  const tipo = c => m => m.getElement().classList.contains(c);
+  const puestas = [], orden = [...marcas.filter(tipo('crit')), ...marcasLim.filter(tipo('d')), ...marcasLim.filter(tipo('p'))];
+  for (const m of orden) {
+    const el = m.getElement(); el.style.visibility = '';
+    const r = el.getBoundingClientRect(); if (!r.width) continue;
+    if (puestas.some(p => r.left < p.right + 6 && r.right > p.left - 6 && r.top < p.bottom + 3 && r.bottom > p.top - 3)) el.style.visibility = 'hidden';
+    else puestas.push(r);
+  }
+}
+function centrarEn(nivel, c) {
+  if (!map) return;
+  const p = LIM ? (nivel === 'dep' ? LIM.dep : LIM.prov).features.find(f => f.properties.c === c) : null;
+  if (nivel === 'dep' && DEPN[c]) { F.dep = DEPN[c]; F.prov = ''; }
+  else if (nivel === 'prov' && PROVN[c]) { [F.dep, F.prov] = PROVN[c]; }
+  else if (p) { const b = p.properties.b; map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: padPais(), duration: RM ? 0 : 1400 }); return; }
+  else return;
+  F.sel = null; $('#fDep').value = F.dep; llenarProv(); $('#fProv').value = F.prov;
+  cerrar(); refrescar(); encuadrarAmbito();
+}
+function marcarZoom() {
+  const z = map.getZoom(), cl = document.body.classList;
+  cl.toggle('cerca', z >= 9);
+  cl.toggle('zPts', z >= 7.4 && estado.capas.pts);
+  cl.toggle('zProv', z >= 6.2);
+  cl.toggle('zDepOff', z >= 8.6);
+  cl.toggle('vDep', estado.capas.dep);
+  cl.toggle('vProv', estado.capas.prov);
+}
+
+function iniciar() {
+try {
+  map = new maplibregl.Map({ container: 'mapa', style: base(ESTILOS[estado.estilo]), bounds: PERU, fitBoundsOptions: { padding: padPais() },
+    attributionControl: { compact: true }, maxPitch: 75, fadeDuration: 0 });
+} catch (err) {
+  estadoMapa('Este navegador no puede dibujar el mapa: la aceleración gráfica (WebGL) está desactivada. Prueba en Edge o Chrome.', true);
+  return;
+}
+estadoMapa('Cargando el mapa…');
+map.on('error', () => { if (!map.isStyleLoaded()) estadoMapa('No llega el fondo del mapa (tiles.openfreemap.org). Revisa la conexión o si la red lo bloquea.', true); });
+let dibujado = false;
+setTimeout(() => { if (!dibujado) estadoMapa('El mapa no termina de dibujarse. Si usas Brave, prueba en Edge o Chrome: algunos perfiles de Brave bloquean el proceso interno del mapa.', true); }, 15000);
+$('#fDisco').setAttribute('aria-pressed', enDisco);
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+map.on('moveend', sinChoques);
+map.on('zoom', marcarZoom);
+map.on('movestart', ocultarAyuda);
+
+function primeraEtiqueta() { const l = map.getStyle().layers.find(x => x.type === 'symbol'); return l ? l.id : undefined; }
+function tono(e) {
+  const oscuro = e.tema === 'oscuro';
+  document.body.classList.toggle('oscuro', oscuro);
+  if (!e.url || enDisco) return;
+  for (const l of map.getStyle().layers) {
+    const id = l.id;
+    try {
+      if (l.type === 'background') map.setPaintProperty(id, 'background-color', oscuro ? '#0D0A0F' : '#FAF8FA');
+      else if (l.type === 'fill') {
+        const agua = /water|ocean|lake|river/.test(id);
+        map.setPaintProperty(id, 'fill-color', oscuro ? (agua ? '#151019' : '#110E14') : (agua ? '#ECE8EF' : '#F6F3F5'));
+        if (!oscuro && !agua) map.setPaintProperty(id, 'fill-opacity', .6);
+      } else if (l.type === 'line') {
+        if (/boundary|admin/.test(id)) map.setPaintProperty(id, 'line-color', oscuro ? '#4A4150' : '#C6BEC9');
+        else map.setPaintProperty(id, 'line-color', oscuro ? (/water|river/.test(id) ? '#1C1622' : '#221B27') : (/water|river/.test(id) ? '#E4DEE8' : '#EDE7EC'));
+      } else if (l.type === 'symbol') {
+        map.setPaintProperty(id, 'text-color', oscuro ? '#8F8494' : '#8A7F8F');
+        map.setPaintProperty(id, 'text-halo-color', oscuro ? '#0D0A0F' : '#FAF8FA');
+        // Nombres en español («Brasil», no «Brazil»); los departamentos los pone MAIA, clicables.
+        if (id === 'label_state' && LIM) map.setLayoutProperty(id, 'visibility', 'none');
+        else if (/^label_|^water_name/.test(id)) map.setLayoutProperty(id, 'text-field', ['coalesce', ['get', 'name:es'], ['get', 'name:latin'], ['get', 'name']]);
+      } else if (l.type === 'fill-extrusion') map.setPaintProperty(id, 'fill-extrusion-opacity', 0);
+    } catch (err) { /* capas con expresiones que no aceptan el cambio */ }
+  }
+}
+function montar() {
+  const e = ESTILOS[estado.estilo], oscuro = e.tema === 'oscuro', antes = primeraEtiqueta(), tinta0 = oscuro ? '#FFFFFF' : '#120C15';
+  tono(e);
+  if (enDisco && PAISES) {
+    map.addSource('paises', { type: 'geojson', data: PAISES.geojson, attribution: PAISES.atribucion });
+    map.addLayer({ id: 'paises-f', type: 'fill', source: 'paises', paint: { 'fill-color': oscuro ? '#17131B' : '#F8F6F8' } });
+    map.addLayer({ id: 'paises-l', type: 'line', source: 'paises', paint: { 'line-color': oscuro ? '#3A3140' : '#D6CED9', 'line-width': .8 } });
+  }
+  if (e.relieve && !map.getSource('dem')) {
+    map.addSource('dem', DEM);
+    const agua = map.getStyle().layers.find(l => l.type === 'fill' && /water|ocean/.test(l.id));
+    map.addLayer({ id: 'relieve', type: 'hillshade', source: 'dem', paint: {
+      'hillshade-exaggeration': e.relieve, 'hillshade-shadow-color': oscuro ? '#000000' : '#5E5263',
+      'hillshade-highlight-color': oscuro ? '#2A2230' : '#FFFFFF', 'hillshade-accent-color': oscuro ? '#1A141E' : '#8A7F8F' } }, agua ? agua.id : antes);
+  }
+  if (e.terreno) {
+    if (!map.getSource('dem3d')) map.addSource('dem3d', DEM);
+    map.setTerrain({ source: 'dem3d', exaggeration: e.terreno });
+    try { map.setSky({ 'sky-color': '#F4EEF3', 'horizon-color': '#FFFFFF', 'fog-color': '#FAF7F9', 'sky-horizon-blend': .6, 'horizon-fog-blend': .5, 'fog-ground-blend': .4 }); } catch (err) {}
+  } else if (map.getTerrain && map.getTerrain()) { try { map.setTerrain(null); } catch (err) {} }
+
+  map.addSource('dist', { type: 'geojson', data: { type: 'FeatureCollection', features: featDist } });
+  map.addSource('pts', { type: 'geojson', data: { type: 'FeatureCollection', features: featPts } });
+  map.addSource('crit', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({ id: 'dist-f', type: 'fill', source: 'dist', paint: { 'fill-color': colorDist(oscuro), 'fill-opacity': opacDist(e.terreno) } }, antes);
+  map.addLayer({ id: 'dist-l', type: 'line', source: 'dist', paint: {
+    'line-color': oscuro ? 'rgba(255,255,255,.14)' : 'rgba(255,255,255,.9)', 'line-width': ['interpolate', ['linear'], ['zoom'], 4, .25, 9, 1] } }, antes);
+  map.addLayer({ id: 'dist-du', type: 'line', source: 'dist', filter: ['==', ['get', 'du'], 1], layout: { visibility: estado.capas.du ? 'visible' : 'none' },
+    paint: { 'line-color': tinta0, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, .5, 9, 1.4], 'line-dasharray': [2, 1.5], 'line-opacity': .55 } }, antes);
+  // Límites de provincias y departamentos (territorio/limites_peru.js) y el ámbito elegido, en magenta.
+  if (LIM) {
+    map.addSource('lim-dep', { type: 'geojson', data: LIM.dep });
+    map.addSource('lim-prov', { type: 'geojson', data: LIM.prov });
+    map.addLayer({ id: 'prov-l', type: 'line', source: 'lim-prov', layout: { 'line-join': 'round' }, paint: {
+      'line-color': tinta0, 'line-opacity': .3, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, .4, 9, 1.1], 'line-dasharray': [3, 2] } }, antes);
+    map.addLayer({ id: 'dep-l', type: 'line', source: 'lim-dep', layout: { 'line-join': 'round' }, paint: {
+      'line-color': tinta0, 'line-opacity': .45, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, .7, 9, 1.8] } }, antes);
+    for (const [id, src] of [['amb-dep', 'lim-dep'], ['amb-prov', 'lim-prov']])
+      map.addLayer({ id, type: 'line', source: src, filter: ['==', ['get', 'c'], ''], layout: { 'line-join': 'round' }, paint: {
+        'line-color': '#D9005A', 'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1.6, 9, 3] } });
+    if (!enDisco) {
+      map.addSource('lim-pt', { type: 'geojson', data: LIMPT });
+      const texto = (v, tam, esp, color) => ({ 'text-field': ['get', 'n'], 'text-font': ['Noto Sans Bold'], 'text-size': tam, 'text-letter-spacing': esp,
+        'text-transform': 'uppercase', 'text-max-width': 12, 'text-variable-anchor': ['center', 'top', 'bottom'], 'text-radial-offset': .5 });
+      map.addLayer({ id: 'lim-t-d', type: 'symbol', source: 'lim-pt', filter: ['==', ['get', 'v'], 'd'], maxzoom: 8.6,
+        layout: texto('d', ['interpolate', ['linear'], ['zoom'], 4, 9.5, 8, 11.5], .24),
+        paint: { 'text-color': oscuro ? '#A99DAD' : '#6E6175', 'text-halo-color': oscuro ? '#0D0A0F' : '#FFFFFF', 'text-halo-width': 1.4 } });
+      map.addLayer({ id: 'lim-t-p', type: 'symbol', source: 'lim-pt', filter: ['==', ['get', 'v'], 'p'], minzoom: 6.2, maxzoom: 11,
+        layout: texto('p', ['interpolate', ['linear'], ['zoom'], 6.2, 9, 10, 11], .12),
+        paint: { 'text-color': oscuro ? '#8F8494' : '#8A7F8F', 'text-halo-color': oscuro ? '#0D0A0F' : '#FFFFFF', 'text-halo-width': 1.3 } });
+    }
+  }
+  ponerLimites();
+  map.addLayer({ id: 'dist-h', type: 'line', source: 'dist', paint: {
+    'line-color': ['case', ['boolean', ['feature-state', 'foco'], false], '#D9005A', ['boolean', ['feature-state', 'hov'], false], '#D9005A', tinta0],
+    'line-width': ['case', ['boolean', ['feature-state', 'foco'], false], 3, ['boolean', ['feature-state', 'hov'], false], 2, ['==', ST('sel'), 1], 1.1, 0] } });
+  // SAF y SCD se distinguen por el anillo: blanco el SAF, oscuro el SCD. El color es la exposición.
+  const esScd = ['==', ['get', 's'], 1];
+  map.addLayer({ id: 'pts', type: 'circle', source: 'pts', minzoom: 7.4, paint: {
+    'circle-color': colorPts(),
+    'circle-radius': ['interpolate', ['linear'], ['zoom'], 7.4, ['+', 1, ['/', ['sqrt', ['get', 'u']], 7]], 11, ['+', 2.5, ['/', ['sqrt', ['get', 'u']], 2.6]]],
+    'circle-stroke-color': ['case', esScd, oscuro ? '#FFFFFF' : '#120C15', oscuro ? '#0D0A0F' : '#FFFFFF'],
+    'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 7.4, ['case', esScd, 1, .4], 11, ['case', esScd, 2.2, 1.2]],
+    'circle-opacity': ['interpolate', ['linear'], ['zoom'], 7.4, 0, 8, .95], 'circle-stroke-opacity': ['interpolate', ['linear'], ['zoom'], 7.4, 0, 8, 1] } });
+  map.addLayer({ id: 'crit-halo', type: 'circle', source: 'crit', maxzoom: 9, paint: {
+    'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': COL[F.esq][0], 'circle-stroke-width': 1.5, 'circle-radius': 8, 'circle-stroke-opacity': .6 } });
+  map.addLayer({ id: 'crit-p', type: 'circle', source: 'crit', maxzoom: 9, paint: {
+    'circle-color': COL[F.esq][0], 'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2.5, 8, 4], 'circle-stroke-color': oscuro ? '#0D0A0F' : '#fff', 'circle-stroke-width': 1.2 } });
+  if (!enDisco) map.addLayer({ id: 'crit-t', type: 'symbol', source: 'crit', maxzoom: 9, layout: {
+    'text-field': ['get', 'n'], 'text-font': ['Noto Sans Bold'], 'text-size': ['interpolate', ['linear'], ['zoom'], 4, 9, 8, 11.5],
+    'text-letter-spacing': .08, 'text-transform': 'uppercase', 'text-offset': [0, 1.1], 'text-anchor': 'top', 'text-optional': true, 'symbol-sort-key': ['-', 0, ['get', 'u']] },
+    paint: { 'text-color': tinta0, 'text-halo-color': oscuro ? '#0D0A0F' : '#FFFFFF', 'text-halo-width': 1.4 } });
+  aplicarCapas();
+  aplicarEstado();
+  if (estado.foco) map.setFeatureState({ source: 'dist', id: +estado.foco }, { foco: true });
+  map.once('render', () => { dibujado = true; estadoMapa(''); });
+}
+map.on('style.load', montar);
+let tocado = false;
+map.on('dragstart', () => { tocado = true; });
+map.on('zoomstart', ev => { if (ev.originalEvent) tocado = true; });
+const reencuadrar = () => { if (!estado.foco && !tocado && !estado.tour && !F.dep && !F.sel) vistaPais(0); };
+map.once('load', reencuadrar);
+addEventListener('resize', () => { clearTimeout(reencuadrar.t); reencuadrar.t = setTimeout(reencuadrar, 200); });
+
+/* ── pulso de los críticos ─────────────────────────────────────────────── */
+if (!RM) {
+  const t0 = performance.now();
+  (function latir(t) {
+    if (map.getLayer('crit-halo') && map.getZoom() < 9) {
+      const f = ((t - t0) % 2200) / 2200;
+      map.setPaintProperty('crit-halo', 'circle-radius', 5 + f * 16);
+      map.setPaintProperty('crit-halo', 'circle-stroke-opacity', .7 * (1 - f));
+    }
+    requestAnimationFrame(latir);
+  })(t0);
+}
+
+/* ── al pasar el cursor: centro poblado (si hay uno debajo) o distrito ──── */
+let hov = null;
+const tip = $('#tip');
+const visible = id => map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== 'none';
+function quitarHov() { if (hov != null) map.setFeatureState({ source: 'dist', id: hov }, { hov: false }); hov = null; }
+const queryNombre = pt => { const ls = ['lim-t-d', 'lim-t-p'].filter(visible); return ls.length ? map.queryRenderedFeatures(pt, { layers: ls })[0] : null; };
+map.on('mousemove', ev => {
+  if (!map.getLayer('dist-f')) return;
+  if (ev.originalEvent.target.closest && ev.originalEvent.target.closest('.eti.lim')) { quitarHov(); tip.style.opacity = 0; return; }
+  const lt = queryNombre(ev.point);
+  if (lt) {
+    quitarHov(); map.getCanvas().style.cursor = 'pointer';
+    tip.innerHTML = '<b>' + titulo(lt.properties.n) + '</b><span>Toca para centrar el mapa en ' + (lt.properties.v === 'd' ? 'el departamento' : 'la provincia') + '</span>';
+    tip.style.left = Math.min(ev.originalEvent.clientX + 16, innerWidth - 300) + 'px'; tip.style.top = (ev.originalEvent.clientY + 16) + 'px'; tip.style.opacity = 1;
+    return;
+  }
+  const capas = ['pts', 'dist-f'].filter(visible);
+  const fs = capas.length ? map.queryRenderedFeatures(ev.point, { layers: capas }) : [];
+  const ps = fs.filter(f => f.layer.id === 'pts'), d = fs.find(f => f.layer.id === 'dist-f');
+  const id = d ? d.id : null;
+  if (hov !== id) { quitarHov(); hov = id; if (hov != null) map.setFeatureState({ source: 'dist', id: hov }, { hov: true }); }
+  let html = '';
+  if (ps.length) {
+    // Un mismo centro poblado puede tener SAF y SCD en el mismo punto: se listan los dos.
+    const q = ps[0].properties, n = nivelP(q.i, q.m), vistos = {};
+    html = '<b>' + q.n + '</b><span>Centro poblado · exposición ' + EXW[n].toLowerCase() + ' a ' + HZN[F.hz] + '</span>'
+      + ps.filter(f => f.properties.n === q.n && !vistos[f.properties.s] && (vistos[f.properties.s] = 1))
+        .map(f => '<span>' + (f.properties.s ? 'SCD · ' + nf(f.properties.u) + ' niñas y niños' : 'SAF · ' + nf(f.properties.u) + ' familias') + '</span>').join('');
+  } else if (d) {
+    const r = enAmbito(d.properties.ubi);
+    if (r) { const v = idx(r);
+      html = '<b>' + r[C.dist] + '</b><span>' + r[C.dep] + ' · ' + r[C.prov] + '</span><span>Riesgo ' + CLS1[cls(v)].toLowerCase() + ' · índice ' + v.toFixed(2) + ' de 5</span>'
+        + '<span>' + nf(r[C.usu]) + ' ' + UNI[F.srv] + (F.srv === 'INTEGRADA' ? ': ' + desglose(d.properties.ubi) : '') + '</span>'; }
+  }
+  map.getCanvas().style.cursor = html ? 'pointer' : '';
+  if (!html) { tip.style.opacity = 0; return; }
+  tip.innerHTML = html;
+  tip.style.left = Math.min(ev.originalEvent.clientX + 16, innerWidth - 300) + 'px';
+  tip.style.top = (ev.originalEvent.clientY + 16) + 'px';
+  tip.style.opacity = 1;
+});
+map.getCanvas().addEventListener('mouseleave', () => { quitarHov(); tip.style.opacity = 0; });
+map.on('click', ev => {
+  abrirAvz(false);
+  if (!map.getLayer('dist-f')) return;
+  const lt = queryNombre(ev.point);
+  if (lt) return centrarEn(lt.properties.v === 'd' ? 'dep' : 'prov', lt.properties.c);
+  const capas = ['pts', 'dist-f'].filter(visible);
+  const f = capas.length ? map.queryRenderedFeatures(ev.point, { layers: capas })[0] : null;
+  if (f && enAmbito(f.properties.ubi)) abrir(f.properties.ubi, true);
+});
+window.MAIA_LAB = { map, abrir, cambiarEstilo, elegir, centrarEn, F, estado, refrescar };
+}
+
+// El estado de los filtros va al mapa como «feature-state»: recolorear no rehace la geometría.
+function aplicarEstado() {
+  if (!map || !map.getSource('dist')) return;
+  const R = filas(), por = {}, hay = !!F.sel;
+  R.forEach(r => por[r[C.ubi]] = r);
+  for (const f of featDist) {
+    const r = por[f.properties.ubi];
+    map.setFeatureState({ source: 'dist', id: f.id }, r
+      ? { cm: 1, idx: Math.round(idx(r) * 100) / 100, sel: hay && enSel(r) ? 1 : 0, dim: hay && !enSel(r) ? 1 : 0 }
+      : { cm: 0, idx: 0, sel: 0, dim: 0 });
+  }
+  CRIT = R.filter(r => cls(idx(r)) === 0 && enSel(r)).map(r => {
+    const g = GEO[r[C.ubi]];
+    return g && g.r && g.r.length ? { type: 'Feature', geometry: { type: 'Point', coordinates: [g.r[1], g.r[0]] }, properties: { ubi: r[C.ubi], n: r[C.dist], u: r[C.usu] } } : null;
+  }).filter(Boolean);
+  map.getSource('crit').setData({ type: 'FeatureCollection', features: CRIT });
+  const oscuro = ESTILOS[estado.estilo].tema === 'oscuro';
+  map.setPaintProperty('dist-f', 'fill-color', colorDist(oscuro));
+  map.setPaintProperty('crit-p', 'circle-color', COL[F.esq][0]);
+  map.setPaintProperty('crit-halo', 'circle-stroke-color', COL[F.esq][0]);
+  // Centros poblados: los del servicio elegido, dentro de los distritos que pasan los filtros.
+  const fil = ['all'];
+  if (F.srv !== 'INTEGRADA') fil.push(['==', ['get', 's'], F.srv === 'SCD' ? 1 : 0]);
+  if (F.dep || F.du || F.fon || hay) fil.push(['in', ['get', 'ubi'], ['literal', R.filter(enSel).map(r => r[C.ubi])]]);
+  map.setFilter('pts', fil.length > 1 ? fil : null);
+  map.setPaintProperty('pts', 'circle-color', colorPts());
+  // El ámbito elegido, con borde magenta.
+  if (map.getLayer('amb-dep')) {
+    const cp = F.prov ? PROVC[F.dep + '|' + F.prov] || '' : '';
+    map.setFilter('amb-dep', ['==', ['get', 'c'], cp ? '' : (DEPC[F.dep] || '')]);
+    map.setFilter('amb-prov', ['==', ['get', 'c'], cp]);
+  }
+  ponerEtiquetas();
+}
+function aplicarCapas() {
+  if (!map) return;
+  const v = b => b ? 'visible' : 'none';
+  for (const id of ['dist-f', 'dist-l']) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', v(estado.capas.dist));
+  if (map.getLayer('pts')) map.setLayoutProperty('pts', 'visibility', v(estado.capas.pts));
+  if (map.getLayer('dist-du')) map.setLayoutProperty('dist-du', 'visibility', v(estado.capas.du));
+  for (const id of ['dep-l', 'lim-t-d']) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', v(estado.capas.dep));
+  for (const id of ['prov-l', 'lim-t-p']) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', v(estado.capas.prov));
+  marcarZoom();
+  requestAnimationFrame(sinChoques);
+}
+const enAmbito = u => { const r = RW[F.srv][u]; return r && pasa(r) ? r : null; };
+// «544 familias SAF y 72 niñas y niños SCD», solo con los servicios que hay en el distrito.
+const desglose = (u, largo) => { const sa = RW.SAF[u], sc = RW.SCD[u], de = largo ? ' del ' : ' ';
+  return [sa && nf(sa[C.fam]) + ' familias' + de + 'SAF', sc && nf(sc[C.ninos]) + ' niñas y niños' + de + 'SCD'].filter(Boolean).join(' y '); };
+
+/* ── filtros ─────────────────────────────────────────────────────────── */
+let pend = false;
+function refrescar() {
+  if (pend) return; pend = true;
+  requestAnimationFrame(() => { pend = false; renderRelato(); renderMatriz(); aplicarEstado(); });
+}
+function seg(id, v) { $$('#' + id + ' button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v)); }
+function llenarProv() {
+  const s = $('#fProv');
+  if (!F.dep) { s.innerHTML = '<option value="">Elige primero un departamento</option>'; s.disabled = true; F.prov = ''; return; }
+  const ps = [...new Set(D.distritos[F.srv].filter(r => r[C.dep] === F.dep).map(r => r[C.prov]))].sort();
+  s.innerHTML = '<option value="">Todas las provincias</option>' + ps.map(p => '<option value="' + p + '">' + p + '</option>').join('');
+  if (!ps.includes(F.prov)) F.prov = '';
+  s.value = F.prov; s.disabled = false;
+}
+function encuadrarAmbito() {
+  if (!map) return;
+  if (!F.dep) return vistaPais(1400);
+  const e = ESTILOS[estado.estilo];
+  map.fitBounds(cajaDe(filas().map(r => r[C.ubi])), { padding: padPais(), pitch: e.terreno ? 50 : 0, bearing: e.terreno ? -14 : 0, maxZoom: 10, duration: RM ? 0 : 1600 });
+}
+function elegir(s) {
+  const igual = s && F.sel && s.tipo === F.sel.tipo && s.imp === F.sel.imp && s.ex === F.sel.ex && s.k === F.sel.k;
+  F.sel = !s || igual ? null : s;
+  refrescar();
+  if (!F.sel || !map) return;
+  const L = filas().filter(enSel).map(r => r[C.ubi]);
+  if (L.length) { const e = ESTILOS[estado.estilo];
+    map.fitBounds(cajaDe(L), { padding: padPais(), pitch: e.terreno ? 50 : 0, bearing: e.terreno ? -14 : 0, maxZoom: 9.5, duration: RM ? 0 : 1600 }); }
+}
+$('#fDep').innerHTML = '<option value="">Todo el país</option>' + DEPS.map(d => '<option value="' + d + '">' + d + '</option>').join('');
+llenarProv();
+$$('#fSrv button').forEach(b => b.onclick = () => { F.srv = b.dataset.v; F.sel = null; seg('fSrv', F.srv); llenarProv(); refrescar(); });
+$$('#fHz button').forEach(b => b.onclick = () => { F.hz = b.dataset.v; F.sel = null; seg('fHz', F.hz); refrescar(); if (estado.foco) abrir(estado.foco, false); });
+$$('#fEsq button').forEach(b => b.onclick = () => { F.esq = b.dataset.v; seg('fEsq', F.esq); refrescar(); if (estado.foco) abrir(estado.foco, false); });
+$('#fDep').onchange = e => { F.dep = e.target.value; F.prov = ''; F.sel = null; llenarProv(); refrescar(); encuadrarAmbito(); };
+$('#fProv').onchange = e => { F.prov = e.target.value; F.sel = null; refrescar(); encuadrarAmbito(); };
+$('#fW').oninput = e => { F.wE = +e.target.value; $('#pE').textContent = F.wE; $('#pI').textContent = 100 - F.wE; refrescar(); };
+const alternar = (id, k) => $(id).onclick = () => { F[k] = !F[k]; $(id).setAttribute('aria-pressed', F[k]); F.sel = null; refrescar(); if (F.dep) encuadrarAmbito(); };
+alternar('#fDu', 'du'); alternar('#fFon', 'fon');
+function abrirAvz(on) { $('#avz').classList.toggle('on', on); $('#bAvz').setAttribute('aria-expanded', on); if (on && !movil()) $('#fBus').focus(); }
+$('#bAvz').onclick = () => abrirAvz(!$('#avz').classList.contains('on'));
+$('#cerrarAvz').onclick = () => { abrirAvz(false); document.body.classList.remove('verF'); };
+$('#limpiar').onclick = () => {
+  Object.assign(F, { srv: 'INTEGRADA', hz: 'max', wE: 40, dep: '', prov: '', du: false, fon: false, sel: null });
+  seg('fSrv', F.srv); seg('fHz', F.hz); $('#fDep').value = ''; llenarProv();
+  $('#fW').value = 40; $('#pE').textContent = 40; $('#pI').textContent = 60;
+  $('#fDu').setAttribute('aria-pressed', false); $('#fFon').setAttribute('aria-pressed', false);
+  cerrar(); refrescar(); if (map) vistaPais(1400);
+};
+const BUS = {};
+D.distritos.INTEGRADA.forEach(r => { BUS[r[C.dist] + ' · ' + r[C.prov] + ' · ' + r[C.dep]] = r[C.ubi]; });
+$('#fBusL').innerHTML = Object.keys(BUS).sort().map(k => '<option value="' + k + '">').join('');
+$('#fBus').onchange = e => { const u = BUS[e.target.value]; if (u) { abrir(u, true); e.target.value = ''; abrirAvz(false); document.body.classList.remove('verF'); } };
+
+function cambiarEstilo(k) {
+  if (k === estado.estilo || !map) return;
+  estado.estilo = k;
+  const e = ESTILOS[k];
+  $$('.estilos button[data-e]').forEach(b => b.setAttribute('aria-pressed', b.dataset.e === k));
+  document.body.classList.toggle('oscuro', e.tema === 'oscuro');
+  // El 3D se apaga antes de cambiar el estilo: su fuente de relieve desaparece con el estilo viejo.
+  if (map.getTerrain && map.getTerrain()) { try { map.setTerrain(null); } catch (err) {} }
+  map.setStyle(base(e), { diff: false });
+  if (estado.foco) volarA(estado.foco, 1600);
+  else if (F.dep) encuadrarAmbito();
+  else vistaPais(1600);
+}
+function volarA(ubi, ms) {
+  const e = ESTILOS[estado.estilo];
+  const cam = map.cameraForBounds(cajaDe([ubi]), { padding: padPais(), bearing: 0 }) || {};
+  const z = Math.min(cam.zoom || 9, 11.5);
+  map.flyTo({ center: cam.center, zoom: e.terreno ? Math.max(z + .5, 7.6) : Math.max(z, 7.4), pitch: e.terreno ? 62 : 0, bearing: e.terreno ? -22 : 0, duration: RM ? 0 : ms, essential: true });
+}
+function vistaPais(ms) {
+  const e = ESTILOS[estado.estilo], d = RM ? 0 : ms;
+  if (e.terreno) map.flyTo({ center: [-75.6, -10.6], zoom: movil() ? 4.7 : 5.1, pitch: 52, bearing: -20, padding: padPais(), duration: d, essential: true });
+  else map.fitBounds(PERU, { padding: padPais(), pitch: 0, bearing: 0, duration: d });
+}
+$$('.estilos button[data-e]').forEach(b => b.onclick = () => cambiarEstilo(b.dataset.e));
+$('#fDisco').onclick = () => { if (!map) return; enDisco = !enDisco; $('#fDisco').setAttribute('aria-pressed', enDisco); map.setStyle(base(ESTILOS[estado.estilo]), { diff: false }); };
+$$('.capas .chip').forEach(b => b.onclick = () => {
+  const k = b.dataset.c;
+  estado.capas[k] = !estado.capas[k]; b.setAttribute('aria-pressed', estado.capas[k]); aplicarCapas();
+});
+
+/* ── ficha del distrito: un solo bloque de riesgo, qué permite actuar,
+      los dos servicios por separado y sus centros poblados ─────────────── */
+const ICO_SI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16.5 9.5"/></svg>';
+const ICO_NO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12h7"/></svg>';
+function abrir(ubi, volar) {
+  const s = RW[F.srv][ubi] ? F.srv : 'INTEGRADA', r = RW[s][ubi]; if (!r || !map) return;
+  abrirAvz(false);
+  if (!pasa(r)) {                // fuera del ámbito elegido: el ámbito pasa a su departamento
+    F.dep = r[C.dep]; F.prov = ''; F.sel = null;
+    if (!pasa(r)) { F.du = F.fon = false; $('#fDu').setAttribute('aria-pressed', false); $('#fFon').setAttribute('aria-pressed', false); }
+    $('#fDep').value = F.dep; llenarProv(); refrescar();
+  }
+  if (F.sel && !enSel(r)) { F.sel = null; refrescar(); }        // fuera de la selección de la matriz: se quita
+  if (estado.foco) map.setFeatureState({ source: 'dist', id: +estado.foco }, { foco: false });
+  estado.foco = ubi; map.setFeatureState({ source: 'dist', id: +ubi }, { foco: true });
+  const v = idx(r), k = cls(v), col = COL[F.esq], P = PCOL[F.esq], g = GEO[ubi] || { p: [] };
+  const acento = F.esq === 'clasico' ? col[k] : 'var(--mg6)', ex = EX(r), imp = r[C.imp];
+  const sa = RW.SAF[ubi], sc = RW.SCD[ubi];
+  const cinco = n => '<div class="cinco" style="--c:' + acento + '">' + [1, 2, 3, 4, 5].map(i => '<i' + (i <= n ? ' class="on"' : '') + '></i>').join('') + '</div>';
+  // 1 · riesgo MAIA: el índice y sus dos componentes, en un solo bloque
+  const riesgo = '<div class="riesgo">'
+    + '<div class="rtop"><div><span class="tt ter" data-tip="indice">Riesgo MAIA</span><b style="color:' + acento + '">' + v.toFixed(2) + '</b></div>'
+    + '<span class="clase" data-tip="indice" style="background:' + col[k] + ';color:' + tinta(col[k]) + '">Riesgo ' + CLS1[k].toLowerCase() + '</span></div>'
+    + '<div class="eje"><span class="ter" data-tip="exposicion">Exposición a ' + HZN[F.hz] + '</span><em>' + ex + ' de 5 · ' + EXW[ex].toLowerCase() + '</em>' + cinco(ex)
+    + '<p>' + nf(E45(r)) + ' de sus ' + nf(r[C.usu]) + ' ' + UNI[s] + ' están en centros poblados con exposición alta o muy alta.</p></div>'
+    + '<div class="eje"><span class="ter" data-tip="impacto">Gente atendida</span><em>' + imp + ' de 5 · ' + IMW[imp] + '</em>' + cinco(imp) + '</div>'
+    + '<p class="formula">El índice suma la exposición (' + F.wE + ' %) y la gente atendida (' + (100 - F.wE) + ' %). Desde 4.5 es riesgo crítico.</p></div>';
+  // 2 · para actuar: el decreto de emergencia y FONDES, con su lectura (la del 0.1)
+  const du = !!r[C.du], fo = !!r[C.fon];
+  const actuar = '<div class="bloque"><span class="tt">Para actuar</span>'
+    + '<div class="ins ' + (du ? 'si' : 'no') + '">' + (du ? ICO_SI : ICO_NO) + '<span><b class="ter" data-tip="ds">' + DS + '</b> · ' + (du ? 'distrito en emergencia hasta el ' + fecha(DEC.vence) : 'este distrito no está en el decreto') + '</span></div>'
+    + '<div class="ins ' + (fo ? 'si' : 'no') + '">' + (fo ? ICO_SI : ICO_NO) + '<span><b class="ter" data-tip="fondes">FONDES</b> · ' + (fo ? 'está en la relación de distritos del fondo' : 'no está en la relación de distritos del fondo') + '</span></div>'
+    + '<p class="veredicto">' + (du && fo ? 'Tiene los dos: se puede actuar sin trámites previos.' : du ? 'Tiene el decreto, pero no FONDES.' : fo ? 'Tiene FONDES, pero no está en el decreto.' : 'No tiene ninguno: actuar aquí requiere trámites previos.') + '</p></div>';
+  // 3 · los dos servicios, por separado (SAF cuenta familias; SCD, niñas y niños)
+  const svc = (id, desc, x, datos) => '<div class="sv' + (F.srv === id ? ' act' : '') + (F.srv !== 'INTEGRADA' && F.srv !== id ? ' off' : '') + '"><h3 data-tip="' + id + '">' + id + '<small>' + desc + '</small></h3>'
+    + (x ? '<dl>' + datos.map(([t, n]) => '<dt>' + t + '</dt><dd>' + nf(n) + '</dd>').join('') + '</dl>' : '<p class="no">No atiende en este distrito</p>') + '</div>';
+  const servicios = '<div class="bloque"><span class="tt">Cuna Más en el distrito</span><div class="srv2">'
+    + svc('SAF', 'Acompañamiento a familias, con visita al hogar', sa, sa && [['Familias', sa[C.fam]], ['Facilitadoras', sa[C.fac]], ['Comités de gestión', sa[C.cg]], ['Centros poblados', sa[C.ccpp]]])
+    + svc('SCD', 'Cuidado diurno de niñas y niños, en locales', sc, sc && [['Niñas y niños', sc[C.ninos]], ['Madres cuidadoras', sc[C.mc]], ['Locales', sc[C.loc]], ['Centros poblados', sc[C.ccpp]]])
+    + '</div></div>';
+  // 4 · los centros poblados con más usuarios del servicio elegido
+  const lst = g.p.filter(p => s === 'INTEGRADA' || (s === 'SCD') === (p[8] === 1)).sort((a, b) => b[5] - a[5]);
+  const ccpp = lst.length ? '<div class="bloque"><div class="cph"><span class="tt">Centros poblados con más usuarios</span><span class="tt" style="text-align:center">Serv.</span><span class="tt r">Usuarios</span></div>'
+    + lst.slice(0, 6).map(p => { const n = nivelP(p[6], p[7]);
+      const ay = '<b>' + p[0] + '</b><br>' + (p[8] === 1 ? 'SCD · ' + nf(p[5]) + ' niñas y niños' : 'SAF · ' + nf(p[5]) + ' familias') + '<br>Exposición ' + EXW[n].toLowerCase() + ' a ' + HZN[F.hz];
+      return '<div class="cp" data-tip="' + attr(ay) + '"><span class="d' + (p[8] === 1 ? ' scd' : '') + '" style="background:' + P[n] + '"></span><span class="n">' + p[0] + '</span>'
+        + '<span class="st">' + (p[8] === 1 ? 'SCD' : 'SAF') + '</span><span class="u">' + nf(p[5]) + '</span></div>'; }).join('')
+    + '<p class="ley">Color: exposición del centro poblado a ' + HZN[F.hz] + '. ' + [5, 4, 3, 2, 1].map(n => '<span><i style="background:' + P[n] + '"></i>' + EXW[n] + '</span>').join('')
+    + '<span><i class="scd"></i>anillo oscuro = SCD</span></p>'
+    + '<p class="ley">Usuarios: familias en el SAF; niñas y niños en el SCD.</p>'
+    + (lst.length > 6 ? '<p class="ley">Se muestran 6 de ' + nf(lst.length) + ' centros poblados de ' + SRVN[s] + '.</p>' : '') + '</div>' : '';
+  const cd = ubi.slice(0, 2), cp = ubi.slice(0, 4);
+  $('#ficha').innerHTML =
+    '<button class="x" aria-label="Cerrar" onclick="cerrar()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
+    + '<div class="loc"><button class="lk" data-d="' + cd + '" data-tip="Ver todo el departamento">' + r[C.dep] + '</button> · <button class="lk" data-p="' + cp + '" data-tip="Ver toda la provincia">' + r[C.prov] + '</button></div>'
+    + '<h2>' + r[C.dist] + '</h2>'
+    + '<div class="que">' + (s === 'INTEGRADA' ? '<span class="ter" data-tip="usuarios">' + nf(r[C.usu]) + ' usuarios</span>: ' + desglose(ubi, true)
+      : nf(r[C.usu]) + ' ' + UNI[s] + ' del ' + s) + ' · padrón de ' + MM.corte + '</div>'
+    + riesgo + actuar + servicios + ccpp;
+  $$('#ficha .lk').forEach(b => b.onclick = () => b.dataset.d ? centrarEn('dep', b.dataset.d) : centrarEn('prov', b.dataset.p));
+  $('#ficha').classList.add('on'); document.body.classList.add('conFicha');
+  if (volar) volarA(ubi, 2400);
+}
+window.cerrar = function () {
+  $('#ficha').classList.remove('on'); document.body.classList.remove('conFicha');
+  if (estado.foco && map) map.setFeatureState({ source: 'dist', id: +estado.foco }, { foco: false });
+  estado.foco = null;
+};
+$('#pais').onclick = () => { pararTour(); cerrar(); if (F.dep) { F.dep = ''; F.prov = ''; $('#fDep').value = ''; llenarProv(); F.sel = null; refrescar(); } if (map) vistaPais(2000); };
+$('#kCrit').onclick = () => elegir({ tipo: 'clase', k: FK });
+$('#kMax').onclick = () => elegir({ tipo: 'celda', imp: 5, ex: 5 });
+$('#mAbrir').onclick = () => { const a = !$('#matriz').classList.contains('abierta'); $('#matriz').classList.toggle('abierta', a); $('#mAbrir').setAttribute('aria-expanded', a); };
+$('#verMx').onclick = () => document.body.classList.add('verMx');
+$('#cerrarMx').onclick = () => document.body.classList.remove('verMx');
+$('#verF').onclick = () => document.body.classList.add('verF');
+$('#cerrarF').onclick = () => document.body.classList.remove('verF');
+
+/* ── recorrido: los críticos del ámbito con más usuarios ──────────────── */
+let TOUR = [];
+function pararTour() {
+  if (estado.tour) { clearTimeout(estado.tour); estado.tour = null; }
+  $('#cap').classList.remove('on'); $('#tour span').textContent = 'Ver recorrido';
+}
+function paso(i) {
+  if (i >= TOUR.length) { pararTour(); cerrar(); if (F.dep) encuadrarAmbito(); else vistaPais(2000); return; }
+  const r = RW[F.srv][TOUR[i]];
+  $('#capS').textContent = 'Distrito crítico ' + (i + 1) + ' de ' + TOUR.length;
+  $('#capB').textContent = r[C.dist] + ' · ' + nf(r[C.usu]) + ' ' + UNI[F.srv];
+  $('#cap').classList.add('on');
+  abrir(TOUR[i], true);
+  estado.tour = setTimeout(() => paso(i + 1), RM ? 2500 : 6500);
+}
+$('#tour').dataset.tip = 'Recorre los 5 distritos críticos con más gente atendida, uno por uno.';
+$('#tour').onclick = () => {
+  if (!map) return;
+  if (estado.tour) { pararTour(); return; }
+  TOUR = CRIT.slice().sort((a, b) => b.properties.u - a.properties.u).slice(0, 5).map(f => f.properties.ubi);
+  if (!TOUR.length) { $('#capS').textContent = 'Recorrido'; $('#capB').textContent = 'No hay distritos críticos con estos filtros'; $('#cap').classList.add('on'); setTimeout(() => $('#cap').classList.remove('on'), 3000); return; }
+  $('#tour span').textContent = 'Detener'; paso(0);
+};
+addEventListener('keydown', ev => {
+  if (ev.key !== 'Escape') return;
+  if ($('#metoM').classList.contains('on')) cerrarMeto();
+  else if ($('#avz').classList.contains('on')) abrirAvz(false);
+  else if (estado.tour) pararTour(); else if (estado.foco) cerrar(); else if (F.sel) elegir(null);
+});
+
+// La barra de filtros marca dónde empieza el mapa útil (el encuadre la respeta).
+function ajustarBarra() {
+  const b = $('.fbar').getBoundingClientRect();
+  document.documentElement.style.setProperty('--barra', (b.height ? Math.round(b.bottom + 12) : 12) + 'px');
+}
+new ResizeObserver(ajustarBarra).observe($('.fbar'));
+ajustarBarra();
+renderRelato(); renderMatriz();
+$('#pie').innerHTML = 'Fuente: padrón PNCM de ' + MM.corte + ' <i>·</i> CENEPRED ' + (CEN ? CEN.escenario + ' (' + CEN.periodo + ')' : MM.vigencia)
+  + (DEC ? ' <i>·</i> ' + DS : '') + (LIM ? ' <i>·</i> límites INEI' : '');
+cuandoHayEspacio(async () => {
+  estadoMapa('Buscando el fondo del mapa…');
+  enDisco = !(await hayFondo());
+  iniciar();
+});
+</script>
+</body>
+</html>
