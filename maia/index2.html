@@ -450,6 +450,19 @@ body:not(.vProv) .eti.lim.p,body:not(.zProv) .eti.lim.p{display:none}
   .relato .acc .ic span,.relato .acc .ic .tx{display:none}
   .relato .acc .ic{padding:8px 10px}
 }
+/* ── celular, versión corta: lo básico; filtros, matriz y metodología, en la computadora ── */
+.enPC{display:none}
+@media (max-width:760px){
+  .centro,.capas,.rail-d,#verF,#verMx,#kMax{display:none!important}
+  button.kpi{pointer-events:none}
+  .relato .acc .ic .tx{display:inline}
+  .relato .acc .ic{padding:8px 12px}
+  .cap{top:12px}
+  .relato .acc{flex-wrap:wrap}
+  .enPC{display:flex;align-items:flex-start;gap:7px;flex-basis:100%;appearance:none;border:0;background:none;padding:2px 2px 0;font:600 11px/1.4 var(--f);color:var(--ink3);cursor:pointer;text-align:left}
+  .enPC svg{width:15px;height:15px;color:var(--mg6);flex:none;margin-top:1px}
+  .enPC b{color:var(--mg6);font-weight:800;white-space:nowrap}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -515,6 +528,7 @@ body:not(.vProv) .eti.lim.p,body:not(.zProv) .eti.lim.p{display:none}
       <button class="btn s ic" id="pais" aria-label="Ver todo el país"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="tx">Todo el país</span></button>
       <button class="btn s soloMovil" id="verF">Filtros</button>
       <button class="btn s soloMovil" id="verMx">Matriz</button>
+      <button class="enPC" id="enPC"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Filtros, matriz y metodología: en la computadora. <b>Compartir enlace</b></span></button>
     </div>
   </section>
 </div>
@@ -582,6 +596,12 @@ if (typeof maplibregl === 'undefined' || typeof D === 'undefined') {
     : 'No se encontraron los datos: DATOS_PNCM debe estar al lado de este archivo.';
   throw new Error('sin motor o sin datos');
 }
+// El proceso interno del mapa (worker) se carga desde un archivo del sitio y no desde memoria
+// (blob:), que algunos perfiles de Brave cancelan. Con doble clic (file://) el navegador no deja
+// abrir workers desde archivos: ahí se queda el de memoria.
+if (/^https?:$/.test(location.protocol)) maplibregl.setWorkerUrl(new URL('lib/maplibre-gl-5.24.0/maplibre-gl-csp-worker.js', location.href).href);
+const BRAVE = !!(navigator.brave && navigator.brave.isBrave);
+const MSG_BRAVE = 'Brave está bloqueando el mapa en esta página. Toca el ícono del león (Brave Shields), junto a la dirección, y desactiva la protección para este sitio; o ábrela en Edge o Chrome.';
 
 /* ── la lógica del 0.1 (v30), tal cual ─────────────────────────────────── */
 const MM = D.meta, C = {}, QQ = MM.cifras || {}, RI = D.resumen.INTEGRADA;
@@ -934,13 +954,26 @@ function rehacerEstilo() {
 let enDisco = false;
 const LOCAL = oscuro => ({ version: 8, sources: {}, layers: [{ id: 'fondo', type: 'background', paint: { 'background-color': oscuro ? '#0D0A0F' : '#ECE8EF' } }] });
 const base = e => enDisco ? LOCAL(e.tema === 'oscuro') : (e.style || e.url);
+// ¿Llega el fondo de internet? No basta con el estilo: se prueban también una tesela, las
+// fuentes y los íconos, porque hay redes que dejan pasar uno y bloquean los otros.
 async function hayFondo() {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), 5000);
+  const pedir = async (url, json) => {
+    const r = await fetch(url, { signal: c.signal, cache: 'no-store' });
+    if (!r.ok || /text\/html/i.test(r.headers.get('content-type') || '')) throw new Error('bloqueado: ' + url);
+    return json ? r.json() : r.arrayBuffer();
+  };
   try {
-    const c = new AbortController(), t = setTimeout(() => c.abort(), 4000);
-    const r = await fetch(OFM, { signal: c.signal, cache: 'no-store' });
-    clearTimeout(t);
-    return r.ok && (await r.text()).trim().startsWith('{');
-  } catch (err) { return false; }
+    const st = await pedir(OFM, true), pr = [];
+    if (st.glyphs) pr.push(pedir(st.glyphs.replace('{fontstack}', encodeURIComponent('Noto Sans Regular')).replace('{range}', '0-255')));
+    const sp = Array.isArray(st.sprite) ? (st.sprite[0] || {}).url : st.sprite;
+    if (sp) pr.push(pedir(sp + '.json', true));
+    const vs = Object.values(st.sources || {}).find(s => s.type === 'vector' && (s.url || s.tiles));
+    if (vs) pr.push((vs.tiles ? Promise.resolve({ tiles: vs.tiles }) : pedir(vs.url, true))
+      .then(tj => tj.tiles && tj.tiles[0] ? pedir(tj.tiles[0].replace('{z}', 4).replace('{x}', 4).replace('{y}', 8)) : null));
+    await Promise.all(pr);
+    return true;
+  } catch (err) { return false; } finally { clearTimeout(t); }
 }
 const ESTILOS = {
   editorial: { url: OFM, tema: 'claro', relieve: .28, pitch: 0, bearing: 0, nota: 'Claro y sobrio. El relieve se insinúa.' },
@@ -974,7 +1007,7 @@ const MQ = matchMedia('(max-width:760px)'), movil = () => MQ.matches;
 const anchoRiel = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anch')) || 372;
 const alturaBarra = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--barra')) || 110;
 // Arriba, los estilos y la barra de filtros; abajo, las capas; a los costados, los rieles.
-const padPais = () => movil() ? { top: 108, bottom: Math.round(innerHeight * .4) + 16, left: 16, right: 16 }
+const padPais = () => movil() ? { top: 24, bottom: Math.round(innerHeight * .4) + 16, left: 16, right: 16 }
   : { top: alturaBarra() + 8, bottom: 64, left: anchoRiel() + 40, right: anchoRiel() + 40 };
 
 let estado = { estilo: 'editorial', capas: { dep: true, prov: false, dist: true, pts: true, du: false }, foco: null, tour: null };
@@ -1089,6 +1122,25 @@ function marcarZoom() {
   cl.toggle('vProv', estado.capas.prov);
 }
 
+// El fondo de internet puede llegar a medias: hay redes que dejan pasar el estilo y bloquean las
+// teselas, las fuentes o los íconos. Si el fondo falla, el mapa se cambia solo al guardado en el
+// equipo, en vez de quedarse en blanco con un aviso.
+let fondoOk = false, fallasFondo = 0;
+const NUESTRAS = /^(dist|pts|crit|lim-|paises|dem|top|onda|anillos|pulso|fam)/;
+async function pasarADisco() {
+  if (enDisco || !map) return;
+  enDisco = true;
+  const b = $('#fDisco'); if (b) b.setAttribute('aria-pressed', true);
+  estadoMapa('La red no deja cargar el fondo del mapa: se usa el guardado en el equipo…');
+  await cargarDisco().catch(() => {});
+  rehacerEstilo();
+}
+function fallaDeFondo(ev) {
+  const src = ev && ev.sourceId, url = (ev && ev.error && ev.error.url) || '';
+  if (enDisco || !((src && !NUESTRAS.test(src)) || /openfreemap|arcgisonline/.test(url))) return;
+  if (++fallasFondo >= (fondoOk ? 8 : 2)) pasarADisco();
+}
+
 function iniciar() {
 try {
   map = new maplibregl.Map({ container: 'mapa', style: base(ESTILOS[estado.estilo]), bounds: PERU, fitBoundsOptions: { padding: padPais() },
@@ -1098,6 +1150,7 @@ try {
   return;
 }
 estadoMapa('Cargando el mapa…');
+map.on('data', e => { if (e.dataType === 'source' && e.tile && e.sourceId && !NUESTRAS.test(e.sourceId)) fondoOk = true; });
 map.on('error', ev => {
   const src = ev && ev.sourceId;
   if (src === 'dem' || src === 'dem3d') {
@@ -1105,10 +1158,13 @@ map.on('error', ev => {
     if (!REL && !cargas[TER + 'relieve_peru.js']) cargarDisco().then(rehacerEstilo).catch(() => {});
     return;
   }
-  if (!src && !map.isStyleLoaded()) estadoMapa('No llega el fondo del mapa (tiles.openfreemap.org). Revisa la conexión o si la red lo bloquea.', true);
+  if (BRAVE && !src && !map.isStyleLoaded()) return estadoMapa(MSG_BRAVE, true);
+  fallaDeFondo(ev);
 });
 let dibujado = false;
-setTimeout(() => { if (!dibujado) estadoMapa('El mapa no termina de dibujarse. Si usas Brave, prueba en Edge o Chrome: algunos perfiles de Brave bloquean el proceso interno del mapa.', true); }, 15000);
+setTimeout(() => {
+  if (!dibujado || (BRAVE && !fondoOk && !enDisco)) estadoMapa(BRAVE ? MSG_BRAVE : 'El mapa no termina de dibujarse. Prueba en Edge o Chrome, o revisa que la aceleración gráfica esté activada.', true);
+}, 10000);
 $('#fDisco').setAttribute('aria-pressed', enDisco);
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
 // En celular el crédito del mapa empieza plegado (la «i»): desplegado tapa el mapa.
@@ -1144,6 +1200,7 @@ function tono(e) {
   }
 }
 function montar() {
+  fondoOk = false; fallasFondo = 0;
   const e = ESTILOS[estado.estilo], oscuro = e.tema === 'oscuro', antes = primeraEtiqueta(), tinta0 = oscuro ? '#FFFFFF' : '#120C15';
   tono(e);
   if (enDisco && PAISES) {
@@ -1392,7 +1449,7 @@ function cambiarEstilo(k) {
 function volarA(ubi, ms) {
   const e = ESTILOS[estado.estilo];
   // En celular la ficha ocupa la parte de abajo: el distrito se encuadra arriba.
-  const pad = movil() ? { top: 108, bottom: Math.round(innerHeight * .56) + 12, left: 16, right: 16 } : padPais();
+  const pad = movil() ? { top: 24, bottom: Math.round(innerHeight * .56) + 12, left: 16, right: 16 } : padPais();
   const cam = map.cameraForBounds(cajaDe([ubi]), { padding: pad, bearing: 0 }) || {};
   const z = Math.min(cam.zoom || 9, 11.5);
   map.flyTo({ center: cam.center, zoom: e.terreno ? Math.max(z + .5, 7.6) : Math.max(z, 7.4), pitch: e.terreno ? 62 : 0, bearing: e.terreno ? -22 : 0, duration: RM ? 0 : ms, essential: true });
@@ -1539,6 +1596,16 @@ function marcarDesliz(el) {
 }
 $$('.capas, .estilos').forEach(marcarDesliz);
 $('#cap').onclick = () => { if (estado.tour) pararTour(); };
+const AVISO = m => { $('#capS').textContent = 'MAIA'; $('#capB').textContent = m; $('#cap').classList.add('on');
+  clearTimeout(AVISO.t); AVISO.t = setTimeout(() => { if (!estado.tour) $('#cap').classList.remove('on'); }, 3200); };
+// Celular: la versión corta invita a abrirla en una computadora; el enlace se comparte o se copia.
+$('#enPC').onclick = async () => {
+  const url = location.href.replace(/#.*$/, '');
+  if (navigator.share) { try { await navigator.share({ title: document.title, text: 'Ábrelo en una computadora para ver todas las opciones.', url }); return; } catch (err) { if (err && err.name === 'AbortError') return; } }
+  let ok = false; try { await navigator.clipboard.writeText(url); ok = true; } catch (err) {}
+  AVISO(ok ? 'Enlace copiado: ábrelo en una computadora' : url);
+};
+
 
 // La barra de filtros marca dónde empieza el mapa útil (el encuadre la respeta).
 function ajustarBarra() {
