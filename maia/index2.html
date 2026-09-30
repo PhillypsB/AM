@@ -21,9 +21,11 @@
   Datos: DATOS_PNCM, último corte del manifiesto (?corte=AAAAMM abre otro).
   Ninguna cifra está escrita a mano.
 -->
-<link href="lib/fuentes/fuentes.css" rel="stylesheet">
-<link href="lib/maplibre-gl-5.24.0/maplibre-gl.css" rel="stylesheet">
-<script src="lib/maplibre-gl-5.24.0/maplibre-gl.js"></script>
+<!-- Lo que el primer dibujo necesita se pide todo a la vez, no en fila:
+     los distritos por adelantado, el padrón apenas se lee el manifiesto
+     y el motor en paralelo. -->
+<link rel="preload" href="DATOS_PNCM/territorio/geo_distritos.js" as="script">
+<link rel="preload" href="lib/maplibre-gl-5.24.0/maplibre-gl.js" as="script">
 <script src="DATOS_PNCM/derivados/MAIA/manifest.js"></script>
 <script>
 (function () {
@@ -36,6 +38,9 @@
   document.write('<script src="DATOS_PNCM/derivados/MAIA/' + c.d01 + '"><\/script>');
 })();
 </script>
+<link href="lib/fuentes/fuentes.css" rel="stylesheet">
+<link href="lib/maplibre-gl-5.24.0/maplibre-gl.css" rel="stylesheet">
+<script src="lib/maplibre-gl-5.24.0/maplibre-gl.js"></script>
 <style>
 :root{
   --mg:#FF0A6C; --mg6:#D9005A; --mg7:#A8004A;
