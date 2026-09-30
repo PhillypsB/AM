@@ -2441,7 +2441,7 @@ $('#enPC').onclick = async () => {
   const url = location.href.replace(/#.*$/, '');
   if (navigator.share) { try { await navigator.share({ title: document.title, text: 'Ábrelo en una computadora para ver todas las opciones.', url }); return; } catch (err) { if (err && err.name === 'AbortError') return; } }
   let ok = false; try { await navigator.clipboard.writeText(url); ok = true; } catch (err) {}
-  AVISO(ok ? 'Enlace copiado: ábrelo en una computadora' : url);
+  if (ok) AVISO('Enlace copiado: ábrelo en una computadora'); else window.prompt('Copia el enlace y ábrelo en una computadora:', url);
 };
 
 
