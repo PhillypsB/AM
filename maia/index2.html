@@ -414,6 +414,42 @@ body:not(.vProv) .eti.lim.p,body:not(.zProv) .eti.lim.p{display:none}
   .modal{padding:24px 20px}
   .maplibregl-ctrl-bottom-right{bottom:50vh}
 }
+/* ── celular: el mapa arriba, una hoja abajo; nada se encima ─────────────
+   La hoja muestra la pregunta, las cifras grandes y los botones (fijos al pie);
+   con el asa se agranda. La ficha del distrito y los paneles la reemplazan, no se le
+   montan. Sin botones de zoom (se hace con dos dedos) y el crédito del mapa, plegado. */
+.asa{display:none}
+.masDer{-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}
+@media (max-width:760px){
+  .asa{display:flex;justify-content:center;align-self:stretch;appearance:none;border:0;background:none;cursor:pointer;padding:2px 0 10px;margin:0 0 2px}
+  .asa i{width:42px;height:5px;border-radius:3px;background:var(--ink5)}
+  .rail-i{left:0;right:0;bottom:0;top:auto;width:auto;max-height:40vh;gap:0;padding-bottom:0}
+  body.hoja .rail-i{max-height:84vh}
+  .rail-i .relato{border-radius:22px 22px 0 0;border-bottom:0;display:flex;flex-direction:column;padding:8px 18px 0}
+  .relato>*{order:5}
+  .relato .asa{order:0} .relato .ceja{order:1} .relato h1{order:2} .relato .kpis,.relato .dos{order:3}
+  .relato .acc{order:99;position:sticky;bottom:0;margin:10px -18px 0;padding:10px 18px 12px;background:var(--glass);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--glassB);z-index:1}
+  .marca{display:none}
+  .ficha{left:0;right:0;bottom:0;top:auto;width:auto;max-height:56vh;border-radius:22px 22px 0 0;transform:translateY(30px)}
+  .ficha.on{transform:none}
+  body.conFicha .rail-i,body.verF .rail-i,body.verMx .rail-i,body.verE .rail-i{display:none}
+  body.verMx .capas,body.verE .capas{display:none}
+  .maplibregl-ctrl-group{display:none!important}
+  .maplibregl-ctrl-bottom-right{bottom:calc(40vh + 4px)!important;right:0}
+  body.hoja .maplibregl-ctrl-bottom-right,body.conFicha .maplibregl-ctrl-bottom-right,body.verF .maplibregl-ctrl-bottom-right,
+  body.verMx .maplibregl-ctrl-bottom-right,body.verE .maplibregl-ctrl-bottom-right{display:none}
+  .cap{top:108px;bottom:auto;left:10px;right:10px;min-width:0;max-width:none;transform:none;pointer-events:auto}
+  .cap.on{transform:none}
+  body.recorriendo .cap:after,body.simulando .cap:after{content:"Toca aquí para detener";display:block;font-size:10px;font-weight:700;color:var(--ink4);margin-top:5px}
+  .capas,.estilos,.eventos{scrollbar-width:none}
+  .capas::-webkit-scrollbar,.estilos::-webkit-scrollbar,.eventos::-webkit-scrollbar{display:none}
+  .capas .chip{padding:6px 9px;font-size:10px}
+  .relato .acc{flex-wrap:nowrap;gap:6px}
+  .relato .acc .btn{padding:8px 12px;font-size:11.5px}
+  .relato .acc .ic span,.relato .acc .ic .tx{display:none}
+  .relato .acc .ic{padding:8px 10px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -455,6 +491,7 @@ body:not(.vProv) .eti.lim.p,body:not(.zProv) .eti.lim.p{display:none}
 
 <div class="rail rail-i">
   <section class="relato card" aria-live="polite">
+    <button class="asa" id="asa" aria-label="Ver más o menos del resumen"><i></i></button>
     <div class="marca"><i>M</i><div><b>MAIA</b><span>Mapa de preparación · Cuna Más</span></div></div>
     <div class="ceja"><span class="ter" data-tip="producto">Preparación ante lluvias</span></div>
     <h1>¿Dónde prepararnos <em>primero?</em></h1>
@@ -475,7 +512,7 @@ body:not(.vProv) .eti.lim.p,body:not(.zProv) .eti.lim.p{display:none}
     <p class="insight" id="ins">—</p>
     <div class="acc">
       <button class="btn p" id="tour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 5l12 7-12 7z"/></svg><span>Ver recorrido</span></button>
-      <button class="btn s" id="pais"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Todo el país</button>
+      <button class="btn s ic" id="pais" aria-label="Ver todo el país"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="tx">Todo el país</span></button>
       <button class="btn s soloMovil" id="verF">Filtros</button>
       <button class="btn s soloMovil" id="verMx">Matriz</button>
     </div>
@@ -937,7 +974,7 @@ const MQ = matchMedia('(max-width:760px)'), movil = () => MQ.matches;
 const anchoRiel = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anch')) || 372;
 const alturaBarra = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--barra')) || 110;
 // Arriba, los estilos y la barra de filtros; abajo, las capas; a los costados, los rieles.
-const padPais = () => movil() ? { top: 100, bottom: Math.round(innerHeight * .5), left: 20, right: 20 }
+const padPais = () => movil() ? { top: 108, bottom: Math.round(innerHeight * .4) + 16, left: 16, right: 16 }
   : { top: alturaBarra() + 8, bottom: 64, left: anchoRiel() + 40, right: anchoRiel() + 40 };
 
 let estado = { estilo: 'editorial', capas: { dep: true, prov: false, dist: true, pts: true, du: false }, foco: null, tour: null };
@@ -1074,6 +1111,8 @@ let dibujado = false;
 setTimeout(() => { if (!dibujado) estadoMapa('El mapa no termina de dibujarse. Si usas Brave, prueba en Edge o Chrome: algunos perfiles de Brave bloquean el proceso interno del mapa.', true); }, 15000);
 $('#fDisco').setAttribute('aria-pressed', enDisco);
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+// En celular el crédito del mapa empieza plegado (la «i»): desplegado tapa el mapa.
+if (movil()) map.once('load', () => { const a = document.querySelector('.maplibregl-ctrl-attrib'); if (a) a.classList.remove('maplibregl-compact-show'); });
 map.on('moveend', sinChoques);
 map.on('zoom', marcarZoom);
 map.on('movestart', ocultarAyuda);
@@ -1352,7 +1391,9 @@ function cambiarEstilo(k) {
 }
 function volarA(ubi, ms) {
   const e = ESTILOS[estado.estilo];
-  const cam = map.cameraForBounds(cajaDe([ubi]), { padding: padPais(), bearing: 0 }) || {};
+  // En celular la ficha ocupa la parte de abajo: el distrito se encuadra arriba.
+  const pad = movil() ? { top: 108, bottom: Math.round(innerHeight * .56) + 12, left: 16, right: 16 } : padPais();
+  const cam = map.cameraForBounds(cajaDe([ubi]), { padding: pad, bearing: 0 }) || {};
   const z = Math.min(cam.zoom || 9, 11.5);
   map.flyTo({ center: cam.center, zoom: e.terreno ? Math.max(z + .5, 7.6) : Math.max(z, 7.4), pitch: e.terreno ? 62 : 0, bearing: e.terreno ? -22 : 0, duration: RM ? 0 : ms, essential: true });
 }
@@ -1454,10 +1495,12 @@ $('#cerrarF').onclick = () => document.body.classList.remove('verF');
 /* ── recorrido: los críticos del ámbito con más usuarios ──────────────── */
 let TOUR = [];
 function pararTour() {
+  document.body.classList.remove('recorriendo');
   if (estado.tour) { clearTimeout(estado.tour); estado.tour = null; }
   $('#cap').classList.remove('on'); $('#tour span').textContent = 'Ver recorrido';
 }
 function paso(i) {
+  document.body.classList.add('recorriendo');
   if (i >= TOUR.length) { pararTour(); cerrar(); if (F.dep) encuadrarAmbito(); else vistaPais(2000); return; }
   const r = RW[F.srv][TOUR[i]];
   $('#capS').textContent = 'Distrito crítico ' + (i + 1) + ' de ' + TOUR.length;
@@ -1485,6 +1528,17 @@ addEventListener('keydown', ev => {
   else if ($('#avz').classList.contains('on')) abrirAvz(false);
   else if (estado.tour) pararTour(); else if (estado.foco) cerrar(); else if (F.sel) elegir(null);
 });
+
+
+// Celular: la hoja de abajo se agranda o se achica con su asa.
+$('#asa').onclick = () => { const on = document.body.classList.toggle('hoja'); if (!on) $('.rail-i').scrollTop = 0; };
+// Barras que se deslizan de lado: se desvanecen a la derecha mientras haya más opciones.
+function marcarDesliz(el) {
+  const f = () => el.classList.toggle('masDer', el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
+  el.addEventListener('scroll', f, { passive: true }); addEventListener('resize', f); f(); setTimeout(f, 1000);
+}
+$$('.capas, .estilos').forEach(marcarDesliz);
+$('#cap').onclick = () => { if (estado.tour) pararTour(); };
 
 // La barra de filtros marca dónde empieza el mapa útil (el encuadre la respeta).
 function ajustarBarra() {
