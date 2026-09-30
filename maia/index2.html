@@ -13,9 +13,11 @@
   Textos para alcaldes, municipalidades y público: lenguaje simple y los términos
   técnicos en ayudas que aparecen al pasar el cursor (data-tip).
   Usuarios = familias del SAF + niñas y niños del SCD.
-  TODO EN DISCO: motor (lib/maplibre-gl-5.24.0), fuentes (lib/fuentes), relieve,
-  países y límites (DATOS_PNCM/territorio). Con internet suma el fondo de
-  OpenFreeMap; si no responde en 4 s o la red lo bloquea, usa el fondo en disco.
+  CARGA POR PARTES: al abrir solo se espera el motor (lib/), el padrón (d01) y
+  los distritos; los centros poblados (geo01) y los límites llegan después del
+  primer dibujo. Con internet, el fondo es de OpenFreeMap y el relieve llega por
+  partes de AWS Terrain Tiles. Sin internet (o si la red los bloquea), el relieve
+  y los países guardados en DATOS_PNCM/territorio se cargan recién ahí.
   Datos: DATOS_PNCM, último corte del manifiesto (?corte=AAAAMM abre otro).
   Ninguna cifra está escrita a mano.
 -->
@@ -30,12 +32,8 @@
   var c = L.filter(function (x) { return x.ym === q; })[0] || L[L.length - 1];
   if (!c) { document.write('<p style="font:16px sans-serif;padding:24px">No hay cortes en DATOS_PNCM/derivados/MAIA/manifest.js</p>'); return; }
   window.CORTE = c;
-  document.write('<script src="DATOS_PNCM/derivados/MAIA/' + c.d01 + '"><\/script>'
-    + '<script src="DATOS_PNCM/derivados/MAIA/' + c.geo01 + '"><\/script>'
-    + '<script src="DATOS_PNCM/territorio/geo_distritos.js"><\/script>'
-    + '<script src="DATOS_PNCM/territorio/limites_peru.js"><\/script>'
-    + '<script src="DATOS_PNCM/territorio/relieve_peru.js"><\/script>'
-    + '<script src="DATOS_PNCM/territorio/paises_sudamerica.js"><\/script>');
+  // Al abrir solo se espera el padrón (las cifras); lo demás llega por partes («carga por partes»).
+  document.write('<script src="DATOS_PNCM/derivados/MAIA/' + c.d01 + '"><\/script>');
 })();
 </script>
 <style>
@@ -535,7 +533,7 @@ body:not(.vProv) .eti.lim.p,body:not(.zProv) .eti.lim.p{display:none}
 'use strict';
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const nf = n => (n == null ? '—' : Number(n).toLocaleString('es-PE'));
-if (typeof maplibregl === 'undefined' || typeof D === 'undefined' || typeof GEO2 === 'undefined') {
+if (typeof maplibregl === 'undefined' || typeof D === 'undefined') {
   const a = $('#aviso'); a.style.display = 'grid';
   a.textContent = typeof maplibregl === 'undefined'
     ? 'No se pudo cargar el motor de mapas (lib/maplibre-gl-5.24.0).'
@@ -584,11 +582,10 @@ D.distritos.INTEGRADA.forEach(r => {
   PROVC[r[C.dep] + '|' + r[C.prov]] = u.slice(0, 4); PROVN[u.slice(0, 4)] = [r[C.dep], r[C.prov]];
 });
 const DEPS = Object.keys(DEPC).sort();
-const LIM = window.MAIA_LIMITES || null;
+let LIM = null, LIMPT = null;   // límites: llegan después del primer dibujo (cargarLimites)
 $('#dsCorto').textContent = DS.replace(/-PCM$/, '');
 // Publicada en la web, «Sin internet» (una herramienta de prueba) no se muestra.
 if (/^https?:$/.test(location.protocol) && !/^(localhost|127\.|\[::1\])/.test(location.hostname)) $$('#fDisco, .estilos .sep').forEach(e => e.style.display = 'none'); $('#dsCapa').textContent = 'Contorno del ' + DS.replace(/-PCM$/, '');
-if (!LIM) $$('.capas .chip[data-c=dep], .capas .chip[data-c=prov]').forEach(b => b.remove());
 
 /* ── ayudas: los términos se explican al pasar el cursor, sin llenar la pantalla ── */
 const HZT = {
@@ -636,23 +633,59 @@ document.addEventListener('focusout', ocultarAyuda);
 document.addEventListener('click', ocultarAyuda, true);
 addEventListener('scroll', ocultarAyuda, true);
 
+/* ── carga por partes ─────────────────────────────────────────────────────
+   Al abrir solo se espera lo indispensable: el motor, las cifras del padrón (d01)
+   y los polígonos de los distritos. Después del primer dibujo llegan, sin
+   bloquear, los centros poblados (geo01) y los límites. El relieve y los países
+   guardados en el equipo se cargan solo sin internet: con conexión, el relieve
+   viene por partes de AWS Terrain Tiles, nada más lo que se ve. */
+const TER = 'DATOS_PNCM/territorio/', DMAIA = 'DATOS_PNCM/derivados/MAIA/', cargas = {};
+function cargar(src) {     // un <script> por archivo: funciona también con doble clic (file://)
+  return cargas[src] || (cargas[src] = new Promise((ok, mal) => {
+    const el = document.createElement('script'); el.src = src; el.async = true;
+    el.onload = () => ok();
+    el.onerror = () => { delete cargas[src]; el.remove(); mal(new Error('No se pudo cargar ' + src)); };
+    document.head.appendChild(el);
+  }));
+}
+
 /* ── geometría ───────────────────────────────────────────────────────── */
 const featDist = [], featPts = [], BB = {};
-let caja = [180, 90, -180, -90];
-for (const [ubi, anillos] of Object.entries(GEO2)) {
-  const b = [180, 90, -180, -90];
-  for (const a of anillos) for (const [x, y] of a) { if (x < b[0]) b[0] = x; if (y < b[1]) b[1] = y; if (x > b[2]) b[2] = x; if (y > b[3]) b[3] = y; }
-  BB[ubi] = b;
-  caja = [Math.min(caja[0], b[0]), Math.min(caja[1], b[1]), Math.max(caja[2], b[2]), Math.max(caja[3], b[3])];
-  const r = RW.INTEGRADA[ubi];
-  featDist.push({ type: 'Feature', id: +ubi, geometry: { type: 'MultiPolygon', coordinates: anillos.map(a => [a]) },
-    properties: { ubi, du: r ? (r[C.du] || 0) : 0 } });
+let caja = [180, 90, -180, -90], PERU = null, GEOP = null;
+function prepararDistritos() {           // territorio/geo_distritos.js → GEO2
+  for (const [ubi, anillos] of Object.entries(GEO2)) {
+    const b = [180, 90, -180, -90];
+    for (const a of anillos) for (const [x, y] of a) { if (x < b[0]) b[0] = x; if (y < b[1]) b[1] = y; if (x > b[2]) b[2] = x; if (y > b[3]) b[3] = y; }
+    BB[ubi] = b;
+    caja = [Math.min(caja[0], b[0]), Math.min(caja[1], b[1]), Math.max(caja[2], b[2]), Math.max(caja[3], b[3])];
+    const r = RW.INTEGRADA[ubi];
+    featDist.push({ type: 'Feature', id: +ubi, geometry: { type: 'MultiPolygon', coordinates: anillos.map(a => [a]) },
+      properties: { ubi, du: r ? (r[C.du] || 0) : 0 } });
+  }
+  PERU = [[caja[0], caja[1]], [caja[2], caja[3]]];
 }
 // Centros poblados: [nombre, lat, lon, niñas/niños, gestantes, usuarios, niv. inund., niv. mov. masa, SCD (1) o SAF (0), …]
-for (const [ubi, g] of Object.entries(GEO))
-  for (const p of g.p) if (p[1] != null) featPts.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [p[2], p[1]] },
-    properties: { n: p[0], u: p[5], i: p[6] || 0, m: p[7] || 0, s: p[8] === 1 ? 1 : 0, ubi } });
-const PERU = [[caja[0], caja[1]], [caja[2], caja[3]]];
+function prepararPuntos() {              // derivados/MAIA/geo01_*.js → GEO
+  GEOP = GEO;
+  for (const [ubi, g] of Object.entries(GEOP))
+    for (const p of g.p) if (p[1] != null) featPts.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [p[2], p[1]] },
+      properties: { n: p[0], u: p[5], i: p[6] || 0, m: p[7] || 0, s: p[8] === 1 ? 1 : 0, ubi } });
+}
+function cargarPuntos() {
+  return cargarPuntos.p || (cargarPuntos.p = cargar(DMAIA + CORTE.geo01).then(() => {
+    prepararPuntos();
+    if (map && map.getSource('pts')) map.getSource('pts').setData({ type: 'FeatureCollection', features: featPts });
+    aplicarEstado();
+    if (estado.foco) abrir(estado.foco, false);
+  }));
+}
+function cargarLimites() {
+  return cargarLimites.p || (cargarLimites.p = cargar(TER + 'limites_peru.js').then(() => {
+    prepararLimites();
+    if (map && estiloListo) { sumarLimites(); aplicarCapas(); aplicarEstado(); }
+  }, () => $$('.capas .chip[data-c=dep], .capas .chip[data-c=prov]').forEach(b => b.remove())));
+}
+function cargarResto() { cargarPuntos().catch(err => console.warn(err.message)); cargarLimites(); }
 const cajaDe = ubis => { const b = [180, 90, -180, -90];
   for (const u of ubis) { const x = BB[u]; if (!x) continue; b[0] = Math.min(b[0], x[0]); b[1] = Math.min(b[1], x[1]); b[2] = Math.max(b[2], x[2]); b[3] = Math.max(b[3], x[3]); }
   return b[0] > b[2] ? PERU : [[b[0], b[1]], [b[2], b[3]]]; };
@@ -739,7 +772,7 @@ $('#metoX').onclick = cerrarMeto;
 $('#metoM').onclick = e => { if (e.target === $('#metoM')) cerrarMeto(); };
 
 /* ── relato, matriz y lista: se recalculan con cada filtro ─────────────── */
-let CRIT = [], FK = 0, map = null;
+let CRIT = [], FK = 0, map = null, estiloListo = false;
 function ambito() {
   return [F.prov ? F.prov + ' (' + F.dep + ')' : F.dep || 'Todo el país', SRVN[F.srv], HZN[F.hz]].concat(F.du ? ['solo ' + DS] : [], F.fon ? ['solo FONDES'] : []);
 }
@@ -830,10 +863,14 @@ function renderMatriz() {
 /* ── estilos del mapa ─────────────────────────────────────────────────── */
 const OFM = 'https://tiles.openfreemap.org/styles/positron';
 const GLYPHS = 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf';
-// Relieve del disco (territorio/relieve_peru.js), servido desde memoria: con doble clic
-// el navegador no deja leer archivos sueltos. Sin ese archivo, de internet.
-const REL = window.MAIA_RELIEVE || null, PAISES = window.MAIA_PAISES || null;
-if (REL) {
+// Relieve guardado en el equipo (territorio/relieve_peru.js, 4.7 MB): solo sin internet.
+// Se sirve desde memoria con un protocolo propio, porque con doble clic el navegador no
+// deja leer archivos sueltos. Con internet, el relieve llega por partes de AWS Terrain Tiles.
+let REL = null, PAISES = null;
+function activarRelieve() {
+  PAISES = window.MAIA_PAISES || PAISES;
+  if (REL || !window.MAIA_RELIEVE) return;
+  REL = window.MAIA_RELIEVE;
   const memo = {};
   maplibregl.addProtocol('relieve', async params => {
     const k = params.url.slice('relieve://'.length);
@@ -842,9 +879,16 @@ if (REL) {
     return { data: memo[k].slice(0) };
   });
 }
-const DEM = REL
+const cargarDisco = () => Promise.all([cargar(TER + 'relieve_peru.js'), cargar(TER + 'paises_sudamerica.js')]).then(activarRelieve);
+const dem = () => REL
   ? { type: 'raster-dem', tiles: ['relieve://{z}/{x}/{y}'], encoding: 'terrarium', tileSize: 256, minzoom: 0, maxzoom: REL.zmax, bounds: REL.caja, attribution: REL.atribucion }
-  : { type: 'raster-dem', tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'], encoding: 'terrarium', tileSize: 256, maxzoom: 14, attribution: 'Relieve: AWS Terrain Tiles' };
+  : { type: 'raster-dem', tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'], encoding: 'terrarium', tileSize: 256, maxzoom: 14, attribution: 'Relieve: AWS Terrain Tiles (Mapzen/Linux Foundation · AWS Open Data)' };
+// Cambiar de fondo: el 3D se apaga antes, porque su fuente de relieve desaparece con el estilo viejo.
+function rehacerEstilo() {
+  estiloListo = false;
+  if (map.getTerrain && map.getTerrain()) { try { map.setTerrain(null); } catch (err) {} }
+  map.setStyle(base(ESTILOS[estado.estilo]), { diff: false });
+}
 let enDisco = false;
 const LOCAL = oscuro => ({ version: 8, sources: {}, layers: [{ id: 'fondo', type: 'background', paint: { 'background-color': oscuro ? '#0D0A0F' : '#ECE8EF' } }] });
 const base = e => enDisco ? LOCAL(e.tema === 'oscuro') : (e.style || e.url);
@@ -891,7 +935,7 @@ const alturaBarra = () => parseInt(getComputedStyle(document.documentElement).ge
 const padPais = () => movil() ? { top: 100, bottom: Math.round(innerHeight * .5), left: 20, right: 20 }
   : { top: alturaBarra() + 8, bottom: 64, left: anchoRiel() + 40, right: anchoRiel() + 40 };
 
-let estado = { estilo: 'editorial', capas: { dep: !!LIM, prov: false, dist: true, pts: true, du: false }, foco: null, tour: null };
+let estado = { estilo: 'editorial', capas: { dep: true, prov: false, dist: true, pts: true, du: false }, foco: null, tour: null };
 
 function estadoMapa(txt, error) {
   const c = $('#carga'); c.querySelector('span').textContent = txt;
@@ -923,9 +967,41 @@ function ponerEtiquetas() {
 // el motor evita que se encimen con los nombres de los críticos, que tienen prioridad.
 // Sin internet (el fondo en disco no trae fuentes) son botones en HTML.
 const titulo = s => s.toLowerCase().replace(/(^|\s)\S/g, x => x.toUpperCase());
-const LIMPT = LIM ? { type: 'FeatureCollection', features: [['dep', 'd'], ['prov', 'p']].flatMap(([nv, v]) => LIM[nv].features.map(f => ({
-  type: 'Feature', geometry: { type: 'Point', coordinates: [f.properties.x, f.properties.y] },
-  properties: { c: f.properties.c, v, n: v === 'd' ? (DEPN[f.properties.c] || f.properties.n) : ((PROVN[f.properties.c] || [])[1] || f.properties.n) } }))) } : null;
+function prepararLimites() {             // territorio/limites_peru.js → window.MAIA_LIMITES
+  LIM = window.MAIA_LIMITES;
+  LIMPT = { type: 'FeatureCollection', features: [['dep', 'd'], ['prov', 'p']].flatMap(([nv, v]) => LIM[nv].features.map(f => ({
+    type: 'Feature', geometry: { type: 'Point', coordinates: [f.properties.x, f.properties.y] },
+    properties: { c: f.properties.c, v, n: v === 'd' ? (DEPN[f.properties.c] || f.properties.n) : ((PROVN[f.properties.c] || [])[1] || f.properties.n) } }))) };
+}
+// Límites de provincias y departamentos y el ámbito elegido, en magenta. Llegan después del
+// primer dibujo: se suman al estilo que esté puesto, cada capa en su lugar de la pila.
+function sumarLimites() {
+  if (!LIM || !map || map.getSource('lim-dep')) return;
+  const oscuro = ESTILOS[estado.estilo].tema === 'oscuro', tinta0 = oscuro ? '#FFFFFF' : '#120C15';
+  const bajoNombres = (map.getStyle().layers.find(l => l.type === 'symbol' && !/^(crit|lim)-/.test(l.id)) || {}).id || 'dist-h';
+  map.addSource('lim-dep', { type: 'geojson', data: LIM.dep });
+  map.addSource('lim-prov', { type: 'geojson', data: LIM.prov });
+  map.addLayer({ id: 'prov-l', type: 'line', source: 'lim-prov', layout: { 'line-join': 'round' }, paint: {
+    'line-color': tinta0, 'line-opacity': .3, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, .4, 9, 1.1], 'line-dasharray': [3, 2] } }, bajoNombres);
+  map.addLayer({ id: 'dep-l', type: 'line', source: 'lim-dep', layout: { 'line-join': 'round' }, paint: {
+    'line-color': tinta0, 'line-opacity': .45, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, .7, 9, 1.8] } }, bajoNombres);
+  for (const [id, src] of [['amb-dep', 'lim-dep'], ['amb-prov', 'lim-prov']])
+    map.addLayer({ id, type: 'line', source: src, filter: ['==', ['get', 'c'], ''], layout: { 'line-join': 'round' }, paint: {
+      'line-color': '#D9005A', 'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1.6, 9, 3] } }, 'dist-h');
+  if (!enDisco) {
+    // Debajo de los nombres de los críticos: el motor los pone primero y evita que se encimen.
+    map.addSource('lim-pt', { type: 'geojson', data: LIMPT });
+    const texto = (tam, esp) => ({ 'text-field': ['get', 'n'], 'text-font': ['Noto Sans Bold'], 'text-size': tam, 'text-letter-spacing': esp,
+      'text-transform': 'uppercase', 'text-max-width': 12, 'text-variable-anchor': ['center', 'top', 'bottom'], 'text-radial-offset': .5 });
+    map.addLayer({ id: 'lim-t-d', type: 'symbol', source: 'lim-pt', filter: ['==', ['get', 'v'], 'd'], maxzoom: 8.6,
+      layout: texto(['interpolate', ['linear'], ['zoom'], 4, 9.5, 8, 11.5], .24),
+      paint: { 'text-color': oscuro ? '#A99DAD' : '#6E6175', 'text-halo-color': oscuro ? '#0D0A0F' : '#FFFFFF', 'text-halo-width': 1.4 } }, 'dist-h');
+    map.addLayer({ id: 'lim-t-p', type: 'symbol', source: 'lim-pt', filter: ['==', ['get', 'v'], 'p'], minzoom: 6.2, maxzoom: 11,
+      layout: texto(['interpolate', ['linear'], ['zoom'], 6.2, 9, 10, 11], .12),
+      paint: { 'text-color': oscuro ? '#8F8494' : '#8A7F8F', 'text-halo-color': oscuro ? '#0D0A0F' : '#FFFFFF', 'text-halo-width': 1.3 } }, 'dist-h');
+  }
+  ponerLimites();
+}
 function ponerLimites() {
   marcasLim.forEach(m => m.remove()); marcasLim = [];
   if (!LIM || !enDisco) return;
@@ -980,7 +1056,15 @@ try {
   return;
 }
 estadoMapa('Cargando el mapa…');
-map.on('error', () => { if (!map.isStyleLoaded()) estadoMapa('No llega el fondo del mapa (tiles.openfreemap.org). Revisa la conexión o si la red lo bloquea.', true); });
+map.on('error', ev => {
+  const src = ev && ev.sourceId;
+  if (src === 'dem' || src === 'dem3d') {
+    // La red bloquea el relieve de internet: se usa el guardado en el equipo, una sola vez.
+    if (!REL && !cargas[TER + 'relieve_peru.js']) cargarDisco().then(rehacerEstilo).catch(() => {});
+    return;
+  }
+  if (!src && !map.isStyleLoaded()) estadoMapa('No llega el fondo del mapa (tiles.openfreemap.org). Revisa la conexión o si la red lo bloquea.', true);
+});
 let dibujado = false;
 setTimeout(() => { if (!dibujado) estadoMapa('El mapa no termina de dibujarse. Si usas Brave, prueba en Edge o Chrome: algunos perfiles de Brave bloquean el proceso interno del mapa.', true); }, 15000);
 $('#fDisco').setAttribute('aria-pressed', enDisco);
@@ -1024,14 +1108,14 @@ function montar() {
     map.addLayer({ id: 'paises-l', type: 'line', source: 'paises', paint: { 'line-color': oscuro ? '#3A3140' : '#D6CED9', 'line-width': .8 } });
   }
   if (e.relieve && !map.getSource('dem')) {
-    map.addSource('dem', DEM);
+    map.addSource('dem', dem());
     const agua = map.getStyle().layers.find(l => l.type === 'fill' && /water|ocean/.test(l.id));
     map.addLayer({ id: 'relieve', type: 'hillshade', source: 'dem', paint: {
       'hillshade-exaggeration': e.relieve, 'hillshade-shadow-color': oscuro ? '#000000' : '#5E5263',
       'hillshade-highlight-color': oscuro ? '#2A2230' : '#FFFFFF', 'hillshade-accent-color': oscuro ? '#1A141E' : '#8A7F8F' } }, agua ? agua.id : antes);
   }
   if (e.terreno) {
-    if (!map.getSource('dem3d')) map.addSource('dem3d', DEM);
+    if (!map.getSource('dem3d')) map.addSource('dem3d', dem());
     map.setTerrain({ source: 'dem3d', exaggeration: e.terreno });
     try { map.setSky({ 'sky-color': '#F4EEF3', 'horizon-color': '#FFFFFF', 'fog-color': '#FAF7F9', 'sky-horizon-blend': .6, 'horizon-fog-blend': .5, 'fog-ground-blend': .4 }); } catch (err) {}
   } else if (map.getTerrain && map.getTerrain()) { try { map.setTerrain(null); } catch (err) {} }
@@ -1044,30 +1128,6 @@ function montar() {
     'line-color': oscuro ? 'rgba(255,255,255,.14)' : 'rgba(255,255,255,.9)', 'line-width': ['interpolate', ['linear'], ['zoom'], 4, .25, 9, 1] } }, antes);
   map.addLayer({ id: 'dist-du', type: 'line', source: 'dist', filter: ['==', ['get', 'du'], 1], layout: { visibility: estado.capas.du ? 'visible' : 'none' },
     paint: { 'line-color': tinta0, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, .5, 9, 1.4], 'line-dasharray': [2, 1.5], 'line-opacity': .55 } }, antes);
-  // Límites de provincias y departamentos (territorio/limites_peru.js) y el ámbito elegido, en magenta.
-  if (LIM) {
-    map.addSource('lim-dep', { type: 'geojson', data: LIM.dep });
-    map.addSource('lim-prov', { type: 'geojson', data: LIM.prov });
-    map.addLayer({ id: 'prov-l', type: 'line', source: 'lim-prov', layout: { 'line-join': 'round' }, paint: {
-      'line-color': tinta0, 'line-opacity': .3, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, .4, 9, 1.1], 'line-dasharray': [3, 2] } }, antes);
-    map.addLayer({ id: 'dep-l', type: 'line', source: 'lim-dep', layout: { 'line-join': 'round' }, paint: {
-      'line-color': tinta0, 'line-opacity': .45, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, .7, 9, 1.8] } }, antes);
-    for (const [id, src] of [['amb-dep', 'lim-dep'], ['amb-prov', 'lim-prov']])
-      map.addLayer({ id, type: 'line', source: src, filter: ['==', ['get', 'c'], ''], layout: { 'line-join': 'round' }, paint: {
-        'line-color': '#D9005A', 'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1.6, 9, 3] } });
-    if (!enDisco) {
-      map.addSource('lim-pt', { type: 'geojson', data: LIMPT });
-      const texto = (v, tam, esp, color) => ({ 'text-field': ['get', 'n'], 'text-font': ['Noto Sans Bold'], 'text-size': tam, 'text-letter-spacing': esp,
-        'text-transform': 'uppercase', 'text-max-width': 12, 'text-variable-anchor': ['center', 'top', 'bottom'], 'text-radial-offset': .5 });
-      map.addLayer({ id: 'lim-t-d', type: 'symbol', source: 'lim-pt', filter: ['==', ['get', 'v'], 'd'], maxzoom: 8.6,
-        layout: texto('d', ['interpolate', ['linear'], ['zoom'], 4, 9.5, 8, 11.5], .24),
-        paint: { 'text-color': oscuro ? '#A99DAD' : '#6E6175', 'text-halo-color': oscuro ? '#0D0A0F' : '#FFFFFF', 'text-halo-width': 1.4 } });
-      map.addLayer({ id: 'lim-t-p', type: 'symbol', source: 'lim-pt', filter: ['==', ['get', 'v'], 'p'], minzoom: 6.2, maxzoom: 11,
-        layout: texto('p', ['interpolate', ['linear'], ['zoom'], 6.2, 9, 10, 11], .12),
-        paint: { 'text-color': oscuro ? '#8F8494' : '#8A7F8F', 'text-halo-color': oscuro ? '#0D0A0F' : '#FFFFFF', 'text-halo-width': 1.3 } });
-    }
-  }
-  ponerLimites();
   map.addLayer({ id: 'dist-h', type: 'line', source: 'dist', paint: {
     'line-color': ['case', ['boolean', ['feature-state', 'foco'], false], '#D9005A', ['boolean', ['feature-state', 'hov'], false], '#D9005A', tinta0],
     'line-width': ['case', ['boolean', ['feature-state', 'foco'], false], 3, ['boolean', ['feature-state', 'hov'], false], 2, ['==', ST('sel'), 1], 1.1, 0] } });
@@ -1087,10 +1147,12 @@ function montar() {
     'text-field': ['get', 'n'], 'text-font': ['Noto Sans Bold'], 'text-size': ['interpolate', ['linear'], ['zoom'], 4, 9, 8, 11.5],
     'text-letter-spacing': .08, 'text-transform': 'uppercase', 'text-offset': [0, 1.1], 'text-anchor': 'top', 'text-optional': true, 'symbol-sort-key': ['-', 0, ['get', 'u']] },
     paint: { 'text-color': tinta0, 'text-halo-color': oscuro ? '#0D0A0F' : '#FFFFFF', 'text-halo-width': 1.4 } });
+  sumarLimites();
   aplicarCapas();
   aplicarEstado();
   if (estado.foco) map.setFeatureState({ source: 'dist', id: +estado.foco }, { foco: true });
-  map.once('render', () => { dibujado = true; estadoMapa(''); });
+  estiloListo = true;
+  map.once('render', () => { dibujado = true; estadoMapa(''); cargarResto(); });
 }
 map.on('style.load', montar);
 let tocado = false;
@@ -1179,7 +1241,7 @@ function aplicarEstado() {
       : { cm: 0, idx: 0, sel: 0, dim: 0 });
   }
   CRIT = R.filter(r => cls(idx(r)) === 0 && enSel(r)).map(r => {
-    const g = GEO[r[C.ubi]];
+    const g = GEOP && GEOP[r[C.ubi]];
     return g && g.r && g.r.length ? { type: 'Feature', geometry: { type: 'Point', coordinates: [g.r[1], g.r[0]] }, properties: { ubi: r[C.ubi], n: r[C.dist], u: r[C.usu] } } : null;
   }).filter(Boolean);
   map.getSource('crit').setData({ type: 'FeatureCollection', features: CRIT });
@@ -1278,9 +1340,7 @@ function cambiarEstilo(k) {
   const e = ESTILOS[k];
   $$('.estilos button[data-e]').forEach(b => b.setAttribute('aria-pressed', b.dataset.e === k));
   document.body.classList.toggle('oscuro', e.tema === 'oscuro');
-  // El 3D se apaga antes de cambiar el estilo: su fuente de relieve desaparece con el estilo viejo.
-  if (map.getTerrain && map.getTerrain()) { try { map.setTerrain(null); } catch (err) {} }
-  map.setStyle(base(e), { diff: false });
+  rehacerEstilo();
   if (estado.foco) volarA(estado.foco, 1600);
   else if (F.dep) encuadrarAmbito();
   else vistaPais(1600);
@@ -1297,7 +1357,12 @@ function vistaPais(ms) {
   else map.fitBounds(PERU, { padding: padPais(), pitch: 0, bearing: 0, duration: d });
 }
 $$('.estilos button[data-e]').forEach(b => b.onclick = () => cambiarEstilo(b.dataset.e));
-$('#fDisco').onclick = () => { if (!map) return; enDisco = !enDisco; $('#fDisco').setAttribute('aria-pressed', enDisco); map.setStyle(base(ESTILOS[estado.estilo]), { diff: false }); };
+$('#fDisco').onclick = async () => {
+  if (!map) return;
+  enDisco = !enDisco; $('#fDisco').setAttribute('aria-pressed', enDisco);
+  if (enDisco && !REL) { estadoMapa('Cargando el fondo guardado en el equipo…'); await cargarDisco().catch(() => {}); }
+  rehacerEstilo();
+};
 $$('.capas .chip').forEach(b => b.onclick = () => {
   const k = b.dataset.c;
   estado.capas[k] = !estado.capas[k]; b.setAttribute('aria-pressed', estado.capas[k]); aplicarCapas();
@@ -1318,7 +1383,7 @@ function abrir(ubi, volar) {
   if (F.sel && !enSel(r)) { F.sel = null; refrescar(); }        // fuera de la selección de la matriz: se quita
   if (estado.foco) map.setFeatureState({ source: 'dist', id: +estado.foco }, { foco: false });
   estado.foco = ubi; map.setFeatureState({ source: 'dist', id: +ubi }, { foco: true });
-  const v = idx(r), k = cls(v), col = COL[F.esq], P = PCOL[F.esq], g = GEO[ubi] || { p: [] };
+  const v = idx(r), k = cls(v), col = COL[F.esq], P = PCOL[F.esq], g = (GEOP && GEOP[ubi]) || { p: [] };
   const acento = F.esq === 'clasico' ? col[k] : 'var(--mg6)', ex = EX(r), imp = r[C.imp];
   const sa = RW.SAF[ubi], sc = RW.SCD[ubi];
   const cinco = n => '<div class="cinco" style="--c:' + acento + '">' + [1, 2, 3, 4, 5].map(i => '<i' + (i <= n ? ' class="on"' : '') + '></i>').join('') + '</div>';
@@ -1345,7 +1410,8 @@ function abrir(ubi, volar) {
     + '</div></div>';
   // 4 · los centros poblados con más usuarios del servicio elegido
   const lst = g.p.filter(p => s === 'INTEGRADA' || (s === 'SCD') === (p[8] === 1)).sort((a, b) => b[5] - a[5]);
-  const ccpp = lst.length ? '<div class="bloque"><div class="cph"><span class="tt">Centros poblados con más usuarios</span><span class="tt" style="text-align:center">Serv.</span><span class="tt r">Usuarios</span></div>'
+  const ccpp = !GEOP ? '<div class="bloque"><span class="tt">Centros poblados con más usuarios</span><p class="ley">Cargando los centros poblados…</p></div>'
+    : lst.length ? '<div class="bloque"><div class="cph"><span class="tt">Centros poblados con más usuarios</span><span class="tt" style="text-align:center">Serv.</span><span class="tt r">Usuarios</span></div>'
     + lst.slice(0, 6).map(p => { const n = nivelP(p[6], p[7]);
       const ay = '<b>' + p[0] + '</b><br>' + (p[8] === 1 ? 'SCD · ' + nf(p[5]) + ' niñas y niños' : 'SAF · ' + nf(p[5]) + ' familias') + '<br>Exposición ' + EXW[n].toLowerCase() + ' a ' + HZN[F.hz];
       return '<div class="cp" data-tip="' + attr(ay) + '"><span class="d' + (p[8] === 1 ? ' scd' : '') + '" style="background:' + P[n] + '"></span><span class="n">' + p[0] + '</span>'
@@ -1399,6 +1465,11 @@ $('#tour').dataset.tip = 'Recorre los 5 distritos críticos con más gente atend
 $('#tour').onclick = () => {
   if (!map) return;
   if (estado.tour) { pararTour(); return; }
+  if (!GEOP) {                  // los críticos se ubican con los centros poblados: se esperan
+    $('#capS').textContent = 'Recorrido'; $('#capB').textContent = 'Cargando los distritos críticos…'; $('#cap').classList.add('on');
+    cargarPuntos().then(() => { $('#cap').classList.remove('on'); $('#tour').click(); }).catch(() => $('#cap').classList.remove('on'));
+    return;
+  }
   TOUR = CRIT.slice().sort((a, b) => b.properties.u - a.properties.u).slice(0, 5).map(f => f.properties.ubi);
   if (!TOUR.length) { $('#capS').textContent = 'Recorrido'; $('#capB').textContent = 'No hay distritos críticos con estos filtros'; $('#cap').classList.add('on'); setTimeout(() => $('#cap').classList.remove('on'), 3000); return; }
   $('#tour span').textContent = 'Detener'; paso(0);
@@ -1419,10 +1490,17 @@ new ResizeObserver(ajustarBarra).observe($('.fbar'));
 ajustarBarra();
 renderRelato(); renderMatriz();
 $('#pie').innerHTML = 'Fuente: padrón PNCM de ' + MM.corte + ' <i>·</i> CENEPRED ' + (CEN ? CEN.escenario + ' (' + CEN.periodo + ')' : MM.vigencia)
-  + (DEC ? ' <i>·</i> ' + DS : '') + (LIM ? ' <i>·</i> límites INEI' : '');
+  + (DEC ? ' <i>·</i> ' + DS : '') + ' <i>·</i> límites INEI';
 cuandoHayEspacio(async () => {
-  estadoMapa('Buscando el fondo del mapa…');
-  enDisco = !(await hayFondo());
+  estadoMapa('Cargando el mapa…');
+  try {
+    const [fondo] = await Promise.all([hayFondo(), cargar(TER + 'geo_distritos.js').then(prepararDistritos)]);
+    enDisco = !fondo;
+  } catch (err) {
+    estadoMapa('No se encontraron los distritos: DATOS_PNCM/territorio debe estar junto a este archivo.', true);
+    return;
+  }
+  if (enDisco) { estadoMapa('Sin conexión con el fondo del mapa: se usa el guardado en el equipo…'); await cargarDisco().catch(() => {}); }
   iniciar();
 });
 </script>
