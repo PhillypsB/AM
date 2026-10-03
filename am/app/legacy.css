@@ -1,0 +1,535 @@
+
+/* ── RESET & BASE ─────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Inter','Segoe UI',Roboto,sans-serif;
+  background:#f0f2f7;
+  color:#1e293b;
+  min-height:100vh;
+}
+
+/* ── HEADER ──────────────────────────────────── */
+.app-header{
+  background:linear-gradient(120deg,#0b1f47 0%,#14306a 48%,#1d4ed8 100%);
+  color:#fff;
+  padding:15px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 6px 24px rgba(11,31,71,.38);
+  flex-wrap:wrap;
+  gap:16px;
+}
+.header-left{display:flex;align-items:center;gap:18px;min-width:0}
+.brand-lock{display:flex;align-items:center;gap:11px;flex-shrink:0}
+.brand-logo{
+  width:44px;height:44px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:13px;
+  backdrop-filter:blur(4px);
+}
+.brand-logo svg{width:26px;height:26px;display:block}
+.brand-name{font-size:1.08rem;font-weight:800;line-height:1.05;letter-spacing:-.01em;color:#fff;display:block}
+.brand-tag{font-size:.66rem;color:#fbbf24;margin-top:2px;display:block;letter-spacing:.03em;font-weight:600;text-transform:uppercase}
+.header-divider{width:1px;align-self:stretch;background:rgba(255,255,255,.16);flex-shrink:0}
+.header-titles{min-width:0}
+.header-titles h1{font-size:1.16rem;font-weight:700;line-height:1.15;color:#fff}
+.header-titles p{font-size:.74rem;color:rgba(255,255,255,.66);margin-top:2px}
+.corte-pill{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:12px;
+  padding:7px 16px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:0;
+  backdrop-filter:blur(4px);
+}
+.corte-label{font-size:.6rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.corte-select{
+  background:transparent;
+  border:none;
+  color:#fff;
+  font-size:.98rem;
+  font-weight:700;
+  cursor:pointer;
+  font-family:inherit;
+  outline:none;
+  padding:1px 0;
+  max-width:200px;
+}
+.corte-select option{color:#1e293b;background:#fff;font-weight:600}
+
+/* ── PAGE WRAPPER ────────────────────────────── */
+.page-wrapper{max-width:1240px;margin:0 auto;padding:28px 20px;display:flex;flex-direction:column;gap:24px}
+
+/* ── FILTER CARD ─────────────────────────────── */
+.filter-card{
+  background:#fff;
+  border-radius:16px;
+  padding:24px 28px;
+  box-shadow:0 2px 16px rgba(0,0,0,.07);
+  border:1px solid #e2e8f0;
+}
+/* Cabecera de la tarjeta de filtros (rediseño "Explora la cobertura") */
+.filter-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.filter-badge{
+  width:42px;height:42px;flex-shrink:0;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:1.15rem;
+  background:linear-gradient(135deg,#14306a,#1d4ed8);color:#fff;
+  box-shadow:0 4px 12px rgba(29,78,216,.25);
+}
+.filter-head-text{display:flex;flex-direction:column;min-width:0}
+.filter-title{font-size:1.14rem;font-weight:700;color:#0f172a;line-height:1.2}
+.filter-sub{font-size:.8rem;color:#64748b;margin-top:2px;white-space:normal}
+.avanzada-pill{
+  flex-shrink:0;display:inline-flex;align-items:center;gap:7px;
+  background:#f1f5f9;border:1px solid #e2e8f0;border-radius:50px;
+  padding:8px 15px;font-size:.78rem;font-weight:600;color:#475569;
+  font-family:inherit;cursor:pointer;transition:background .15s,border-color .15s;
+}
+.avanzada-pill:hover{background:#e2e8f0;border-color:#cbd5e1}
+.avanzada-chevron{transition:transform .2s;display:inline-block;font-size:.85rem;color:#94a3b8}
+.avanzada-pill[aria-expanded="true"] .avanzada-chevron{transform:rotate(180deg)}
+/* Botón "Consultar" — solo en móvil: la búsqueda no es en vivo, se dispara aquí */
+.btn-consultar{
+  display:none;width:100%;margin-top:16px;justify-content:center;align-items:center;gap:8px;
+  background:linear-gradient(135deg,#14306a,#1d4ed8);color:#fff;border:none;border-radius:12px;
+  padding:14px;font-size:.98rem;font-weight:700;font-family:inherit;cursor:pointer;
+  box-shadow:0 4px 14px rgba(29,78,216,.3);
+}
+.btn-consultar:active{transform:scale(.98)}
+@media(max-width:820px){ .btn-consultar.visible{display:flex} }
+.filter-row{
+  display:flex;
+  align-items:flex-end;
+  gap:16px;
+  flex-wrap:wrap;
+}
+/* ── Buscador en vivo (dentro de Búsqueda avanzada) ───────────────── */
+.busca-wrap{position:relative;flex:1 1 320px;min-width:240px;max-width:520px}
+.busca-input{
+  width:100%;padding:11px 38px 11px 38px;border:1px solid #d1d5db;border-radius:10px;
+  font-size:.92rem;font-family:inherit;color:#1e293b;background:#fff;transition:border-color .15s,box-shadow .15s;
+}
+.busca-input:focus{outline:none;border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.12)}
+.busca-lupa{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.95rem;pointer-events:none}
+.busca-limpiar{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;
+  color:#94a3b8;font-size:1rem;cursor:pointer;padding:4px 6px;border-radius:6px;display:none;
+}
+.busca-limpiar:hover{background:#f1f5f9;color:#475569}
+.busca-sug{
+  /* Cuelga del <body> y va en position:fixed a propósito: el contenedor de los
+     filtros tiene overflow:hidden para su animación de plegado y recortaba el
+     desplegable. */
+  position:fixed;z-index:9000;background:#fff;
+  border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.14);
+  max-height:320px;overflow-y:auto;display:none;
+}
+.busca-sug.abierta{display:block}
+.busca-item{
+  display:flex;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;
+  border-bottom:1px solid #f1f5f9;font-size:.86rem;color:#1e293b;
+}
+.busca-item:last-child{border-bottom:none}
+.busca-item:hover,.busca-item.activa{background:#eff6ff}
+.busca-nivel{
+  flex:0 0 auto;font-size:.6rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 7px;border-radius:50px;background:#eef2ff;color:#4338ca;
+}
+.busca-nivel[data-n="Departamento"]{background:#eff6ff;color:#1d4ed8}
+.busca-nivel[data-n="Provincia"]{background:#ecfdf5;color:#047857}
+.busca-nivel[data-n="Distrito"]{background:#fef3c7;color:#b45309}
+.busca-nivel[data-n="Centro poblado"]{background:#fae8ff;color:#a21caf}
+.busca-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.busca-txt b{color:#1d4ed8}
+.busca-vacio{padding:14px 13px;font-size:.84rem;color:#94a3b8;text-align:center}
+@media (max-width:820px){ .busca-wrap{flex:1 1 100%;max-width:none} }
+.select-group{display:flex;flex-direction:column;gap:6px;flex:1;min-width:160px}
+.select-group label{
+  font-size:.75rem;
+  font-weight:600;
+  color:#6b7280;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.select-group select{
+  padding:10px 14px;
+  border:1.5px solid #d1d5db;
+  border-radius:10px;
+  font-size:.9rem;
+  font-family:inherit;
+  color:#1e293b;
+  background:#fff;
+  cursor:pointer;
+  transition:border-color .2s,box-shadow .2s;
+  appearance:auto;
+}
+.select-group select:focus{
+  outline:none;
+  border-color:#3b82f6;
+  box-shadow:0 0 0 3px rgba(59,130,246,.15);
+}
+.select-group select:hover{border-color:#9ca3af}
+
+/* ── BUTTONS ─────────────────────────────────── */
+.btn{
+  padding:10px 22px;
+  border-radius:10px;
+  border:none;
+  font-size:.88rem;
+  font-weight:600;
+  font-family:inherit;
+  cursor:pointer;
+  transition:transform .15s,box-shadow .15s,opacity .2s;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  white-space:nowrap;
+}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+.btn-word{background:#1d4ed8;color:#fff;box-shadow:0 3px 10px rgba(29,78,216,.25)}
+.btn-word:hover:not(:disabled){background:#1e40af;box-shadow:0 5px 16px rgba(29,78,216,.35);transform:translateY(-1px)}
+.btn-wa{background:#16a34a;color:#fff;box-shadow:0 3px 10px rgba(22,163,74,.25)}
+.btn-wa:hover:not(:disabled){background:#15803d;box-shadow:0 5px 16px rgba(22,163,74,.35);transform:translateY(-1px)}
+.btn-excel{background:#047857;color:#fff;box-shadow:0 3px 10px rgba(4,120,87,.28)}
+.btn-excel:hover:not(:disabled){background:#065f46;box-shadow:0 5px 16px rgba(4,120,87,.4);transform:translateY(-1px)}
+.btn-ppt{background:#c2410c;color:#fff;box-shadow:0 3px 10px rgba(194,65,12,.25)}
+.btn-ppt:hover:not(:disabled){background:#9a3412;box-shadow:0 5px 16px rgba(194,65,12,.35);transform:translateY(-1px)}
+
+/* ── LOADING ─────────────────────────────────── */
+.loading-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  padding:48px;
+  background:#fff;
+  border-radius:16px;
+  box-shadow:0 2px 16px rgba(0,0,0,.07);
+  border:1px solid #e2e8f0;
+}
+.spinner{
+  width:42px;height:42px;
+  border:4px solid #e2e8f0;
+  border-top-color:#1d4ed8;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-wrap p{color:#6b7280;font-size:.9rem;font-weight:500}
+
+/* ── RESULTS SECTION ─────────────────────────── */
+.results-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:16px;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:16px 20px;
+  box-shadow:0 2px 16px rgba(0,0,0,.05);
+}
+.results-id{display:flex;align-items:center;gap:14px;min-width:0}
+.results-avatar{
+  width:48px;height:48px;flex-shrink:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.35rem;
+  background:linear-gradient(135deg,#14306a,#1d4ed8);color:#fff;
+  box-shadow:0 4px 12px rgba(29,78,216,.28);
+}
+.results-kicker{
+  font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:#1d4ed8;display:block;
+}
+.results-header h2{font-size:1.12rem;font-weight:800;color:#0f172a;line-height:1.2;margin-top:1px}
+.results-header p{font-size:.78rem;color:#64748b;margin-top:2px}
+.export-bar{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ── KPI CONTAINER ───────────────────────────── */
+.kpi-container{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:860px){.kpi-container{grid-template-columns:1fr}}
+
+/* ── SERVICE CARD ────────────────────────────── */
+.service-card{
+  background:#fff;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 2px 16px rgba(0,0,0,.07);
+  border:1px solid #e2e8f0;
+  display:flex;
+  flex-direction:column;
+  animation:fadeUp .4s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.saf-card{border-top:4px solid #e53e3e}
+.scd-card{border-top:4px solid #38a169}
+.service-header{
+  padding:18px 22px 14px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.service-title{display:flex;align-items:center;gap:10px}
+.service-dot{
+  width:12px;height:12px;
+  border-radius:50%;
+  flex-shrink:0;
+  margin-top:3px;
+}
+.saf-dot{background:#e53e3e}
+.scd-dot{background:#38a169}
+.service-title h3{font-size:.95rem;font-weight:700;color:#1e293b;line-height:1.3}
+.service-abbr{
+  background:#f1f5f9;
+  color:#64748b;
+  font-size:.72rem;
+  font-weight:700;
+  padding:3px 8px;
+  border-radius:6px;
+  letter-spacing:.05em;
+}
+.foc-badge{
+  padding:5px 12px;
+  border-radius:50px;
+  font-size:.75rem;
+  font-weight:700;
+  border:1.5px solid transparent;
+  white-space:nowrap;
+}
+
+/* ── KPI GRID ────────────────────────────────── */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:#f1f5f9;
+  border-top:1px solid #f1f5f9;
+  border-bottom:1px solid #f1f5f9;
+}
+.kpi-grid-2{
+  grid-template-columns:repeat(2,1fr);
+}
+.kpi-block{
+  background:#fff;
+  padding:16px 14px 14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:4px;
+}
+.kpi-block.primary-kpi{background:#fafbff}
+.kpi-emoji{font-size:1.4rem;line-height:1;margin-bottom:2px}
+.kpi-value{font-size:1.8rem;font-weight:800;color:#1e293b;line-height:1.1}
+.kpi-label{font-size:.72rem;color:#64748b;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.kpi-trend{
+  font-size:.72rem;
+  font-weight:600;
+  margin-top:4px;
+  padding:2px 8px;
+  border-radius:50px;
+}
+.trend-up{background:#dcfce7;color:#16a34a}
+.trend-down{background:#fee2e2;color:#dc2626}
+
+/* ── DETAIL TABLE ────────────────────────────── */
+.detail-section{padding:0 22px 20px}
+.detail-table{width:100%;border-collapse:collapse;font-size:.84rem;margin-top:4px}
+.detail-table tr{border-bottom:1px solid #f1f5f9}
+.detail-table tr:last-child{border-bottom:none}
+.detail-table td{padding:9px 6px;color:#374151}
+/* nombre del comite junto a cada servicio alimentario: dato de apoyo, no cifra */
+.detail-table td.sa-cg{
+  font-weight:600;font-size:.72rem;color:#6b7280;text-align:right;
+  white-space:normal;line-height:1.35;
+}
+.detail-table td:last-child{text-align:right;font-weight:600;color:#1e293b}
+
+/* ── HIDDEN UTIL ─────────────────────────────── */
+.hidden{display:none!important}
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media(max-width:640px){
+  .app-header{padding:14px 16px}
+  .header-titles h1{font-size:1.05rem}
+  .page-wrapper{padding:16px 12px}
+  .filter-card{padding:18px 16px}
+  .filter-row{flex-direction:column}
+  .select-group{min-width:unset}
+  .btn-group{width:100%}
+  .btn{justify-content:center;flex:1}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .kpi-value{font-size:1.4rem}
+}
+
+.am-narrativa{
+  grid-column:1 / -1;                 /* ocupa el ancho completo, no media columna */
+  background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+  box-shadow:0 2px 16px rgba(0,0,0,.07);
+  padding:24px 30px 26px;margin-top:4px;
+  font-size:.88rem;line-height:1.75;color:#334155;text-align:justify;
+}
+.am-narrativa-lbl{
+  font-size:.62rem;font-weight:700;color:#94a3b8;
+  text-transform:uppercase;letter-spacing:.1em;
+  padding-bottom:12px;margin-bottom:18px;border-bottom:1px solid #f1f5f9;
+}
+.am-narrativa h2{display:none;}       /* redundante en pantalla; se conserva en Word */
+.am-narrativa h3{
+  font-size:.8rem;font-weight:700;color:#1e293b;letter-spacing:.01em;
+  margin:0 0 10px;padding-left:11px;border-left:3px solid #cbd5e1;
+}
+/* dos columnas: SAF a la izquierda, SCD a la derecha */
+.am-cols{
+  display:grid;grid-template-columns:1fr 1fr;gap:30px;
+  margin-top:18px;padding-top:18px;border-top:1px solid #f1f5f9;
+}
+.am-col-scd{border-left:1px solid #f1f5f9;padding-left:30px;}
+.am-col-saf h3{border-left-color:#ec4899;}
+.am-col-scd h3{border-left-color:#10b981;}
+/* apilado: va DESPUÉS de las reglas base para que gane el orden de cascada */
+@media(max-width:960px){
+  .am-cols{grid-template-columns:1fr;gap:0;}
+  .am-col-scd{border-left:none;padding-left:0;padding-top:22px;margin-top:22px;border-top:1px solid #f1f5f9;}
+}
+.am-narrativa p{margin:0 0 11px;}
+.am-cols p{max-width:60ch;}   /* la medida corta solo aplica dentro de las columnas */
+.am-narrativa p:last-child{margin-bottom:0;}
+.am-narrativa strong{color:#0f172a;font-weight:700;}
+
+/* ── filas de actores dentro de las tarjetas ── */
+.detail-table tr.row-sep td{
+  padding:14px 6px 5px;font-size:.63rem;font-weight:700;color:#94a3b8;
+  text-transform:uppercase;letter-spacing:.08em;
+}
+.detail-table tr.row-sep{border-bottom:1px solid #e2e8f0;}
+.detail-table tr.row-total td{
+  padding-top:11px;font-weight:800;color:#0f172a;
+}
+.detail-table tr.row-total{border-top:1px solid #e2e8f0;border-bottom:none;}
+
+/* ── separación clara entre la consulta y los resultados ── */
+.results-header{
+  padding-top:26px;margin-top:30px;border-top:2px solid #e2e8f0;
+}
+.results-header h2{line-height:1.2;}
+#resultados.kpi-container{margin-top:18px !important;gap:22px;}
+section#resultadosArea{margin-top:4px;}
+
+/* ── chips de periodo/ámbito y botón de descarga en la tarjeta ── */
+.service-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.card-chip{
+  font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:#64748b;background:#f1f5f9;border:1px solid #e2e8f0;
+  padding:3px 9px;border-radius:50px;white-space:nowrap;
+}
+.card-chip-amb{color:#1e293b;background:#fff;border-color:#cbd5e1;font-weight:800;max-width:230px;overflow:hidden;text-overflow:ellipsis;}
+.card-dl{
+  width:26px;height:26px;flex-shrink:0;cursor:pointer;
+  border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#64748b;
+  font-size:.85rem;line-height:1;font-family:inherit;
+  display:inline-flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.card-dl:hover{background:#1e293b;color:#fff;border-color:#1e293b;}
+
+/* la meta se alinea a la derecha, también cuando la cabecera envuelve */
+.service-meta{margin-left:auto;justify-content:flex-end;}
+.service-title{flex:1 1 auto;min-width:0;}
+.service-title h3{min-width:0;}
+
+/* ════════ MÓVIL: iPhone y Android ════════
+   Los jefes consultan desde el celular. Dos cosas que rompían la experiencia:
+   iOS hace zoom automático al tocar un control con letra menor a 16px, y las
+   zonas táctiles quedaban por debajo de los 44px que recomiendan Apple y Google. */
+@media (max-width: 820px) {
+  select, input, textarea { font-size: 16px !important; }   /* evita el zoom de iOS */
+
+  .corte-select,
+  #selectDepartamento, #selectProvincia, #selectDistrito, #selectCentroPoblado, #selectEspecial {
+    min-height: 44px; padding-top: 8px; padding-bottom: 8px;
+  }
+  .btn { min-height: 46px; font-size: .82rem; }
+  .card-dl { width: 44px; height: 44px; font-size: 1.05rem; }
+  .export-bar { gap: 8px; }
+  .export-bar .btn { flex: 1 1 46%; }        /* dos por fila, cómodos de tocar */
+
+  /* las tablas anchas se deslizan con el dedo, con inercia */
+  .detail-table-wrap, .tabla-cobertura-wrap, [style*="overflow-x"] {
+    -webkit-overflow-scrolling: touch;
+  }
+  /* la ficha ocupa el ancho útil */
+  .am-narrativa { padding: 18px 16px; font-size: .9rem; }
+  .service-header { padding: 14px 16px 12px; }
+  .service-meta { gap: 6px; }
+  .card-chip { font-size: .58rem; padding: 3px 8px; }
+}
+
+/* ── Filtros plegables y exportación compacta ── */
+.filter-card-title{
+  flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:13px;
+  background:none;border:none;padding:0;cursor:pointer;
+  font-family:inherit;text-align:left;color:inherit;
+}
+.filtro-resumen{
+  margin-left:auto;font-size:.7rem;font-weight:700;color:#4338CA;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46%;
+}
+.filtro-chevron{
+  flex-shrink:0;font-size:1.2rem;line-height:1;color:#94a3b8;
+  transition:transform .25s cubic-bezier(.16,1,.3,1);
+}
+.filter-card.plegado .filtro-chevron{transform:rotate(-90deg)}
+.filter-card:not(.plegado) .filtro-resumen{display:none}
+/* Colapsada: barra más compacta (oculta subtítulo; el pill de avanzada
+   sigue visible y, al tocarlo, expande la tarjeta —ver toggleAvanzada). */
+.filter-card.plegado .filter-sub{display:none}
+.filter-card.plegado .filter-head{align-items:center}
+#filtroCuerpo{
+  overflow:hidden;max-height:1400px;opacity:1;margin-top:14px;
+  transition:max-height .3s cubic-bezier(.16,1,.3,1),opacity .2s,margin-top .3s;
+}
+.filter-card.plegado #filtroCuerpo{max-height:0;opacity:0;margin-top:0}
+
+@media (max-width:820px){
+  /* ── Cabecera en UNA fila: marca (izq) + corte compacto (der) ── */
+  .app-header{padding:10px 14px;gap:10px;align-items:center;flex-wrap:nowrap}
+  .header-left{gap:9px;min-width:0;flex:1 1 auto}
+  .brand-logo{width:36px;height:36px;border-radius:10px}
+  .brand-logo svg{width:21px;height:21px}
+  .brand-name{font-size:.95rem;white-space:nowrap}
+  .brand-tag{font-size:.6rem}
+  .header-divider,.header-titles{display:none}
+  .corte-pill{flex-shrink:0;padding:6px 12px;flex-direction:row;align-items:center;gap:7px}
+  .corte-label{font-size:0;line-height:0}          /* oculta el texto, deja el ícono */
+  .corte-label::before{content:"📅";font-size:.95rem;line-height:1}
+  .corte-select{font-size:.88rem;max-width:120px}
+
+  /* ── Filtros: en columna los grupos ocupan el ancho completo.
+        Sin esto heredan align-items:flex-end y encogen contra el borde. ── */
+  .filter-card{padding:16px}
+  .filter-row{flex-direction:column;align-items:stretch;gap:13px}
+  .select-group{min-width:0;width:100%;max-width:none!important}
+  .select-group select{width:100%}
+  .filter-row[style]{margin-top:12px!important;padding-top:14px!important}
+  #especial-info{width:100%;box-sizing:border-box}
+
+  .export-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%}
+  .export-bar .btn{
+    flex:none;min-height:46px;padding:10px 1px;font-size:.58rem;
+    justify-content:center;gap:0;
+  }
+  .export-bar .btn span{display:block;line-height:1.2}
+}
+/* Embebida en Web_UPPM (?embebido=1): el periodo lo fija la web que la
+   contiene, así que la cabecera propia (con su selector de corte) no se muestra. */
+html.embebido .app-header{display:none}
+html.embebido body{min-height:0}

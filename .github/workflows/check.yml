@@ -1,0 +1,21 @@
+name: Check static application
+on: [push, pull_request]
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Locate application and check JavaScript
+        shell: bash
+        run: |
+          if [ -f tools/check.cjs ]; then
+            node tools/check.cjs
+          elif [ -f am/tools/check.cjs ]; then
+            node am/tools/check.cjs
+          else
+            echo 'Application check script not found'
+            exit 1
+          fi

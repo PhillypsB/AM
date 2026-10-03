@@ -1,0 +1,21 @@
+# Machine-specific data location (never publish personal filesystem paths).
+app/config.local.js
+
+# Local verification, editor and OS artifacts.
+test-results/
+node_modules/
+package-lock.json
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+.env
+.env.*
+
+# Historical material does not belong in the application repository.
+_archivo*/
+_revision*/
+_backups/
+vistas-previas/
