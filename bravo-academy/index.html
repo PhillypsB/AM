@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BRAVO ACADEMY · Aprende IA en 3 horas. Sal con tu web publicada.</title>
+<meta name="description" content="Aprende IA en 3 horas y sal con tu web publicada en tu propio .com. En tu casa o en tu negocio, sin saber programar. 1 mes de acompañamiento y garantía de aprendizaje. Lima, Perú.">
+<meta name="theme-color" content="#070708">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_PE">
+<meta property="og:title" content="BRAVO ACADEMY · Aprende IA en 3 horas. Sal con tu web publicada.">
+<meta property="og:description" content="En tu casa o en tu negocio. Sin saber programar. Es más simple de lo que crees.">
+<meta property="og:image" content="img/og-transformacion.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="img/sombrero-voltaje.webp" type="image/webp">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@500;700&family=Manrope:wght@400..800&display=swap">
+<link rel="preload" as="image" href="img/hero-poster.webp">
+<style>
+:root{
+  --bg:#070708;
+  --surface-1:#0e0c10;
+  --surface-2:#151217;
+  --surface-3:#1d191f;
+  --line:#fdf7fa1a;
+  --line-strong:#fdf7fa38;
+  --ink:#fdf7fa;
+  --ink-soft:#d9cfd5;
+  --muted:#9a8f95;
+  --magenta:#ff0a6c;
+  --magenta-accion:#e00860;
+  --on-magenta:#ffffff;
+  --rosa:#ff4d94;
+  --ciruela:#5c0029;
+  --ciruela-profunda:#24000f;
+  --whatsapp:#25d366;
+  --on-whatsapp:#070708;
+  --focus:var(--rosa);
+  --glow-sm:0 0 24px rgba(255, 10, 108, 0.35);
+  --glow-lg:0 0 80px rgba(255, 10, 108, 0.30), 0 0 180px rgba(92, 0, 41, 0.55);
+  --lift:0 24px 60px rgba(0, 0, 0, 0.55);
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:20px;
+  --space-6:24px;
+  --space-8:32px;
+  --space-12:48px;
+  --space-18:72px;
+  --space-30:120px;
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:28px;
+  --radius-pill:999px;
+  --tap-min:48px;
+  --header-h:64px;
+  --bar-h:76px;
+  --content-max:1120px;
+  --text-max:620px;
+  --font-display:"Archivo Black", "Arial Black", system-ui, sans-serif;
+  --font-body:Manrope, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+html,body{margin:0;background:#070708}
+
+/* BRAVO ACADEMY — componentes (mobile-first, 390px base). Valores de marca: tokens.json. */
+:root{
+  --ease:cubic-bezier(.16,1,.3,1);
+  --t-micro:200ms; --t-media:600ms;
+}
+.ba, .ba *{box-sizing:border-box}
+.ba{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:26px;font-weight:500;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip}
+.ba img{max-width:100%;display:block}
+.ba a{color:inherit}
+.ba :focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:6px}
+.ba-skip{position:absolute;left:-999px;top:8px;z-index:100;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:var(--radius-pill);font-weight:800}
+.ba-skip:focus{left:12px}
+.ba-wrap{width:100%;max-width:var(--content-max);margin:0 auto;padding:0 var(--space-5)}
+.ba-section{padding:var(--space-18) 0;position:relative;border-top:1px solid var(--line)}
+.ba-section--alt{background:var(--surface-1)}
+.ba-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Tipografía ---------- */
+.ba-h1{font-family:var(--font-display);font-weight:400;font-size:clamp(40px,10.6vw,76px);line-height:.98;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.ba-h2{font-family:var(--font-display);font-weight:400;font-size:clamp(30px,8.4vw,56px);line-height:1.02;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.ba-h3{font-family:var(--font-display);font-weight:400;font-size:24px;line-height:1.08;margin:0}
+.ba-title{font-size:20px;line-height:28px;font-weight:800;margin:0}
+.ba-lede{font-size:18px;line-height:28px;color:var(--ink-soft);max-width:var(--text-max);margin:var(--space-4) 0 0;text-wrap:pretty}
+.ba-small{font-size:14px;line-height:22px;font-weight:600;color:var(--muted)}
+.ba-mag{color:var(--magenta)}
+.ba-glowtext{color:var(--magenta);text-shadow:0 0 .35em rgba(255,10,108,.55)}
+.ba-eyebrow{font-family:var(--font-mono);font-size:12px;line-height:16px;letter-spacing:.28em;text-transform:uppercase;color:var(--rosa);
+  display:flex;align-items:center;gap:var(--space-3);margin:0 0 var(--space-4)}
+.ba-eyebrow::before{content:"";width:28px;height:1px;background:var(--magenta);flex:none}
+.ba-head{margin-bottom:var(--space-8)}
+
+/* ---------- Wordmark ---------- */
+.ba-wm{font-family:var(--font-display);font-weight:400;display:inline-flex;align-items:baseline;line-height:.84;letter-spacing:-.01em;white-space:nowrap}
+.ba-wm .w{color:var(--ink)}
+.ba-wm .brk{color:var(--magenta);text-shadow:0 0 .06em rgba(255,10,108,.7),0 0 .22em rgba(255,77,148,.45)}
+.ba-wm .o{background:linear-gradient(180deg,#ffd0e4 0%,var(--rosa) 34%,var(--magenta) 74%,var(--ciruela) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 .08em rgba(255,10,108,.6))}
+.ba-wm .acad{color:var(--ink);margin-left:.32em;font-size:.62em;letter-spacing:.06em}
+.ba-tagline{font-family:var(--font-mono);font-size:14px;line-height:20px;letter-spacing:.08em;color:var(--ink)}
+.ba-tagline .br{color:var(--rosa);font-weight:700}
+.ba-tagline .cur{color:var(--magenta);font-weight:700;animation:ba-blink 1.15s step-end infinite}
+@keyframes ba-blink{0%,55%{opacity:1}56%,100%{opacity:0}}
+
+/* ---------- Botones ---------- */
+.ba-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:var(--tap-min);padding:0 var(--space-6);
+  border-radius:var(--radius-pill);font-family:var(--font-body);font-size:16px;line-height:20px;font-weight:800;text-decoration:none;cursor:pointer;
+  border:1px solid transparent;transition:transform var(--t-micro) var(--ease),box-shadow var(--t-micro) var(--ease),background-color var(--t-micro) var(--ease),border-color var(--t-micro) var(--ease)}
+.ba-btn--primary{background:var(--magenta-accion);color:var(--on-magenta);box-shadow:var(--glow-sm)}
+.ba-btn--primary:hover{transform:translateY(-1px);box-shadow:0 0 36px rgba(255,10,108,.55)}
+.ba-btn--ghost{background:transparent;color:var(--ink);border-color:var(--line-strong)}
+.ba-btn--ghost:hover{border-color:var(--rosa);background:var(--surface-2)}
+.ba-btn--wa{background:var(--whatsapp);color:var(--on-whatsapp)}
+.ba-btn--lg{min-height:56px;font-size:18px;padding:0 var(--space-8)}
+.ba-btn--block{width:100%}
+.ba-btn:active{transform:translateY(1px)}
+.ba-btn svg{width:20px;height:20px;flex:none}
+.ba-ctas{display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-8)}
+
+/* ---------- Insignias / chips / en vivo ---------- */
+.ba-chips{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-6);padding:0;list-style:none}
+.ba-chip{display:inline-flex;align-items:center;gap:var(--space-2);min-height:36px;padding:0 14px;border:1px solid var(--line-strong);border-radius:var(--radius-pill);
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--ink);background:rgba(7,7,8,.6)}
+.ba-chip::before{content:"✦";color:var(--rosa)}
+.ba-chip--plain::before{content:none}
+.ba-live{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+.ba-live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--magenta);box-shadow:var(--glow-sm);animation:ba-pulse 1.8s var(--ease) infinite}
+@keyframes ba-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+
+/* ---------- Header ---------- */
+.ba-header{position:sticky;top:0;z-index:40;height:var(--header-h);display:flex;align-items:center;
+  background:rgba(7,7,8,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.ba-header .ba-wrap{display:flex;align-items:center;gap:var(--space-4)}
+.ba-brand{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:auto;min-height:var(--tap-min)}
+.ba-brand img{height:34px;width:auto;filter:drop-shadow(0 0 10px rgba(255,10,108,.4))}
+.ba-brand .ba-wm{font-size:22px}
+.ba-nav{display:none}
+.ba-nav a{text-decoration:none;font-size:15px;font-weight:700;color:var(--ink-soft);padding:12px 4px;transition:color var(--t-micro) var(--ease)}
+.ba-nav a:hover{color:var(--ink)}
+.ba-header .ba-btn{display:none;min-height:44px;font-size:15px;padding:0 18px}
+.ba-burger{width:48px;height:48px;display:grid;place-items:center;background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-pill);color:var(--ink);cursor:pointer}
+.ba-burger span{display:block;width:18px;height:2px;background:currentColor;position:relative;transition:transform var(--t-micro) var(--ease)}
+.ba-burger span::before,.ba-burger span::after{content:"";position:absolute;left:0;width:18px;height:2px;background:currentColor;transition:transform var(--t-micro) var(--ease),top var(--t-micro) var(--ease)}
+.ba-burger span::before{top:-6px}.ba-burger span::after{top:6px}
+.ba-burger[aria-expanded="true"] span{background:transparent}
+.ba-burger[aria-expanded="true"] span::before{top:0;transform:rotate(45deg)}
+.ba-burger[aria-expanded="true"] span::after{top:0;transform:rotate(-45deg)}
+.ba-menu{position:fixed;inset:var(--header-h) 0 0 0;z-index:47;background:var(--bg);padding:var(--space-8) var(--space-5);display:flex;flex-direction:column;gap:var(--space-2);
+  opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity var(--t-micro) var(--ease),transform var(--t-micro) var(--ease),visibility 0s linear var(--t-micro)}
+.ba-menu.is-open{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+.ba-menu a:not(.ba-btn){font-family:var(--font-display);font-size:28px;line-height:1.1;text-decoration:none;padding:12px 0;border-bottom:1px solid var(--line)}
+.ba-menu .ba-btn{margin-top:var(--space-6)}
+
+/* ---------- Hero ---------- */
+.ba-hero{position:relative;padding:var(--space-12) 0 var(--space-18);overflow:hidden}
+.ba-hero::before{content:"";position:absolute;width:560px;height:560px;right:-220px;top:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,10,108,.22),rgba(92,0,41,.18) 45%,transparent 70%);pointer-events:none}
+.ba-hero .ba-wrap{position:relative;display:grid;gap:var(--space-12)}
+.ba-hero .ba-lede{font-size:18px}
+.ba-hero .ba-live{margin-bottom:var(--space-6)}
+
+/* ---------- Video 9:16 ---------- */
+.ba-video{position:relative;width:min(78vw,360px);margin:0 auto;aspect-ratio:9/16;border-radius:var(--radius-lg);overflow:hidden;
+  background:var(--surface-2) center/cover no-repeat;border:1px solid var(--line-strong);box-shadow:var(--glow-lg);isolation:isolate}
+.ba-video video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ba-video__play{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(180deg,transparent 55%,rgba(7,7,8,.85));border:0;color:var(--ink);cursor:pointer;width:100%}
+.ba-video__btn{width:76px;height:76px;border-radius:50%;background:var(--magenta-accion);display:grid;place-items:center;box-shadow:0 0 0 10px rgba(255,10,108,.18),var(--glow-sm);
+  transition:transform var(--t-micro) var(--ease)}
+.ba-video.is-playing .ba-video__btn{width:48px;height:48px;box-shadow:none;background:rgba(7,7,8,.6);border:1px solid var(--line-strong);position:absolute;top:var(--space-4);right:var(--space-4)}
+.ba-video.is-playing .ba-video__btn svg{width:18px;height:18px;margin-left:2px}
+.ba-video.is-playing .ba-video__play{background:none}
+.ba-video__snd{display:none}
+.ba-video.is-playing:not(.is-sound) .ba-video__snd{display:block;position:absolute;top:calc(var(--space-4) + 14px);right:calc(var(--space-4) + 56px);font-family:var(--font-mono);font-size:12px;color:var(--ink);letter-spacing:.08em;background:rgba(7,7,8,.6);padding:4px 10px;border-radius:999px}
+.ba-video video{background:var(--bg)}
+.ba-video__play:hover .ba-video__btn{transform:scale(1.06)}
+.ba-video__btn svg{width:28px;height:28px;margin-left:4px;fill:var(--on-magenta)}
+.ba-video__meta{position:absolute;left:var(--space-4);right:var(--space-4);bottom:var(--space-4);display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;color:var(--ink);pointer-events:none}
+.ba-video__corner{position:absolute;top:var(--space-4);left:var(--space-4);font-family:var(--font-mono);font-size:12px;color:var(--ink);letter-spacing:.08em;pointer-events:none}
+
+/* ---------- Gancho ---------- */
+.ba-hook{padding:var(--space-12) 0}
+.ba-hook__q{min-height:52svh;display:flex;align-items:center;margin:0}
+.ba-hook__q .ba-h2{font-size:clamp(34px,9.4vw,72px)}
+.ba-hook__q .q{color:var(--magenta)}
+.ba-hook__close{min-height:60svh;display:flex;flex-direction:column;justify-content:center;gap:var(--space-4);text-align:left}
+.ba-hook__close .ba-h2{font-size:clamp(36px,10vw,80px)}
+
+/* ---------- Carril / mockups ---------- */
+.ba-rail{display:grid;grid-auto-flow:column;grid-auto-columns:62%;gap:var(--space-4);overflow-x:auto;scroll-snap-type:x mandatory;
+  padding:4px var(--space-5) var(--space-6);margin:0 calc(var(--space-5) * -1);scrollbar-width:none;list-style:none}
+.ba-rail::-webkit-scrollbar{display:none}
+.ba-rail > *{scroll-snap-align:center}
+.ba-mock{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--space-3);margin:0;
+  transition:transform var(--t-micro) var(--ease),border-color var(--t-micro) var(--ease),box-shadow var(--t-micro) var(--ease)}
+.ba-mock:hover{transform:translateY(-4px);border-color:rgba(255,77,148,.5);box-shadow:var(--lift)}
+.ba-mock__screen{border-radius:var(--radius-sm);overflow:hidden;background:#fbf7f3;color:#1b1418;aspect-ratio:540/1168;display:flex;flex-direction:column}
+.ba-mock__screen img{width:100%;flex:1;min-height:0;object-fit:cover;object-position:top}
+.ba-mock__bar{display:flex;align-items:center;gap:5px;padding:7px 9px;background:#ece5e9;flex:none}
+.ba-mock__bar i{width:7px;height:7px;border-radius:50%;background:#c9bcc3}
+.ba-mock__bar b{margin-left:6px;flex:1;background:#fff;border-radius:6px;font:600 9px/16px var(--font-mono);color:#6b5d65;padding:0 7px;overflow:hidden;white-space:nowrap}
+.ba-mock__body{padding:12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.ba-mock figcaption{padding:var(--space-4) var(--space-2) var(--space-2)}
+.ba-mock figcaption .ba-title{font-size:18px;line-height:24px}
+.ba-mock figcaption p{margin:4px 0 0;color:var(--ink-soft);font-size:15px;line-height:22px}
+/* piezas internas de los mockups (ilustrativas) */
+.m-h{font:400 17px/1.05 var(--font-display);margin:0}
+.m-row{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed #d8ccd2;font-weight:700}
+.m-row span:last-child{font-family:var(--font-mono);font-weight:700}
+.m-btn{margin-top:auto;border-radius:999px;padding:8px 10px;text-align:center;font-weight:800;font-size:11px}
+.m-btn--wa{background:#25d366;color:#07140c}
+.m-btn--dark{background:#1b1418;color:#fff}
+.m-btn--mag{background:#e00860;color:#fff}
+.m-tags{display:flex;flex-wrap:wrap;gap:4px}
+.m-tags span{border:1px solid #cdbfc6;border-radius:999px;padding:1px 7px;font-weight:700;font-size:10px}
+.m-line{height:6px;border-radius:3px;background:#e1d6dc}
+.m-avatar{width:42px;height:42px;border-radius:50%;background:#1b1418;color:#fbf7f3;display:grid;place-items:center;font:400 14px var(--font-display)}
+.m-dark{background:#140d12;color:#fbf7f3}
+.m-dark .m-row{border-color:#3a2a33}
+.m-banner{border-radius:8px;padding:14px 10px;background:#5c0029;color:#fdf7fa;position:relative;overflow:hidden}
+.m-banner::after{content:"✦  ✦\A  ✦";white-space:pre;position:absolute;right:10px;top:8px;color:#ff4d94;font-size:12px;line-height:1.3}
+.m-maze{flex:1;display:grid;grid-template-columns:repeat(9,1fr);gap:3px;background:#0b0710;border-radius:8px;padding:8px}
+.m-maze i{aspect-ratio:1;border-radius:2px}
+.m-maze .w{background:#5c0029}
+.m-maze .d{background:radial-gradient(circle,#fdf7fa 22%,transparent 26%)}
+.m-maze .p{background:#ff0a6c;border-radius:50%;box-shadow:0 0 8px #ff0a6c}
+.m-maze .g{background:#ff4d94;border-radius:50% 50% 2px 2px}
+.ba-phrase{margin-top:var(--space-8);font-family:var(--font-display);font-size:clamp(22px,6vw,36px);line-height:1.1;max-width:22ch}
+
+/* ---------- Checklist ✦ ---------- */
+.ba-check{list-style:none;padding:0;margin:0;display:grid;gap:var(--space-2)}
+.ba-check li{position:relative;padding:var(--space-4) var(--space-4) var(--space-4) 52px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-md);font-size:17px;line-height:26px;font-weight:600}
+.ba-check li::before{content:"✦";position:absolute;left:18px;top:15px;color:var(--magenta);font-size:20px;text-shadow:0 0 12px rgba(255,10,108,.6)}
+.ba-check li small{display:block;font-size:14px;line-height:22px;font-weight:500;color:var(--ink-soft);margin-top:2px}
+
+/* ---------- Tarjetas (para quién) ---------- */
+.ba-cards{display:grid;gap:var(--space-3)}
+.ba-card{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--space-6);
+  transition:transform var(--t-micro) var(--ease),border-color var(--t-micro) var(--ease),background-color var(--t-micro) var(--ease)}
+.ba-card:hover{transform:translateY(-3px);border-color:rgba(255,77,148,.45);background:var(--surface-3)}
+.ba-card__idx{font-family:var(--font-mono);font-size:12px;letter-spacing:.2em;color:var(--rosa);display:block;margin-bottom:var(--space-3)}
+.ba-card p{margin:var(--space-2) 0 0;color:var(--ink-soft)}
+.ba-card{display:flex;flex-direction:column}
+.ba-card__cta{margin-top:auto;padding-top:var(--space-4);min-height:var(--tap-min);display:inline-flex;align-items:flex-end;color:var(--rosa);font-weight:800;text-decoration:none}
+.ba-card__cta:hover{color:var(--ink)}
+.ba-midcta{padding:var(--space-8) 0;text-align:center;border-top:1px solid var(--line)}
+.ba-surprise .ba-wrap{min-height:36svh;display:flex;align-items:center}
+.ba-note{margin-top:var(--space-6);color:var(--ink-soft);font-size:16px}
+.ba-quote{margin:var(--space-12) 0 0;padding:0;font-family:var(--font-display);font-size:clamp(24px,6.6vw,40px);line-height:1.1;max-width:24ch}
+.ba-quote::before{content:"“";display:block;color:var(--magenta);font-size:1.8em;line-height:.6;margin-bottom:8px}
+
+/* ---------- Pasos (cómo funciona) ---------- */
+.ba-steps{list-style:none;padding:0;margin:0;counter-reset:s;position:relative}
+.ba-steps::before{content:"";position:absolute;left:23px;top:24px;bottom:24px;width:1px;background:linear-gradient(var(--magenta),var(--ciruela))}
+.ba-steps > li{counter-increment:s;position:relative;padding:0 0 var(--space-8) 72px;min-height:48px}
+.ba-steps > li::before{content:counter(s);position:absolute;left:0;top:0;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+  background:var(--bg);border:1px solid var(--magenta);color:var(--magenta);font:400 18px var(--font-display);box-shadow:var(--glow-sm)}
+.ba-steps > li:last-child{padding-bottom:0}
+.ba-steps .ba-title{padding-top:10px}
+.ba-steps p{margin:var(--space-1) 0 0;color:var(--ink-soft)}
+.ba-dates{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-3);padding:0;list-style:none}
+.ba-date{display:flex;flex-direction:column;align-items:center;min-width:68px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface-2)}
+.ba-date b{font:400 24px/1 var(--font-display);color:var(--ink)}
+.ba-date span{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--rosa);margin-top:4px;text-transform:uppercase}
+.ba-closing{margin-top:var(--space-12);font-family:var(--font-display);font-size:clamp(24px,6.4vw,40px);line-height:1.1}
+
+/* ---------- Línea de tiempo de la sesión ---------- */
+.ba-timeline{list-style:none;padding:0;margin:0;display:grid;gap:0;border-left:1px solid var(--line-strong);margin-left:6px}
+.ba-timeline li{position:relative;display:grid;grid-template-columns:52px 1fr;gap:var(--space-3);padding:10px 0 10px 20px;font-weight:600}
+.ba-timeline li::before{content:"";position:absolute;left:-5px;top:17px;width:9px;height:9px;border-radius:50%;background:var(--surface-3);border:1px solid var(--rosa)}
+.ba-timeline time{font-family:var(--font-mono);font-size:13px;color:var(--rosa);padding-top:1px}
+.ba-timeline .is-key::before{background:var(--magenta);border-color:var(--magenta);box-shadow:var(--glow-sm)}
+.ba-timeline .is-break{color:var(--muted)}
+
+/* ---------- Garantía ---------- */
+.ba-guarantee{position:relative;border-radius:var(--radius-lg);padding:var(--space-8) var(--space-6);background:var(--ciruela-profunda);border:1px solid rgba(255,10,108,.45);
+  box-shadow:var(--glow-lg);overflow:hidden;isolation:isolate}
+.ba-guarantee::before{content:"";position:absolute;inset:-40% -20% auto auto;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(255,10,108,.35),transparent 65%);z-index:-1}
+.ba-guarantee .ba-h2{font-size:clamp(34px,9.6vw,64px)}
+.ba-guarantee ol{list-style:none;padding:0;margin:var(--space-8) 0 0;display:grid;gap:var(--space-3);counter-reset:g}
+.ba-guarantee ol li{counter-increment:g;display:grid;grid-template-columns:48px 1fr;gap:var(--space-4);align-items:start;padding:var(--space-4);border-radius:var(--radius-md);background:rgba(7,7,8,.55);border:1px solid var(--line);font-size:17px;line-height:26px;font-weight:600}
+.ba-guarantee ol li::before{content:counter(g);font:400 40px/1 var(--font-display);color:var(--magenta);text-shadow:0 0 18px rgba(255,10,108,.6)}
+.ba-guarantee__fallback{margin:var(--space-6) 0 0;color:var(--ink-soft)}
+
+/* ---------- El constructor ---------- */
+.ba-builder{display:grid;gap:var(--space-8);align-items:center}
+.ba-photo{position:relative;aspect-ratio:4/5;width:min(100%,360px);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface-2);border:1px solid var(--line-strong)}
+.ba-photo img{width:100%;height:100%;object-fit:cover}
+.ba-photo__slot{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);color:var(--muted);font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  background:repeating-linear-gradient(135deg,transparent 0 14px,rgba(253,247,250,.03) 14px 15px)}
+.ba-photo__slot img{width:96px;height:auto;opacity:.9}
+.ba-builder blockquote{margin:var(--space-6) 0 0;padding-left:var(--space-4);border-left:2px solid var(--magenta);font-size:18px;line-height:28px;color:var(--ink)}
+.ba-builder .ba-sign{margin-top:var(--space-4);font-family:var(--font-mono);font-size:13px;color:var(--muted);letter-spacing:.06em}
+
+/* ---------- Tabla de inversión ---------- */
+.ba-price{border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface-1)}
+.ba-price__group{padding:var(--space-6);border-bottom:1px solid var(--line)}
+.ba-price__head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:var(--space-2) var(--space-4)}
+.ba-price__amt{font:400 28px/1 var(--font-display);white-space:nowrap}
+.ba-price__amt small{display:block;text-align:right;font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.06em}
+.ba-price__group p{margin:var(--space-2) 0 0;color:var(--ink-soft);font-size:15px;line-height:24px}
+.ba-price__rows{list-style:none;padding:0;margin:var(--space-4) 0 0;display:grid}
+.ba-price__rows li{display:flex;justify-content:space-between;gap:var(--space-4);padding:10px 0;border-top:1px dashed var(--line-strong);font-size:15px;color:var(--ink-soft)}
+.ba-price__rows li span:last-child{font-family:var(--font-mono);color:var(--ink);white-space:nowrap}
+.ba-price__tag{display:inline-block;margin-top:var(--space-2);font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--rosa)}
+.ba-price__total{padding:var(--space-6);background:var(--ciruela-profunda);display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-4);box-shadow:inset 0 1px 0 rgba(255,10,108,.5)}
+.ba-price__total .ba-price__amt{white-space:normal;font-size:clamp(28px,8vw,44px);color:var(--ink);text-shadow:0 0 22px rgba(255,10,108,.55)}
+.ba-fine{margin:var(--space-4) 0 0;padding:0;list-style:none;display:grid;gap:var(--space-2)}
+.ba-fine li{font-size:14px;line-height:22px;color:var(--ink-soft);padding-left:18px;position:relative}
+.ba-fine li::before{content:"·";position:absolute;left:4px;color:var(--rosa);font-weight:800}
+
+/* ---------- Requisitos ---------- */
+.ba-needs{list-style:none;padding:0;margin:0;display:grid;gap:var(--space-2)}
+.ba-needs li{display:grid;grid-template-columns:44px 1fr;gap:var(--space-3);align-items:start;padding:var(--space-4);border-bottom:1px solid var(--line)}
+.ba-needs svg{width:28px;height:28px;stroke:var(--rosa);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin-top:2px}
+.ba-needs b{display:block;font-weight:800}
+.ba-needs span{color:var(--ink-soft);font-size:15px;line-height:23px}
+.ba-age{margin-top:var(--space-6);font-size:14px;line-height:22px;color:var(--muted)}
+
+/* ---------- Acordeón ---------- */
+.ba-acc{display:grid;gap:var(--space-2)}
+.ba-acc details{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-md);transition:border-color var(--t-micro) var(--ease)}
+.ba-acc details[open]{border-color:rgba(255,77,148,.45);background:var(--surface-3)}
+.ba-acc summary{list-style:none;cursor:pointer;min-height:var(--tap-min);padding:var(--space-4) 56px var(--space-4) var(--space-6);position:relative;font-size:17px;line-height:26px;font-weight:800}
+.ba-acc summary::-webkit-details-marker{display:none}
+.ba-acc summary::after{content:"";position:absolute;right:20px;top:50%;width:14px;height:14px;margin-top:-7px;
+  background:linear-gradient(var(--magenta),var(--magenta)) center/14px 2px no-repeat,linear-gradient(var(--magenta),var(--magenta)) center/2px 14px no-repeat;transition:transform var(--t-micro) var(--ease)}
+.ba-acc details[open] summary::after{transform:rotate(45deg)}
+.ba-acc details > div{padding:0 var(--space-6) var(--space-6);color:var(--ink-soft)}
+.ba-acc details > div p{margin:0}
+
+/* ---------- Cierre / Reserva ---------- */
+.ba-reserve{position:relative;text-align:left;border-radius:var(--radius-lg);padding:var(--space-12) var(--space-6);background:var(--ciruela-profunda);border:1px solid rgba(255,10,108,.45);box-shadow:var(--glow-lg);overflow:hidden;isolation:isolate}
+.ba-reserve::before{content:"";position:absolute;left:50%;top:-180px;width:520px;height:520px;margin-left:-260px;border-radius:50%;background:radial-gradient(circle,rgba(255,10,108,.32),transparent 65%);z-index:-1}
+.ba-reserve > .ba-btn{width:100%}
+.ba-reserve__hat{width:84px;margin-bottom:var(--space-6);filter:drop-shadow(0 0 20px rgba(255,10,108,.55))}
+.ba-reserve ol{list-style:none;padding:0;margin:var(--space-8) 0;display:grid;gap:var(--space-2);counter-reset:r}
+.ba-reserve ol li{counter-increment:r;display:flex;gap:var(--space-3);align-items:baseline;font-weight:700}
+.ba-reserve ol li::before{content:counter(r) ".";font-family:var(--font-mono);color:var(--rosa);min-width:20px}
+.ba-ask{margin-top:var(--space-6);display:flex;align-items:center;gap:var(--space-2);background:var(--bg);border:1px solid var(--line-strong);border-radius:var(--radius-pill);padding:4px 4px 4px 20px;transition:border-color var(--t-micro) var(--ease),box-shadow var(--t-micro) var(--ease)}
+.ba-ask:focus-within{border-color:var(--rosa);box-shadow:0 0 0 3px rgba(255,77,148,.25)}
+.ba-ask label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.ba-ask input{flex:1;min-width:0;min-height:48px;background:transparent;border:0;color:var(--ink);font:500 16px var(--font-body);outline:none}
+.ba-ask input::placeholder{color:var(--muted)}
+.ba-ask button{width:48px;height:48px;flex:none;border-radius:50%;border:0;background:var(--magenta-accion);color:var(--on-magenta);display:grid;place-items:center;cursor:pointer}
+.ba-ask button svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2}
+
+/* ---------- Footer ---------- */
+.ba-footer{padding:var(--space-12) 0 calc(var(--bar-h) + var(--space-12));border-top:1px solid var(--line);background:var(--bg)}
+.ba-footer .ba-wm{font-size:30px}
+.ba-footer .ba-tagline{display:block;margin-top:var(--space-4)}
+.ba-footer nav{display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-6);margin:var(--space-8) 0}
+.ba-footer nav a{text-decoration:none;color:var(--ink-soft);font-weight:700;min-height:var(--tap-min);display:inline-flex;align-items:center}
+.ba-footer nav a:hover{color:var(--ink)}
+
+/* ---------- Fijos: barra de reserva + WhatsApp ---------- */
+.ba-bar{position:fixed;left:0;right:0;bottom:0;z-index:45;padding:10px var(--space-4) calc(10px + env(safe-area-inset-bottom));
+  background:rgba(7,7,8,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;align-items:center;gap:var(--space-3)}
+.ba-bar__info{display:none}
+.ba-bar .ba-btn{flex:1}
+.ba-fab{position:fixed;right:var(--space-4);bottom:calc(var(--bar-h) + 14px + env(safe-area-inset-bottom));z-index:46;width:56px;height:56px;border-radius:50%;background:var(--whatsapp);color:var(--on-whatsapp);
+  display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:transform var(--t-micro) var(--ease)}
+.ba-fab:hover{transform:scale(1.06)}
+.ba-fab svg{width:28px;height:28px}
+.ba-static .ba-bar,.ba-static .ba-fab{position:absolute}
+
+/* ---------- Reveal ---------- */
+.ba-js .ba-reveal{opacity:0;transform:translateY(24px);transition:opacity var(--t-media) var(--ease),transform var(--t-media) var(--ease)}
+.ba-js .ba-reveal.is-in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .ba-js .ba-reveal{opacity:1;transform:none;transition:none}
+  .ba *,.ba *::before,.ba *::after{animation:none!important;transition:none!important}
+}
+
+/* ---------- Tablet / escritorio ---------- */
+@media (min-width:600px){
+  .ba-wrap{padding:0 32px}
+  .ba-ctas{flex-direction:row;flex-wrap:wrap}
+  .ba-cards{grid-template-columns:1fr 1fr}
+  .ba-rail{grid-auto-columns:34%}
+  .ba-bar{left:50%;right:auto;bottom:16px;transform:translateX(-50%);border:1px solid var(--line-strong);border-radius:var(--radius-pill);padding:8px 8px 8px 22px;box-shadow:var(--lift);width:max-content}
+  .ba-bar__info{display:inline-flex}
+  .ba-bar .ba-btn{flex:none}
+  .ba-fab{bottom:20px;right:20px}
+  .ba-guarantee,.ba-reserve{padding:var(--space-12)}
+  .ba-reserve > .ba-btn{width:auto}
+}
+@media (min-width:960px){
+  .ba-section{padding:var(--space-30) 0}
+  .ba-nav{display:flex;gap:var(--space-6)}
+  .ba-header .ba-btn{display:inline-flex}
+  .ba-burger,.ba-menu{display:none}
+  .ba-hero{padding:var(--space-18) 0 var(--space-30);min-height:calc(100svh - var(--header-h));display:flex;align-items:center}
+  .ba-hero .ba-wrap{grid-template-columns:1.25fr .75fr;align-items:center;gap:64px}
+  .ba-video{width:100%;max-width:360px}
+  .ba-rail{grid-auto-columns:21%}
+  .ba-cards--4{grid-template-columns:repeat(4,1fr)}
+  .ba-cards--3{grid-template-columns:repeat(3,1fr)}
+  .ba-split{display:grid;grid-template-columns:.9fr 1.1fr;gap:80px;align-items:start}
+  .ba-split > .ba-head{position:sticky;top:calc(var(--header-h) + 32px)}
+  .ba-builder{grid-template-columns:360px 1fr;gap:80px}
+  .ba-guarantee ol{grid-template-columns:repeat(3,1fr)}
+  .ba-price__total{flex-direction:row;justify-content:space-between;align-items:center}
+  .ba-guarantee ol li{grid-template-columns:1fr}
+  .ba-hook__q{min-height:64vh}
+  .ba-reserve{text-align:center;padding:96px 64px}
+  .ba-reserve .ba-reserve > .ba-btn{width:100%}
+.ba-reserve__hat{margin:0 auto var(--space-6)}
+  .ba-reserve ol{grid-template-columns:repeat(4,1fr);text-align:left;gap:var(--space-4)}
+  .ba-reserve .ba-lede{margin-left:auto;margin-right:auto}
+  .ba-ask{max-width:560px;margin-left:auto;margin-right:auto}
+}
+
+</style>
+</head>
+<body>
+<div id="app" class="ba"><noscript><p style="padding:24px">BRAVO ACADEMY · Aprende IA en 3 horas. Sal con tu web publicada. Escríbeme por WhatsApp para reservar.</p></noscript></div>
+<script>
+/* ====== EDITA AQUÍ: número, fechas, video y foto ====== */
+window.BA_CONFIG = {
+  whatsapp: '51954708174',          // ej. '51987654321'
+  email: 'phillyps@outlook.com',
+  linkedin: 'https://pe.linkedin.com/in/phillyps',
+  mesRepaso: 'octubre', sabados: [['17','Sáb'],['24','Sáb'],['31','Sáb']],
+  video: 'video/bravo-academy-truco.mp4',
+  foto: 'img/phillyps.webp',
+  img: { hat: 'img/sombrero-voltaje.webp', poster: 'img/hero-poster.webp' }
+};
+</script>
+<script>
+/* BRAVO ACADEMY — secciones de la landing como funciones (HTML estático) + comportamiento.
+   window.BravoAcademy = { config, sections, render(el, cfg), init(el), wa(msg) }
+   Edita montos, fechas, número y textos en CONFIG (o pasa window.BA_CONFIG antes de cargar). */
+(function () {
+  var CONFIG = {
+    whatsapp: '51954708174',              // solo dígitos con código de país, ej. 51987654321
+    email: 'phillyps@outlook.com',
+    linkedin: 'https://pe.linkedin.com/in/phillyps',
+    bravoUrl: 'https://phillyps-bravo.vercel.app/',
+    mesRepaso: 'octubre',
+    sabados: [['17', 'Sáb'], ['24', 'Sáb'], ['31', 'Sáb']],
+    video: 'video/bravo-academy-truco.mp4',                       // URL del video vertical (mp4). Vacío = solo poster.
+    videoDuracion: '0:45',
+    foto: 'img/phillyps.webp',          // foto de Phillyps (400x400: reemplazar por una de mayor resolución)
+    img: {
+      hat: 'img/sombrero-voltaje.webp',
+      poster: 'img/hero-poster.webp'
+    },
+    msgReserva: 'Hola, quiero reservar mi cupo en BRAVO ACADEMY',
+    msgInfo: 'Hola, quiero información de BRAVO ACADEMY',
+    msgDetalle: 'Hola, quiero el detalle de BRAVO ACADEMY'
+  };
+
+  function merge(a, b) { var o = {}, k; for (k in a) o[k] = a[k]; for (k in (b || {})) o[k] = b[k]; if (b && b.img) { o.img = {}; for (k in a.img) o.img[k] = a.img[k]; for (k in b.img) o.img[k] = b.img[k]; } return o; }
+  function wa(c, msg) { var n = String(c.whatsapp).replace(/\D/g, ''); return 'https://wa.me/' + (n || '') + '?text=' + encodeURIComponent(msg); }
+
+  var I = {
+    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>',
+    wa: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2.2A9.8 9.8 0 0 0 3.6 17l-1.3 4.8 4.9-1.3A9.8 9.8 0 1 0 12 2.2Zm0 17.8c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.3-.4.8-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1c0 1.2.9 2.4 1 2.6.1.2 1.8 2.8 4.4 3.9 1.7.7 2.3.8 3.1.6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.4-.3Z"/></svg>',
+    arrow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+    pc: '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="22" height="14" rx="2"/><path d="M2 25h28"/></svg>',
+    mail: '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="7" width="24" height="18" rx="2"/><path d="m5 9 11 8 11-8"/></svg>',
+    wifi: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 12a17 17 0 0 1 24 0M8 16.5a11 11 0 0 1 16 0M12 21a5 5 0 0 1 8 0"/><circle cx="16" cy="25" r="1.2"/></svg>',
+    card: '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="8" width="24" height="16" rx="2"/><path d="M4 13h24M8 19h6"/></svg>',
+    spark: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4c.8 6.4 5.6 11.2 12 12-6.4.8-11.2 5.6-12 12-.8-6.4-5.6-11.2-12-12 6.4-.8 11.2-5.6 12-12Z"/></svg>',
+    pencil: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="m6 26 1.5-5.5L21 7a2.8 2.8 0 0 1 4 4L11.5 24.5Z"/><path d="m19 9 4 4"/></svg>'
+  };
+
+  function wm(acad) { return '<span class="ba-wm"><span class="w">BRAV</span><span class="brk">[</span><span class="o">O</span><span class="brk">]</span>' + (acad ? '<span class="acad">ACADEMY</span>' : '') + '</span>'; }
+  function tagline() { return '<span class="ba-tagline"><span class="br">&lt;</span> Hacemos que funcione<span class="cur">_</span> <span class="br">&gt;</span></span>'; }
+  function btn(c, label, opts) { opts = opts || {}; return '<a class="ba-btn ' + (opts.cls || 'ba-btn--primary') + '" href="' + (opts.href || wa(c, c.msgReserva)) + '"' + (opts.href && opts.href.charAt(0) === '#' ? '' : ' target="_blank" rel="noopener"') + '>' + (opts.icon || '') + label + '</a>'; }
+  function eyebrow(t) { return '<p class="ba-eyebrow">' + t + '</p>'; }
+
+  var NAV = [['#crear', 'Qué crearás'], ['#garantia', 'Garantía'], ['#preguntas', 'Preguntas']];
+
+  var S = {};
+  S.header = function (c) {
+    var links = NAV.map(function (n) { return '<a href="' + n[0] + '">' + n[1] + '</a>'; }).join('');
+    return '<header class="ba-header"><div class="ba-wrap">' +
+      '<a class="ba-brand" href="#top" aria-label="BRAVO ACADEMY, inicio"><img src="' + c.img.hat + '" alt="" width="26" height="34">' + wm(true) + '</a>' +
+      '<nav class="ba-nav" aria-label="Principal">' + links + '</nav>' + btn(c, 'Reserva tu fecha') +
+      '<button class="ba-burger" type="button" aria-expanded="false" aria-controls="ba-menu" aria-label="Abrir menú"><span></span></button>' +
+      '</div></header>' +
+      '<nav class="ba-menu" id="ba-menu" aria-label="Menú">' + links + btn(c, 'Reserva tu fecha', { cls: 'ba-btn--primary ba-btn--lg ba-btn--block' }) + '</nav>';
+  };
+  S.video = function (c) {
+    return '<div class="ba-video" style="background-image:url(\'' + c.img.poster + '\')" data-video="' + (c.video || '') + '">' +
+      '<span class="ba-video__corner">' + wm(false).replace('class="ba-wm"', 'class="ba-wm" style="font-size:16px"') + '</span>' +
+      '<button class="ba-video__play" type="button" aria-label="Activar sonido del video"><span class="ba-video__btn">' + I.play + '</span><span class="ba-video__snd">Activar sonido</span></button>' +
+      '<div class="ba-video__meta"><span class="ba-live">Mírame primero</span><span>' + c.videoDuracion + '</span></div></div>';
+  };
+  S.hero = function (c) {
+    return '<section class="ba-hero" id="top" aria-labelledby="ba-h1"><div class="ba-wrap"><div class="ba-reveal">' +
+      '<span class="ba-live">Cupos de ' + c.mesRepaso + ' abiertos</span>' +
+      '<h1 class="ba-h1" id="ba-h1">Aprende IA en <span class="ba-glowtext">3 horas.</span> Sal con tu web publicada.</h1>' +
+      '<p class="ba-lede">En tu casa o en tu negocio. Sin saber programar. Es más simple de lo que crees.</p>' +
+      '<div class="ba-ctas">' + btn(c, 'Reserva tu fecha', { cls: 'ba-btn--primary ba-btn--lg' }) + btn(c, 'Ver cómo funciona', { cls: 'ba-btn--ghost ba-btn--lg', href: '#como' }) + '</div>' +
+      '<ul class="ba-chips"><li class="ba-chip">3 horas en tu casa</li><li class="ba-chip">Tu .com publicado</li><li class="ba-chip">1 mes de acompañamiento</li></ul>' +
+      '</div><div class="ba-reveal">' + S.video(c) + '</div></div></section>';
+  };
+  S.segments = function (c) {
+    var A = [
+      ['Negocios', 'Tu negocio, con web propia', 'Servicios, precios y botón de WhatsApp. La actualizas tú.', 'Reservar para mi negocio', 'Mi caso: negocio.'],
+      ['Familias', 'Aprendan IA en familia', 'Un adulto al mando y hasta 5 personas creando juntas.', 'Reservar en familia', 'Mi caso: familia.'],
+      ['Profesionales', 'Ponte al día con la IA', 'La aprendes usándola en algo útil: tu web o tu portafolio.', 'Reservar mi fecha', 'Mi caso: profesional.']
+    ];
+    return '<section class="ba-section" id="parati" aria-labelledby="ba-caso"><div class="ba-wrap"><div class="ba-head ba-reveal">' + eyebrow('Para quién es') +
+      '<h2 class="ba-h2" id="ba-caso">¿Cuál es tu <span class="ba-mag">caso?</span></h2></div>' +
+      '<div class="ba-cards ba-cards--3">' + A.map(function (a, i) {
+        return '<article class="ba-card ba-reveal"><span class="ba-card__idx">[0' + (i + 1) + '] ' + a[0] + '</span><h3 class="ba-title">' + a[1] + '</h3><p>' + a[2] + '</p>' +
+          '<a class="ba-card__cta" href="' + wa(c, 'Hola, quiero reservar mi fecha en BRAVO ACADEMY. ' + a[4]) + '" target="_blank" rel="noopener">' + a[3] + ' →</a></article>';
+      }).join('') + '</div>' +
+      '<p class="ba-closing ba-reveal">Vamos. Yo te acompaño. <span class="ba-glowtext">No estás solo.</span></p><p class="ba-reveal" style="margin:var(--space-4) 0 0">' + tagline() + '</p></div></section>';
+  };
+  var MOCKS = [
+    ['sazondemamarosa.com', 'Tu restaurante o menú', 'Platos, precios y pedidos directo a tu WhatsApp.', 'img/ej-sazon.webp', 'Web de un restaurante con menú del día y botón de WhatsApp'],
+    ['barberiadonlucho.com', 'Tu barbería', 'Tus servicios, tus precios y turnos por WhatsApp.', 'img/ej-barberia.webp', 'Web de una barbería con servicios y botón para reservar'],
+    ['spa-luna.com', 'Tu spa o consultorio', 'Tus tratamientos y un botón para separar la cita.', 'img/ej-spa.webp', 'Web de un spa con tratamientos y botón para reservar'],
+    ['ana-rios.com', 'Tu portafolio o currículum', 'Que te encuentren por tu nombre, no por un PDF perdido.', 'img/ej-ana.webp', 'Portafolio de una contadora con botón para descargar su CV'],
+    ['juegodemati.com', 'Un juego hecho en casa', 'Un laberinto que se juega de verdad, desde el celular.', 'img/ej-laberinto.webp', 'Juego de laberinto con puntos y fantasmas']
+  ];
+  S.mock = function (m) {
+    return '<li><figure class="ba-mock"><div class="ba-mock__screen"><div class="ba-mock__bar" aria-hidden="true"><i></i><i></i><i></i><b>' + m[0] + '</b></div><img src="' + m[3] + '" alt="' + m[4] + '" width="540" height="1168" loading="lazy" decoding="async"></div>' +
+      '<figcaption><h3 class="ba-title">' + m[1] + '</h3><p>' + m[2] + '</p></figcaption></figure></li>';
+  };
+  S.create = function () {
+    return '<section class="ba-section" id="crear" aria-labelledby="ba-crear"><div class="ba-wrap"><div class="ba-head ba-reveal">' + eyebrow('Qué vas a crear') +
+      '<h2 class="ba-h2" id="ba-crear">Tu idea entra. <span class="ba-mag">Tu .com sale.</span></h2><p class="ba-lede">Sirve para todas las profesiones y comercios. Estos son ejemplos; la tuya la decides tú.</p></div>' +
+      '<ul class="ba-rail ba-reveal" aria-label="Ejemplos de páginas">' + MOCKS.map(S.mock).join('') + '</ul>' +
+      '<p class="ba-phrase ba-reveal">Si lo puedes contar o vender, <span class="ba-mag">lo puedes publicar.</span></p></div></section>';
+  };
+  S.takeaways = function () {
+    var L = [['Tu web publicada en tu .com, ese mismo día', 'Con un enlace para compartir donde quieras.'], ['Botón de WhatsApp', 'Para que te escriban directo.'], ['Sabes hacerlo otra vez, solo', 'Sin depender de nadie.'], ['1 mes de soporte y 3 sábados de práctica', 'Respuesta en máximo 24 h.']];
+    return '<section class="ba-section ba-section--alt" aria-labelledby="ba-llevas"><div class="ba-wrap ba-split"><div class="ba-head ba-reveal">' + eyebrow('Qué te llevas') +
+      '<h2 class="ba-h2" id="ba-llevas">No te vas con apuntes. Te vas con <span class="ba-mag">tu página funcionando.</span></h2></div>' +
+      '<ul class="ba-check ba-reveal">' + L.map(function (l) { return '<li>' + l[0] + '<small>' + l[1] + '</small></li>'; }).join('') + '</ul></div></section>';
+  };
+  S.surprise = function () {
+    return '<section class="ba-section ba-section--alt ba-surprise" aria-labelledby="ba-sorp"><div class="ba-wrap"><div class="ba-reveal">' + eyebrow('La sesión') +
+      '<h2 class="ba-h2" id="ba-sorp">El cómo no te lo cuento <span class="ba-glowtext">aquí.</span></h2><p class="ba-lede">En la primera hora lo ves. En la segunda, lo haces tú.</p></div></div></section>';
+  };
+  S.cta = function (c) {
+    return '<section class="ba-midcta"><div class="ba-wrap ba-reveal">' + btn(c, 'Reserva tu fecha', { cls: 'ba-btn--primary ba-btn--lg', icon: I.wa }) + '<p class="ba-small" style="margin:var(--space-3) 0 0">Te respondo en menos de 24 horas.</p></div></section>';
+  };
+  S.guarantee = function () {
+    return '<section class="ba-section" id="garantia" aria-labelledby="ba-gar"><div class="ba-wrap"><div class="ba-guarantee ba-reveal">' + eyebrow('Garantía de aprendizaje') +
+      '<h2 class="ba-h2" id="ba-gar">Sí o sí vas a <span class="ba-glowtext">aprender.</span></h2><p class="ba-lede">Al terminar, serás capaz de:</p><ol>' +
+      '<li>Cambiar un texto, un precio y una imagen de tu página.</li><li>Publicar ese cambio y verlo en tu .com.</li><li>Explicar con tus palabras qué es un dominio y qué es un hosting.</li></ol>' +
+      '<p class="ba-guarantee__fallback">¿Algo no quedó claro? Tienes los 3 sábados, el acompañamiento del mes y refuerzo sin costo hasta que lo logres.</p></div></div></section>';
+  };
+  S.builder = function (c) {
+    var photo = c.foto ? '<img src="' + c.foto + '" alt="Phillyps Bravo" loading="lazy">' : '<div class="ba-photo__slot"><img src="' + c.img.hat + '" alt="">Foto de Phillyps</div>';
+    return '<section class="ba-section ba-section--alt" aria-labelledby="ba-yo"><div class="ba-wrap ba-builder"><div class="ba-photo ba-reveal">' + photo + '</div><div class="ba-reveal">' + eyebrow('El constructor') +
+      '<h2 class="ba-h2" id="ba-yo">Phillyps Bravo</h2><p class="ba-lede">Ingeniero de sistemas con 20 años en tecnología y experiencia construyendo aplicaciones con inteligencia artificial.</p>' +
+      '<blockquote>“Estoy tan emocionado como tú de explorar lo que la IA puede hacer, y estoy aquí para guiarte paso a paso.”</blockquote><p class="ba-sign">— Phillyps · ' + wm(false).replace('class="ba-wm"', 'class="ba-wm" style="font-size:14px"') + '</p></div></div></section>';
+  };
+  var FAQ = [
+    ['¿Necesito saber programar?', 'No. Ni una línea de código. El cómo es la sorpresa de la sesión.'],
+    ['¿Qué página puedo hacer?', 'Tu currículum, tu negocio, tu menú, tus clases o un juego sencillo. Si lo puedes contar o vender, lo puedes publicar.'],
+    ['¿Qué necesito?', 'Una computadora (Windows 10/11 o Mac reciente; no sirve celular ni tablet), un correo Gmail, internet estable y una tarjeta habilitada para compras por internet. Lo revisamos juntos antes de la visita; si tu equipo no sirve, reprogramamos sin problema.'],
+    ['¿Qué pasa si no me queda claro?', 'Para eso están los 3 sábados de práctica, el mes de acompañamiento y el refuerzo sin costo hasta que lo logres.'],
+    ['¿Puedo ir acompañado?', 'Sí. Tú eres el titular y quien te acompaña aprende a tu lado: pareja, familia o un amigo. Los menores participan con un adulto responsable.'],
+    ['¿Quién es el dueño de la página?', 'Tú. La cuenta, el dominio y la página quedan a tu nombre.'],
+    ['¿Cuánto cuesta?', 'Depende de lo que quieras crear. Te paso el detalle completo por WhatsApp, sin compromiso.']
+  ];
+  S.faq = function (c) {
+    return '<section class="ba-section" id="preguntas" aria-labelledby="ba-faq"><div class="ba-wrap ba-split"><div class="ba-head ba-reveal">' + eyebrow('Preguntas frecuentes') +
+      '<h2 class="ba-h2" id="ba-faq">Lo que todos preguntan.</h2></div><div class="ba-reveal"><div class="ba-acc">' +
+      FAQ.map(function (f, i) { return '<details' + (i === 0 ? ' open' : '') + '><summary>' + f[0] + '</summary><div><p>' + f[1] + '</p></div></details>'; }).join('') + '</div>' +
+      '<p style="margin-top:var(--space-6)">' + btn(c, 'Pídeme el detalle por WhatsApp', { cls: 'ba-btn--ghost ba-btn--lg', href: wa(c, c.msgDetalle), icon: I.wa }) + '</p></div></div></section>';
+  };
+  S.reserve = function (c) {
+    return '<section class="ba-section" id="reserva" aria-labelledby="ba-res"><div class="ba-wrap"><div class="ba-reserve ba-reveal"><img class="ba-reserve__hat" src="' + c.img.hat + '" alt="" loading="lazy">' +
+      '<h2 class="ba-h2" id="ba-res">¿Qué quieres crear? <span class="ba-glowtext">Escríbeme y vemos tu fecha.</span></h2>' +
+      '<ol><li>Elige fecha y horario.</li><li>Te paso el detalle por WhatsApp.</li><li>Separas tu cupo.</li><li>Recibes tu confirmación.</li></ol>' +
+      btn(c, 'Reserva tu fecha', { cls: 'ba-btn--primary ba-btn--lg', icon: I.wa }) +
+      '<form class="ba-ask" data-ask><label for="ba-ask-in">¿Qué página quieres crear?</label><input id="ba-ask-in" name="q" type="text" placeholder="¿Qué página quieres crear?" autocomplete="off">' +
+      '<button type="submit" aria-label="Enviar por WhatsApp">' + I.arrow + '</button></form>' +
+      '<p class="ba-small" style="margin-top:12px">Se abre WhatsApp con tu mensaje ya escrito.</p></div></div></section>';
+  };
+  S.footer = function (c) {
+    return '<footer class="ba-footer"><div class="ba-wrap">' + wm(true) + tagline() +
+      '<nav aria-label="Enlaces"><a href="' + c.bravoUrl + '" target="_blank" rel="noopener">BRAVO consultora</a><a href="' + wa(c, c.msgInfo) + '" target="_blank" rel="noopener">WhatsApp</a><a href="mailto:' + c.email + '">Correo</a><a href="' + c.linkedin + '" target="_blank" rel="noopener">LinkedIn</a></nav>' +
+      '<p class="ba-small">© 2026 BRAVO · Lima, Perú</p></div></footer>';
+  };
+  S.bar = function (c) {
+    return '<div class="ba-bar" role="region" aria-label="Reserva"><span class="ba-bar__info ba-live">3 h en tu casa · tu .com</span>' + btn(c, 'Reserva tu fecha', { cls: 'ba-btn--primary ba-btn--lg' }) + '</div>';
+  };
+  S.fab = function (c) { return '<a class="ba-fab" href="' + wa(c, c.msgInfo) + '" target="_blank" rel="noopener" aria-label="Escríbeme por WhatsApp">' + I.wa + '</a>'; };
+
+  S.page = function (c) {
+    return '<a class="ba-skip" href="#main">Saltar al contenido</a>' + S.header(c) + '<main id="main">' + S.hero(c) + S.segments(c) + S.create(c) + S.builder(c) + S.takeaways(c) + S.guarantee(c) + S.cta(c) +
+      S.surprise(c) + S.faq(c) + S.reserve(c) + '</main>' + S.footer(c) + S.bar(c) + S.fab(c);
+  };
+
+  function init(root) {
+    root = root || document;
+    var base = root.classList ? root : document.documentElement;
+    base.classList.add('ba-js');
+    var burger = root.querySelector('.ba-burger'), menu = root.querySelector('.ba-menu');
+    if (burger && menu) {
+      var set = function (o) { burger.setAttribute('aria-expanded', o ? 'true' : 'false'); burger.setAttribute('aria-label', o ? 'Cerrar menú' : 'Abrir menú'); menu.classList.toggle('is-open', o); };
+      burger.addEventListener('click', function () { set(burger.getAttribute('aria-expanded') !== 'true'); });
+      menu.addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
+    }
+    var els = root.querySelectorAll('.ba-reveal');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+      els.forEach(function (el) { io.observe(el); });
+    } else els.forEach(function (el) { el.classList.add('is-in'); });
+    root.querySelectorAll('.ba-video').forEach(function (v) {
+      var src = v.getAttribute('data-video'); if (!src) return;
+      var btn = v.querySelector('.ba-video__play');
+      var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var vid = null, want = false;
+      function make() {
+        if (vid) return vid;
+        vid = document.createElement('video');
+        vid.muted = true; vid.loop = true; vid.playsInline = true; vid.preload = 'metadata';
+        vid.setAttribute('playsinline', ''); vid.setAttribute('muted', ''); vid.setAttribute('aria-hidden', 'true'); vid.tabIndex = -1;
+        vid.addEventListener('playing', function () { v.classList.add('is-playing'); });
+        vid.src = src; v.insertBefore(vid, v.firstChild);
+        return vid;
+      }
+      function sync() {
+        if (reduce) return;
+        var on = want && !document.hidden;
+        if (on) { var p = make().play(); if (p && p.catch) p.catch(function () {}); }
+        else if (vid && !vid.paused) vid.pause();
+      }
+      if ('IntersectionObserver' in window && !reduce) {
+        new IntersectionObserver(function (es) { want = es[0].isIntersecting; sync(); }, { threshold: 0.25 }).observe(v);
+        document.addEventListener('visibilitychange', sync);
+      }
+      if (btn) btn.addEventListener('click', function () {
+        var d = make();
+        if (reduce) { d.loop = false; d.muted = false; d.controls = true; d.play(); v.classList.add('is-playing', 'is-sound'); return; }
+        d.muted = !d.muted; v.classList.toggle('is-sound', !d.muted);
+        if (d.paused) d.play();
+        btn.setAttribute('aria-label', d.muted ? 'Activar sonido del video' : 'Silenciar el video');
+      });
+    });
+    root.querySelectorAll('form[data-ask]').forEach(function (f) {
+      f.addEventListener('submit', function (e) {
+        e.preventDefault(); var q = (f.q.value || '').trim();
+        window.open(wa(api.config, q ? 'Hola, quiero crear esta página: ' + q : api.config.msgReserva), '_blank', 'noopener');
+      });
+    });
+  }
+
+  var api = {
+    config: merge(CONFIG, window.BA_CONFIG),
+    sections: S,
+    mocks: MOCKS,
+    wa: function (msg) { return wa(api.config, msg); },
+    wordmark: wm,
+    tagline: tagline,
+    render: function (el, cfg) { if (cfg) api.config = merge(api.config, cfg); el.classList.add('ba'); el.innerHTML = S.page(api.config); init(el); },
+    mount: function (el, names, cfg) { if (cfg) api.config = merge(api.config, cfg); el.classList.add('ba'); el.innerHTML = names.map(function (n) { return S[n](api.config); }).join(''); init(el); },
+    init: init
+  };
+  window.BravoAcademy = api;
+})();
+
+</script>
+<script>BravoAcademy.render(document.getElementById('app'));</script>
+</body>
+</html>
