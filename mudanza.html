@@ -11,23 +11,28 @@
 <style>
   :root {
     --bg: #070708; --bg2: #0d0d10; --ink: #FDF7FA; --soft: #c9c0c5; --faint: #9A8F95;
-    --magenta: #FF0A6C; --rose: #FF4D94; --plum: #5C0029;
+    --magenta: #FF0A6C; --rose: #FF4D94;
     --ease: cubic-bezier(.16, 1, .3, 1);
   }
   * { box-sizing: border-box; margin: 0; }
-  html { -webkit-text-size-adjust: 100%; }
+  html, body { height: 100%; }
   body {
-    min-height: 100svh; background: var(--bg); color: var(--ink);
-    font-family: Manrope, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.5; -webkit-font-smoothing: antialiased;
-    display: grid; place-items: center; padding: 20px 16px calc(28px + env(safe-area-inset-bottom));
+    background: var(--bg); color: var(--ink); overflow: hidden;
+    font-family: Manrope, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100svh;
     background-image:
-      radial-gradient(ellipse 70% 45% at 50% 0%, rgba(255, 10, 108, .22), transparent 70%),
-      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(92, 0, 41, .35), transparent 70%);
+      radial-gradient(ellipse 60% 55% at 50% 45%, rgba(255, 10, 108, .22), transparent 70%),
+      radial-gradient(ellipse 50% 30% at 50% 100%, rgba(92, 0, 41, .4), transparent 70%);
   }
-  main { width: 100%; max-width: 440px; display: grid; justify-items: center; gap: 18px; text-align: center; }
-  .brand { display: inline-flex; align-items: center; gap: 10px; font: 400 18px/1 'Archivo Black', Impact, system-ui, sans-serif; letter-spacing: .02em; }
-  .hat { width: 34px; height: 34px; overflow: visible; }
+  [hidden] { display: none !important; }
+
+  /* Encabezado mínimo: el video es la estrella. */
+  header {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding: max(10px, env(safe-area-inset-top)) 16px 8px; animation: rise .8s var(--ease) both;
+  }
+  .hat { width: 28px; height: 28px; overflow: visible; flex: none; }
   .hat .star { transform-origin: 14px 5px; animation: star 4.5s var(--ease) .3s both; }
   @keyframes star {
     0% { transform: translateY(-16px) scale(.4); opacity: 0; }
@@ -35,94 +40,91 @@
     60% { transform: translateY(2px) scale(1); }
     100% { transform: none; opacity: 1; filter: drop-shadow(0 0 5px var(--magenta)); }
   }
-  h1 {
-    font: 400 clamp(2.6rem, 11vw, 3.6rem)/1 'Archivo Black', Impact, system-ui, sans-serif; letter-spacing: -.015em;
-    animation: rise .8s var(--ease) both;
-  }
-  h1 em { font-style: normal; color: var(--magenta); text-shadow: 0 0 28px rgba(255, 10, 108, .45); }
-  .lede { color: var(--soft); max-width: 36ch; animation: rise .8s var(--ease) .12s both; }
-  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  h1 { font: 400 clamp(1.4rem, 5vw, 2rem)/1 'Archivo Black', Impact, system-ui, sans-serif; letter-spacing: -.01em; }
+  h1 em { font-style: normal; color: var(--magenta); text-shadow: 0 0 22px rgba(255, 10, 108, .5); }
 
+  /* Escenario: el video ocupa todo el alto disponible, en vertical. */
+  .stage { min-height: 0; display: grid; place-items: center; padding: 0 12px; }
   .video {
-    position: relative; height: min(54svh, 520px); width: auto; max-width: 100%; aspect-ratio: 9 / 16; justify-self: center;
-    border-radius: 22px; overflow: hidden; background: var(--bg2) center / cover no-repeat;
-    border: 1px solid rgba(253, 247, 250, .14);
-    box-shadow: 0 0 0 6px rgba(255, 10, 108, .06), 0 30px 80px rgba(255, 10, 108, .22);
-    animation: rise .9s var(--ease) .2s both;
+    position: relative; height: 100%; max-width: 100%; aspect-ratio: 9 / 16; overflow: hidden;
+    border-radius: 18px; background: var(--bg2) center / cover no-repeat; cursor: pointer;
+    border: 1px solid rgba(253, 247, 250, .16);
+    box-shadow: 0 0 0 5px rgba(255, 10, 108, .07), 0 20px 80px rgba(255, 10, 108, .28);
+    animation: rise .9s var(--ease) .15s both;
   }
   .video video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .video .bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--magenta); transition: width .25s linear; }
-  .video button.sound, .video button.play {
-    position: absolute; border: 0; cursor: pointer; color: var(--ink); font: 600 13px/1 Manrope, system-ui, sans-serif;
-    background: rgba(7, 7, 8, .72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(253, 247, 250, .2);
+  .sound, .play {
+    position: absolute; left: 50%; transform: translateX(-50%); border: 0; cursor: pointer; color: var(--ink);
+    font: 700 15px/1.2 Manrope, system-ui, sans-serif; background: rgba(7, 7, 8, .78);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 10, 108, .6);
+    box-shadow: 0 0 30px rgba(255, 10, 108, .35);
   }
-  .video button.sound { right: 10px; bottom: 14px; padding: 9px 13px; border-radius: 999px; }
-  .video button.play { inset: 0; margin: auto; width: 72px; height: 72px; border-radius: 50%; font-size: 26px; }
-  [hidden] { display: none !important; }
+  .sound { bottom: 16px; padding: 12px 18px; border-radius: 999px; white-space: nowrap; animation: glow 1.6s var(--ease) infinite; }
+  .play { top: 50%; transform: translate(-50%, -50%); width: 84px; height: 84px; border-radius: 50%; font-size: 30px; }
+  @keyframes glow { 50% { box-shadow: 0 0 44px rgba(255, 10, 108, .7); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
-  .actions { display: grid; gap: 12px; width: min(100%, 340px); justify-items: center; animation: rise .9s var(--ease) .3s both; }
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 52px;
-    padding: .8em 1.4em; border-radius: 999px; border: 0; cursor: pointer; text-decoration: none;
-    font: 700 16px/1 Manrope, system-ui, sans-serif; background: var(--magenta); color: #070708;
-    box-shadow: 0 12px 36px rgba(255, 10, 108, .35); transition: transform .35s var(--ease), box-shadow .35s var(--ease), opacity .35s;
+  /* Franja inferior: avisa que al terminar el video se puede continuar. */
+  .strip {
+    position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    padding: 12px max(16px, env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    background: linear-gradient(180deg, rgba(255, 10, 108, .16), rgba(92, 0, 41, .55));
+    border-top: 1px solid rgba(255, 10, 108, .55); animation: rise .9s var(--ease) .3s both;
   }
-  .btn:hover:not([aria-disabled=true]) { transform: translateY(-2px); box-shadow: 0 18px 48px rgba(255, 10, 108, .5); }
-  .btn[aria-disabled=true] { background: rgba(253, 247, 250, .08); color: var(--faint); box-shadow: none; cursor: default; border: 1px solid rgba(253, 247, 250, .14); }
-  .btn.ready { animation: pulse 1.8s var(--ease) 2; }
-  @keyframes pulse { 50% { transform: scale(1.04); } }
-  .dest { font-size: 13px; color: var(--faint); word-break: break-all; }
-  .dest b { color: var(--ink); font-weight: 600; }
-  .links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; font-size: 14px; }
-  .links a { color: var(--rose); font-weight: 600; text-decoration: none; padding: 8px 2px; }
-  .links a:hover, .links a:focus-visible { text-decoration: underline; }
-  .note { font-size: 13px; color: var(--faint); max-width: 38ch; }
-  .note a { color: var(--rose); }
-  :focus-visible { outline: 2px solid var(--magenta); outline-offset: 3px; border-radius: 8px; }
-  @media (max-height: 700px) { .video { height: 44svh; } }
+  .strip .progress { position: absolute; left: 0; top: -1px; height: 3px; width: 0; background: var(--magenta); box-shadow: 0 0 12px var(--magenta); transition: width .25s linear; }
+  .msg { flex: 1 1 220px; min-width: 0; font-size: 14.5px; color: var(--soft); }
+  .msg b { display: block; color: var(--ink); font-size: 15.5px; }
+  .msg .dest { color: var(--rose); font-weight: 700; word-break: break-all; }
+  .msg small { display: block; margin-top: 2px; color: var(--faint); font-size: 12.5px; }
+  .msg small a { color: var(--rose); }
+  .btn {
+    flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; min-height: 48px; min-width: 160px;
+    padding: .75em 1.5em; border-radius: 999px; text-decoration: none; cursor: pointer;
+    font: 800 16px/1 Manrope, system-ui, sans-serif; background: var(--magenta); color: #070708;
+    box-shadow: 0 10px 34px rgba(255, 10, 108, .45); transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+  }
+  .btn:hover:not([aria-disabled=true]) { transform: translateY(-2px); }
+  .btn[aria-disabled=true] { background: rgba(253, 247, 250, .08); color: var(--faint); box-shadow: none; cursor: default; border: 1px solid rgba(253, 247, 250, .16); }
+  .btn.ready { animation: ready 1.4s var(--ease) 3; }
+  @keyframes ready { 50% { transform: scale(1.06); } }
+  @media (max-width: 520px) { .btn { width: 100%; } }
+  :focus-visible { outline: 2px solid var(--magenta); outline-offset: 3px; border-radius: 10px; }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; transition-duration: .001ms !important; }
+    *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
   }
 </style>
 </head>
 <body>
-<main>
-  <div class="brand">
-    <svg class="hat" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-      <path class="star" d="M14 1l1.2 2.5 2.7.4-2 1.9.5 2.7L14 7.2l-2.4 1.3.5-2.7-2-1.9 2.7-.4z" fill="#FF4D94"/>
-      <path d="M8.5 11h11l1.2 10H7.3z" fill="#141418" stroke="#FF0A6C" stroke-width="1.6" stroke-linejoin="round"/>
-      <path d="M7.7 18h12.6l.4 3H7.3z" fill="#FF0A6C"/>
-      <ellipse cx="14" cy="22" rx="11.5" ry="3.2" fill="#141418" stroke="#FF0A6C" stroke-width="1.6"/>
-    </svg>
-    BRAVO
-  </div>
+<header>
+  <svg class="hat" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+    <path class="star" d="M14 1l1.2 2.5 2.7.4-2 1.9.5 2.7L14 7.2l-2.4 1.3.5-2.7-2-1.9 2.7-.4z" fill="#FF4D94"/>
+    <path d="M8.5 11h11l1.2 10H7.3z" fill="#141418" stroke="#FF0A6C" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M7.7 18h12.6l.4 3H7.3z" fill="#FF0A6C"/>
+    <ellipse cx="14" cy="22" rx="11.5" ry="3.2" fill="#141418" stroke="#FF0A6C" stroke-width="1.6"/>
+  </svg>
+  <h1>BRAVO · Nos <em>mudamos</em></h1>
+</header>
 
-  <h1>Nos <em>mudamos</em>.</h1>
-  <p class="lede">BRAVO ya tiene casa propia. Mira la academia y te llevamos a tu enlace en el sitio nuevo.</p>
-
+<div class="stage">
   <div class="video" id="box" hidden>
-    <video id="v" muted playsinline preload="auto" aria-label="Video de BRAVO ACADEMY"></video>
-    <button class="play" id="play" type="button" aria-label="Reproducir el video" hidden>▶</button>
-    <button class="sound" id="sound" type="button" hidden>🔊 Activar sonido</button>
-    <i class="bar" id="bar"></i>
+    <video id="v" playsinline preload="auto" aria-label="Video de BRAVO ACADEMY"></video>
+    <button class="play" id="play" type="button" aria-label="Reproducir el video con sonido" hidden>▶</button>
+    <button class="sound" id="sound" type="button" hidden>🔊 Toca para activar el sonido</button>
   </div>
+</div>
 
-  <div class="actions">
-    <a class="btn" id="go" href="https://phillyps-bravo.site/" aria-disabled="false">Continuar</a>
-    <p class="dest">Te llevamos a <b id="dest">phillyps-bravo.site</b></p>
-    <div class="links">
-      <a id="skip" href="https://phillyps-bravo.site/" hidden>Saltar el video</a>
-      <a id="acad" href="https://phillyps-bravo.site/bravo-academy/">Conocer BRAVO ACADEMY →</a>
-    </div>
-    <p class="note" id="maia" hidden>
-      ¿Guardaste cosas en MAIA? Quedaron en este navegador, en el enlace anterior.
-      <a id="viejo" href="/maia/?viejo=1">Abrir MAIA anterior</a> para copiarlas.
-    </p>
-  </div>
-</main>
+<footer class="strip" id="strip">
+  <i class="progress" id="bar"></i>
+  <p class="msg" id="msg" aria-live="polite">
+    <b id="msg1">Al terminar el video podrás continuar</b>
+    <span>a <span class="dest" id="dest">phillyps-bravo.site</span></span>
+    <small id="maia" hidden>¿Guardaste cosas en MAIA? Quedaron en el enlace anterior: <a id="viejo" href="/maia/?viejo=1">abrir MAIA anterior</a>.</small>
+    <small><a id="acad" href="https://phillyps-bravo.site/bravo-academy/">Conocer BRAVO ACADEMY →</a></small>
+  </p>
+  <a class="btn" id="go" href="https://phillyps-bravo.site/" aria-disabled="false">Continuar</a>
+</footer>
 
-<noscript><p style="text-align:center;padding:16px"><a style="color:#FF4D94" href="https://phillyps-bravo.site/">Continuar a phillyps-bravo.site</a></p></noscript>
+<noscript><p style="position:fixed;inset:auto 0 70px;text-align:center"><a style="color:#FF4D94" href="https://phillyps-bravo.site/">Continuar a phillyps-bravo.site</a></p></noscript>
 
 <script>
 (function () {
@@ -137,7 +139,7 @@
   if (!/^\/(?!\/)[A-Za-z0-9._~!$&'()*+,;=:@%\/-]{0,300}$|^\/$/.test(de) || /^\/mudanza/.test(de)) de = '/';
   q.delete('de'); q.delete('viejo');
   var rest = q.toString();
-  var target = NEW + de + (rest ? (de.indexOf('?') < 0 ? '?' : '&') + rest : '') + location.hash;
+  var target = NEW + de + (rest ? '?' + rest : '') + location.hash;
   var seg = (de.split('/')[1] || '').toLowerCase();
   var app = seg === '' ? 'inicio' : (APPS.indexOf(seg) >= 0 ? seg : 'otros');
 
@@ -145,8 +147,8 @@
   if (location.hostname === 'phillyps-bravo.site' || location.hostname === 'www.phillyps-bravo.site') { location.replace(target); return; }
 
   var $ = function (id) { return document.getElementById(id); };
-  var go = $('go'), skip = $('skip'), box = $('box'), v = $('v'), play = $('play'), sound = $('sound'), bar = $('bar');
-  go.href = target; skip.href = target;
+  var go = $('go'), box = $('box'), v = $('v'), play = $('play'), sound = $('sound'), bar = $('bar'), msg1 = $('msg1');
+  go.href = target;
   $('dest').textContent = 'phillyps-bravo.site' + de;
   if (app === 'maia') $('maia').hidden = false;
 
@@ -162,40 +164,43 @@
   var ready = false;
   function enable() {
     if (ready) return; ready = true;
-    go.setAttribute('aria-disabled', 'false'); go.textContent = 'Continuar'; go.classList.add('ready'); skip.hidden = true;
+    go.setAttribute('aria-disabled', 'false'); go.textContent = 'Continuar'; go.classList.add('ready');
+    msg1.textContent = 'Listo: ya puedes continuar'; sound.hidden = true;
   }
-  function lock() { go.setAttribute('aria-disabled', 'true'); go.textContent = 'Continuar · al terminar el video'; }
+  function lock() { go.setAttribute('aria-disabled', 'true'); go.textContent = 'Espera el final'; }
 
   go.addEventListener('click', function (ev) {
     if (go.getAttribute('aria-disabled') === 'true') { ev.preventDefault(); return; }
     send('mudanza_continuar', app);
   });
-  skip.addEventListener('click', function () { send('mudanza_saltar'); });
   $('acad').addEventListener('click', function () { send('mudanza_academia'); });
 
-  // Sin video (sin JS, sin conexión o bloqueado) la persona nunca queda atrapada: Continuar queda activo.
+  // Sin video (sin conexión o bloqueado) la persona nunca queda atrapada: Continuar queda activo.
   v.addEventListener('error', function () { box.hidden = true; enable(); });
   box.style.backgroundImage = 'url(' + POSTER + ')';
   v.poster = POSTER; v.src = VIDEO; box.hidden = false; lock();
 
-  var sawEnd = false, skipTimer = setTimeout(function () { if (!ready) skip.hidden = false; }, 5000);
+  var sawEnd = false;
   v.addEventListener('timeupdate', function () { if (v.duration) bar.style.width = (100 * v.currentTime / v.duration) + '%'; });
   v.addEventListener('ended', function () { if (!sawEnd) { sawEnd = true; send('mudanza_fin'); } bar.style.width = '100%'; enable(); });
-  v.addEventListener('playing', function () { play.hidden = true; sound.hidden = false; });
+  v.addEventListener('playing', function () { play.hidden = true; sound.hidden = ready || !v.muted; });
 
-  play.addEventListener('click', function () { v.muted = false; sound.textContent = '🔇 Silenciar'; v.play(); });
-  sound.addEventListener('click', function () {
-    v.muted = !v.muted; sound.textContent = v.muted ? '🔊 Activar sonido' : '🔇 Silenciar';
-  });
-
-  // Con "reducir movimiento" no arranca solo: la persona decide darle play.
+  // Con audio desde el primer momento. Los navegadores solo lo permiten a veces sin un toque previo:
+  // si lo bloquean, arranca en silencio y cualquier toque sobre el video activa el sonido.
+  function unmute() { v.muted = false; sound.hidden = true; if (v.paused) v.play(); }
+  box.addEventListener('click', function () { if (v.muted || v.paused) unmute(); });
   var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (calm) { play.hidden = false; }
   else {
+    v.muted = false;
     var p = v.play();
-    if (p && p.catch) p.catch(function () { play.hidden = false; });
+    if (p && p.catch) p.catch(function () {
+      v.muted = true;
+      var p2 = v.play();
+      if (p2 && p2.catch) p2.catch(function () { play.hidden = false; });
+      sound.hidden = false;
+    });
   }
-  window.addEventListener('pagehide', function () { clearTimeout(skipTimer); });
 })();
 </script>
 </body>
