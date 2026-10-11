@@ -8,6 +8,8 @@
 <meta name="author" content="Phillyps Bravo">
 <meta name="theme-color" content="#E600FA">
 <link rel="canonical" href="https://phillyps-bravo.site/">
+<link rel="preload" as="image" href="img/hero-fondo.webp" media="(min-width:901px)" fetchpriority="high">
+<link rel="preload" as="image" href="img/hero-fondo-movil.webp" media="(max-width:900px)" fetchpriority="high">
 <!-- Open Graph -->
 <meta property="og:title" content="BRAV[O] · Hacemos que funcione">
 <meta property="og:description" content="Del dato a la acción. Mira en video zaZÁ PRESUPUESTO, MAIA, AM y BRAVO ACADEMY, y ábrelos ahora.">
@@ -147,6 +149,10 @@
         <video muted loop playsinline preload="none" poster="img/cartel-am.webp" data-src="video/adelanto-am.mp4" aria-hidden="true"></video>
         <span class="vit-play" aria-hidden="true">▶</span>
       </article>
+      <article class="vit-card" data-v="reservas" role="group" aria-roledescription="video" aria-label="Reservas online">
+        <video muted loop playsinline preload="none" poster="img/cartel-reservas.webp" data-src="video/adelanto-reservas.mp4" aria-hidden="true"></video>
+        <span class="vit-play" aria-hidden="true">▶</span>
+      </article>
       <article class="vit-card" data-v="academia" role="group" aria-roledescription="video" aria-label="BRAVO ACADEMY">
         <video muted loop playsinline preload="none" poster="img/cartel-academia.webp" data-src="video/adelanto-academia.mp4" aria-hidden="true"></video>
         <span class="vit-play" aria-hidden="true">▶</span>
@@ -250,6 +256,30 @@
           <div class="pr-btns">
             <a class="btn-s" href="am/" data-o="am">Abrir AM →</a>
             <a class="btn-s ghost" href="https://wa.me/51954708174?text=Hola%20Phillyps%2C%20me%20interesa%20AM%20%28Ayuda%20Memoria%29%20para%20mi%20equipo." target="_blank" rel="noopener">Lo quiero para mi equipo</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Reservas (PhillRobs) -->
+      <article class="pr-card wide">
+        <div class="pr-thumb" data-open-video="reservas" role="button" tabindex="0" aria-label="Ver el video de Reservas online">
+          <video muted loop playsinline preload="none" poster="img/cartel-reservas.webp" data-src="video/adelanto-reservas.mp4" aria-hidden="true"></video>
+          <span class="vit-play" aria-hidden="true">▶</span>
+        </div>
+        <div>
+          <span class="pr-tag">Demo en vivo · con PhillRobs</span>
+          <h3>Reservas online para tu negocio</h3>
+          <p>Tus clientes reservan solos, las 24 horas: eligen día y hora, pagan el adelanto con Yape o Plin y tú lo ves todo en tu panel. Reserva tú como si fueras cliente y luego mira lo que ve el negocio.</p>
+          <ul>
+            <li>Sin cuentas ni contraseñas: solo nombre y WhatsApp</li>
+            <li>Cero cruces de horario</li>
+            <li>Funciona en celular y computadora, sin descargar apps</li>
+            <li>Números para decidir: qué servicio rinde más y cuándo</li>
+          </ul>
+          <div class="pr-btns">
+            <a class="btn-s" href="https://phillrobs.phillrobs-dev.workers.dev/demo/spa/" target="_blank" rel="noopener noreferrer" data-o="reservas">Probar la demo del spa →</a>
+            <a class="btn-s ghost" href="https://phillrobs.phillrobs-dev.workers.dev/demo/dentista/" target="_blank" rel="noopener noreferrer" data-o="reservas-dentista">Demo del dentista</a>
+            <a class="btn-s ghost" href="https://wa.me/51954708174?text=Hola%20Phillyps%2C%20me%20interesa%20el%20m%C3%B3dulo%20de%20reservas%20online%20%28PhillRobs%29%20para%20mi%20negocio." target="_blank" rel="noopener">Lo quiero en mi negocio</a>
           </div>
         </div>
       </article>
@@ -411,22 +441,14 @@
       <!-- ── COLUMNA IZQUIERDA: foto + enfoque ── -->
       <div class="sv2-photo-col rv-l">
 
-        <!-- Foto -->
-        <div class="sv2-photo-card sc-hover">
-          <img src="img/phillyps.jfif"
-               alt="Phillyps Bravo" loading="lazy" class="sv2-img"
-               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div class="sv2-img-fb" style="display:none">PB</div>
-        </div>
-
-        <!-- Mi historia en video -->
-        <div class="sv2-story" data-open-video="historia" role="button" tabindex="0" aria-label="Ver mi historia en video">
-          <div class="pr-thumb">
-            <img src="img/cartel-historia.webp" alt="" loading="lazy">
+        <!-- Mi historia en video (43 s) -->
+        <div class="pr-phone sv2-video">
+          <div class="pr-thumb" data-open-video="historia" role="button" tabindex="0" aria-label="Ver mi historia en video, 43 segundos" style="border-radius:26px;border:none">
+            <video muted loop playsinline preload="none" poster="img/cartel-historia.webp" data-src="video/adelanto-historia.mp4" aria-hidden="true"></video>
             <span class="vit-play" aria-hidden="true">▶</span>
           </div>
-          <div><strong>Mi historia en 43 s</strong><span>Del dato a la acción, en video.</span></div>
         </div>
+        <p class="sv2-cap">Mi historia en 43 segundos</p>
 
       </div><!-- /photo-col -->
 
