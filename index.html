@@ -4,16 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BRAV[O] · Hacemos que funcione</title>
-<meta name="description" content="Aplicaciones web, automatización y soluciones digitales. Resultados medibles desde el primer día. Phillyps Bravo · Lima, Perú.">
+<meta name="description" content="Phillyps Bravo, ingeniero de sistemas. Productos propios en uso: zaZÁ PRESUPUESTO, MAIA y AM. BRAVO ACADEMY: tu web .com con IA en 3 horas. Lima, Perú.">
 <meta name="author" content="Phillyps Bravo">
 <meta name="theme-color" content="#E600FA">
+<link rel="canonical" href="https://phillyps-bravo.site/">
 <!-- Open Graph -->
 <meta property="og:title" content="BRAV[O] · Hacemos que funcione">
-<meta property="og:description" content="Sistemas que resuelven problemas reales. Sin tecnología de moda.">
+<meta property="og:description" content="Del dato a la acción. Mira en video zaZÁ PRESUPUESTO, MAIA, AM y BRAVO ACADEMY, y ábrelos ahora.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://phillyps-bravo.vercel.app">
-<meta property="og:image" content="https://phillyps-bravo.vercel.app/img/phillyps.jfif">
-<meta property="og:image:alt" content="Phillyps Bravo · BRAVO">
+<meta property="og:url" content="https://phillyps-bravo.site/">
+<meta property="og:image" content="https://phillyps-bravo.site/img/og-bravo.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="BRAV[O]: zaZÁ PRESUPUESTO, MAIA, AM y BRAVO ACADEMY">
+<meta property="og:locale" content="es_PE">
+<meta name="twitter:card" content="summary_large_image">
 
 <!-- Favicon SVG -->
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -43,6 +48,7 @@
 <link rel="stylesheet" href="css/07-contacto-footer.css">
 <link rel="stylesheet" href="css/08-responsive.css">
 <link rel="stylesheet" href="css/09-hatbot.css">
+<link rel="stylesheet" href="css/10-vitrina.css">
 
 <!-- GSAP (contadores + scroll horizontal del método) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
@@ -73,10 +79,12 @@
 <nav>
   <div class="wrap nav-i">
     <a href="#" class="nav-logo">
-      <img class="hat" src="img/hat.png" alt="">
+      <img class="hat" src="img/hat.webp" alt="">
       <span class="wm"><span class="w">BRAV</span><span class="brk">[</span><span class="o">O</span><span class="brk">]</span></span>
     </a>
     <div class="nav-links">
+      <a href="#productos">Productos</a>
+      <a href="#academia">Academia</a>
       <a href="#soluciones">Soluciones</a>
       <a href="#sobre">Sobre mí</a>
     </div>
@@ -90,6 +98,8 @@
 
 <!-- ═══ MENÚ MOBILE DRAWER ═══ -->
 <nav class="nav-drawer" aria-label="Menú mobile">
+  <a href="#productos">Productos</a>
+  <a href="#academia">Academia</a>
   <a href="#soluciones">Soluciones</a>
   <a href="#sobre">Sobre mí</a>
   <a href="#contacto" class="nd-cta">Hablemos →</a>
@@ -100,292 +110,161 @@
 
   <!-- LEFT: texto -->
   <div class="hero-text">
-    <div class="h-badge rv">Automatización · Sistemas · Soluciones Digitales</div>
+    <div class="h-badge rv">Datos · Aplicaciones web · IA aplicada</div>
     <h1 class="rv">
-      <span class="dim">Construyo sistemas que</span><br>
-      <span class="acc">resuelven problemas reales.</span>
+      <span class="dim">Del dato a la acción.</span><br>
+      <span class="acc">Herramientas que funcionan.</span>
     </h1>
     <p class="h-sub rv">
-      Aplicaciones web, automatización y soluciones digitales
-      para organizaciones que necesitan más control,
-      menos trabajo manual y mejores resultados.
+      Convierto tus datos en aplicaciones que la gente usa para decidir.
+      Productos propios, abiertos y en uso: míralos en video y pruébalos.
     </p>
     <div class="h-btns rv">
-      <a class="btn-p" href="#soluciones">Ver soluciones</a>
-      <a class="btn-g" href="#contacto">Contactar</a>
+      <a class="btn-p" href="#productos">Ver los productos</a>
+      <a class="btn-g" href="#contacto">Hablemos</a>
     </div>
     <div class="h-proof rv">
-      <span class="proof-item">Software real construido y en producción</span>
-      <span class="proof-item">Resultados medibles desde el primer día</span>
-      <span class="proof-item">Implementación completa y acompañamiento</span>
+      <span class="proof-item">Más de 17 años de trayectoria, más de 10 en datos</span>
+      <span class="proof-item">Premio a las Buenas Prácticas en Gestión Pública 2019</span>
+      <span class="proof-item">Productos que puedes abrir ahora: zaZÁ, MAIA y AM</span>
     </div>
   </div>
 
-  <!-- RIGHT: carousel -->
-  <div class="hero-carousel">
-    <div class="hero-screen-name"><span class="dotp"></span><span class="nm" id="scrName">Mi Mantenimiento <small>Dashboard</small></span></div>
-    <div class="hero-stage">
-      <button class="cnav prev" onclick="gsPrev()" aria-label="Pantalla anterior">&#8249;</button>
-      <button class="cnav next" onclick="gsNext()" aria-label="Pantalla siguiente">&#8250;</button>
-    <div class="app-win">
-      <div class="win-chrome">
-        <div class="wdots"><div class="wd wd-r"></div><div class="wd wd-y"></div><div class="wd wd-g"></div></div>
-        <div class="win-ttl-bar" id="wttl">Mi Mantenimiento · Dashboard</div>
-        <div class="win-tabs" id="wtabs">
-          <div class="wt on" onclick="gs(0)">Mant.</div>
-          <div class="wt" onclick="gs(1)">ZaZá</div>
-          <div class="wt" onclick="gs(2)">CRM</div>
-          <div class="wt" onclick="gs(3)">Ayudas</div>
-          <div class="wt" onclick="gs(4)">Sello</div>
-        </div>
+  <!-- RIGHT: carrusel de videos (vitrina.js) -->
+  <div class="hero-carousel vit-hero" id="vitHero" aria-roledescription="carrusel" aria-label="Productos en video">
+    <div class="vit-stage" id="vitStage">
+      <button class="vit-nav vit-prev" type="button" aria-label="Video anterior">&#8249;</button>
+      <div class="vit-deck" id="vitDeck">
+      <article class="vit-card" data-v="zaza" role="group" aria-roledescription="video" aria-label="zaZÁ PRESUPUESTO">
+        <video muted loop playsinline preload="none" poster="img/cartel-zaza.webp" data-src="video/adelanto-zaza.mp4" aria-hidden="true"></video>
+        <span class="vit-play" aria-hidden="true">▶</span>
+      </article>
+      <article class="vit-card" data-v="maia" role="group" aria-roledescription="video" aria-label="MAIA">
+        <video muted loop playsinline preload="none" poster="img/cartel-maia.webp" data-src="video/adelanto-maia.mp4" aria-hidden="true"></video>
+        <span class="vit-play" aria-hidden="true">▶</span>
+      </article>
+      <article class="vit-card" data-v="am" role="group" aria-roledescription="video" aria-label="AM · Ayuda Memoria">
+        <video muted loop playsinline preload="none" poster="img/cartel-am.webp" data-src="video/adelanto-am.mp4" aria-hidden="true"></video>
+        <span class="vit-play" aria-hidden="true">▶</span>
+      </article>
+      <article class="vit-card" data-v="academia" role="group" aria-roledescription="video" aria-label="BRAVO ACADEMY">
+        <video muted loop playsinline preload="none" poster="img/cartel-academia.webp" data-src="video/adelanto-academia.mp4" aria-hidden="true"></video>
+        <span class="vit-play" aria-hidden="true">▶</span>
+      </article>
       </div>
-
-      <div class="slides-wrap" id="slides-wrap">
-
-        <!-- SLIDE 1: Mi Mantenimiento -->
-        <div class="slide on">
-          <div class="asb">
-            <div class="asb-logo"><div class="asb-dot"></div>Mantenimiento</div>
-            <div class="asb-sec">Principal</div>
-            <div class="asb-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
-            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>Solicitudes</div>
-            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Estadísticas</div>
-          </div>
-          <div class="amain">
-            <div class="atop">
-              <div class="abc"><span>Dashboard</span><span class="abc-s">/</span><strong>Solicitudes</strong></div>
-              <div class="acts"><button class="abtn">+ Nueva</button><button class="abtn">Exportar</button></div>
-            </div>
-            <div class="acont">
-              <div class="krow">
-                <div class="kpi"><div class="kv w">24</div><div class="kl">Abiertas</div><div class="kd dn">↑ 3 hoy</div></div>
-                <div class="kpi"><div class="kv g">1.2h</div><div class="kl">Tiempo prom.</div><div class="kd up">↓ 85%</div></div>
-                <div class="kpi"><div class="kv g">96%</div><div class="kl">Resolución</div><div class="kd up">↑ 12%</div></div>
-                <div class="kpi"><div class="kv g">0</div><div class="kl">Perdidas</div><div class="kd up">Perfecto</div></div>
-              </div>
-              <div class="g2">
-                <div class="apanel">
-                  <div class="ph"><div class="pt">Solicitudes recientes</div><div class="pbadge">Live</div></div>
-                  <table class="mt"><thead><tr><th>ID</th><th>Descripción</th><th>Técnico</th><th>Estado</th></tr></thead><tbody>
-                    <tr><td>#1042</td><td>Aire acond. 3B</td><td>Carlos R.</td><td><span class="chip cp">En proceso</span></td></tr>
-                    <tr><td>#1041</td><td>Filtración 204</td><td>Luis M.</td><td><span class="chip co">Abierto</span></td></tr>
-                    <tr><td>#1040</td><td>Electricidad 1A</td><td>Pedro G.</td><td><span class="chip cd">Resuelto</span></td></tr>
-                    <tr><td>#1039</td><td>Agua P4</td><td>Ana V.</td><td><span class="chip cd">Resuelto</span></td></tr>
-                  </tbody></table>
-                </div>
-                <div class="apanel">
-                  <div class="ph"><div class="pt">Solicitudes / semana</div></div>
-                  <div class="bch">
-                    <div class="bc"><div class="bcf" style="height:55%"></div><div class="bcl">L</div></div>
-                    <div class="bc"><div class="bcf" style="height:72%"></div><div class="bcl">M</div></div>
-                    <div class="bc"><div class="bcf" style="height:44%"></div><div class="bcl">X</div></div>
-                    <div class="bc"><div class="bcf" style="height:82%"></div><div class="bcl">J</div></div>
-                    <div class="bc"><div class="bcf" style="height:60%"></div><div class="bcl">V</div></div>
-                    <div class="bc"><div class="bcf" style="height:28%"></div><div class="bcl">S</div></div>
-                    <div class="bc"><div class="bcf" style="height:18%"></div><div class="bcl">D</div></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SLIDE 2: ZaZá -->
-        <div class="slide">
-          <div class="asb">
-            <div class="asb-logo"><div class="asb-dot"></div>zaZÁ Events</div>
-            <div class="asb-sec">Gestión</div>
-            <div class="asb-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
-            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Scanner QR</div>
-            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Asistentes</div>
-          </div>
-          <div class="amain">
-            <div class="atop">
-              <div class="abc"><span>zaZÁ</span><span class="abc-s">/</span><strong>Noche de Gala 2025</strong></div>
-              <div class="acts"><button class="abtn" style="background:rgba(52,211,153,.12);color:#34D399">● En vivo</button></div>
-            </div>
-            <div class="acont">
-              <div class="krow">
-                <div class="kpi"><div class="kv g">342</div><div class="kl">Validados</div><div class="kd up">68% aforo</div></div>
-                <div class="kpi"><div class="kv g">0</div><div class="kl">Duplicados</div><div class="kd up">Sin errores</div></div>
-                <div class="kpi"><div class="kv">3.2s</div><div class="kl">Por scan</div><div class="kd up">Muy rápido</div></div>
-                <div class="kpi"><div class="kv w">158</div><div class="kl">Disponibles</div><div class="kd">500 total</div></div>
-              </div>
-              <div class="g2">
-                <div class="apanel">
-                  <div class="ph"><div class="pt">Últimos accesos</div><div class="pbadge">Live</div></div>
-                  <table class="mt"><thead><tr><th>Ticket</th><th>Tipo</th><th>Hora</th><th>Estado</th></tr></thead><tbody>
-                    <tr><td>#2847</td><td>VIP</td><td>21:34</td><td><span class="chip cd">✓ Válido</span></td></tr>
-                    <tr><td>#2846</td><td>General</td><td>21:33</td><td><span class="chip cd">✓ Válido</span></td></tr>
-                    <tr><td>#2845</td><td>VIP</td><td>21:33</td><td><span class="chip cd">✓ Válido</span></td></tr>
-                    <tr><td>#2844</td><td>General</td><td>21:32</td><td><span class="chip cd">✓ Válido</span></td></tr>
-                  </tbody></table>
-                </div>
-                <div class="apanel">
-                  <div class="ph"><div class="pt">Aforo</div></div>
-                  <div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--app-muted);margin-bottom:2px"><span>Capacidad</span><span style="color:var(--app-accent)">68%</span></div><div class="prog"><div class="pf" style="width:68%"></div></div></div>
-                  <div class="dw">
-                    <svg class="dsv" viewBox="0 0 80 80"><circle class="dbg" cx="40" cy="40" r="28"/><circle class="dring" cx="40" cy="40" r="28" stroke-dasharray="119 37"/></svg>
-                    <div class="dlabs">
-                      <div class="dli"><div class="ddot" style="background:var(--accent-m)"></div>VIP: 120</div>
-                      <div class="dli"><div class="ddot" style="background:#34D399"></div>General: 222</div>
-                      <div class="dli"><div class="ddot" style="background:rgba(255,255,255,.12)"></div>Libres: 158</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SLIDE 3: Potenciales CRM -->
-        <div class="slide">
-          <div class="asb">
-            <div class="asb-logo"><div class="asb-dot"></div>Potenciales</div>
-            <div class="asb-sec">Pipeline</div>
-            <div class="asb-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
-            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Pipeline</div>
-            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Contactos</div>
-          </div>
-          <div class="amain">
-            <div class="atop">
-              <div class="abc"><span>Potenciales</span><span class="abc-s">/</span><strong>Pipeline comercial</strong></div>
-              <div class="acts"><button class="abtn">+ Oportunidad</button></div>
-            </div>
-            <div class="acont">
-              <div class="krow">
-                <div class="kpi"><div class="kv g">S/.74k</div><div class="kl">Pipeline total</div><div class="kd up">+40% cierre</div></div>
-                <div class="kpi"><div class="kv">8</div><div class="kl">Activas</div><div class="kd up">+2 semana</div></div>
-                <div class="kpi"><div class="kv g">40%</div><div class="kl">Tasa cierre</div><div class="kd up">↑ vs 28%</div></div>
-                <div class="kpi"><div class="kv w">3</div><div class="kl">Follow-up</div><div class="kd">Hoy</div></div>
-              </div>
-              <div class="g2" style="grid-template-columns:1fr 1fr 1fr">
-                <div class="apanel"><div class="ph"><div class="pt">Contacto</div><div class="pbadge">3</div></div><div style="display:flex;flex-direction:column;gap:4px"><div style="padding:6px 8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa A</div><div style="font-size:8px;color:var(--app-accent)">S/.4,200</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:20%"></div></div></div><div style="padding:6px 8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa B</div><div style="font-size:8px;color:var(--app-accent)">S/.8,500</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:30%"></div></div></div></div></div>
-                <div class="apanel"><div class="ph"><div class="pt">Propuesta</div><div class="pbadge" style="color:#FBBF24;background:rgba(251,191,36,.1)">2</div></div><div style="display:flex;flex-direction:column;gap:4px"><div style="padding:6px 8px;background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.1);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa C</div><div style="font-size:8px;color:#FBBF24">S/.12,000</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:60%"></div></div></div><div style="padding:6px 8px;background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.1);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa D</div><div style="font-size:8px;color:#FBBF24">S/.6,800</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:55%"></div></div></div></div></div>
-                <div class="apanel"><div class="ph"><div class="pt">Cierre</div><div class="pbadge" style="color:#34D399;background:rgba(52,211,153,.1)">3</div></div><div style="display:flex;flex-direction:column;gap:4px"><div style="padding:6px 8px;background:rgba(52,211,153,.04);border:1px solid rgba(52,211,153,.12);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa E</div><div style="font-size:8px;color:#34D399">S/.18k ✓</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:90%;background:linear-gradient(90deg,#059669,#34D399)"></div></div></div><div style="padding:6px 8px;background:rgba(52,211,153,.04);border:1px solid rgba(52,211,153,.12);border-radius:4px"><div style="font-size:9px;font-weight:600;color:var(--app-text)">Empresa F</div><div style="font-size:8px;color:#34D399">S/.24.5k ✓</div><div class="prog" style="margin-top:2px"><div class="pf" style="width:95%;background:linear-gradient(90deg,#059669,#34D399)"></div></div></div></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SLIDE 4: Ayudas Memoria -->
-        <div class="slide">
-          <div class="asb">
-            <div class="asb-logo"><div class="asb-dot"></div>Ayudas Memoria</div>
-            <div class="asb-sec">Gestión</div>
-            <div class="asb-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
-            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>Compromisos</div>
-            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Alertas</div>
-          </div>
-          <div class="amain">
-            <div class="atop">
-              <div class="abc"><span>Ayudas Memoria</span><span class="abc-s">/</span><strong>Semana 23 · 2025</strong></div>
-              <div class="acts"><button class="abtn">Reporte</button></div>
-            </div>
-            <div class="acont">
-              <div class="krow">
-                <div class="kpi"><div class="kv g">92%</div><div class="kl">Cumplimiento</div><div class="kd up">↑ 8%</div></div>
-                <div class="kpi"><div class="kv g">24</div><div class="kl">A tiempo</div><div class="kd up">Sin retrasos</div></div>
-                <div class="kpi"><div class="kv w">3</div><div class="kl">Por vencer</div><div class="kd">Esta semana</div></div>
-                <div class="kpi"><div class="kv g">4h</div><div class="kl">Recuperadas</div><div class="kd up">Semanal</div></div>
-              </div>
-              <div class="g2">
-                <div class="apanel">
-                  <div class="ph"><div class="pt">Compromisos activos</div></div>
-                  <table class="mt"><thead><tr><th>Compromiso</th><th>Vence</th><th>Estado</th></tr></thead><tbody>
-                    <tr><td>Informe trimestral</td><td>Jun 15</td><td><span class="chip cd">✓ Listo</span></td></tr>
-                    <tr><td>Reunión comité</td><td>Jun 16</td><td><span class="chip cp">En proceso</span></td></tr>
-                    <tr><td>Respuesta Of. 142</td><td>Jun 17</td><td><span class="chip co">Pendiente</span></td></tr>
-                    <tr><td>Plan contingencia</td><td>Jun 20</td><td><span class="chip co">Pendiente</span></td></tr>
-                  </tbody></table>
-                </div>
-                <div class="apanel">
-                  <div class="ph"><div class="pt">Distribución</div></div>
-                  <div class="dw">
-                    <svg class="dsv" viewBox="0 0 80 80"><circle class="dbg" cx="40" cy="40" r="28"/><circle class="dring" cx="40" cy="40" r="28" stroke-dasharray="109 47"/></svg>
-                    <div class="dlabs">
-                      <div class="dli"><div class="ddot" style="background:#34D399"></div>A tiempo: 24</div>
-                      <div class="dli"><div class="ddot" style="background:#FBBF24"></div>Por vencer: 3</div>
-                      <div class="dli"><div class="ddot" style="background:var(--accent-m)"></div>Vencidos: 2</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SLIDE 5: Sello Municipal -->
-        <div class="slide">
-          <div class="asb">
-            <div class="asb-logo"><div class="asb-dot"></div>Sello Municipal</div>
-            <div class="asb-sec">Trámites</div>
-            <div class="asb-i on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
-            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Trámites</div>
-            <div class="asb-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Aprobados</div>
-          </div>
-          <div class="amain">
-            <div class="atop">
-              <div class="abc"><span>Sello Municipal</span><span class="abc-s">/</span><strong>Trámites del día</strong></div>
-              <div class="acts"><button class="abtn">Estadísticas</button></div>
-            </div>
-            <div class="acont">
-              <div class="krow">
-                <div class="kpi"><div class="kv g">96%</div><div class="kl">Reducción tiempo</div><div class="kd up">3d → 2h</div></div>
-                <div class="kpi"><div class="kv g">47</div><div class="kl">Trámites hoy</div><div class="kd up">↑ Récord</div></div>
-                <div class="kpi"><div class="kv w">2h</div><div class="kl">Tiempo prom.</div><div class="kd up">Era 3 días</div></div>
-                <div class="kpi"><div class="kv g">0</div><div class="kl">Papel usado</div><div class="kd up">100% digital</div></div>
-              </div>
-              <div class="g2">
-                <div class="apanel">
-                  <div class="ph"><div class="pt">Trámites recientes</div></div>
-                  <table class="mt"><thead><tr><th>ID</th><th>Tipo</th><th>Tiempo</th><th>Estado</th></tr></thead><tbody>
-                    <tr><td>#T-847</td><td>Licencia comercial</td><td>1h 45m</td><td><span class="chip cd">Aprobado</span></td></tr>
-                    <tr><td>#T-846</td><td>Permiso de obra</td><td>2h 10m</td><td><span class="chip cd">Aprobado</span></td></tr>
-                    <tr><td>#T-845</td><td>Certif. PB</td><td>—</td><td><span class="chip cp">En revisión</span></td></tr>
-                    <tr><td>#T-844</td><td>Lic. comercial</td><td>1h 55m</td><td><span class="chip cd">Aprobado</span></td></tr>
-                  </tbody></table>
-                </div>
-                <div class="apanel">
-                  <div class="ph"><div class="pt">Trámites / semana</div></div>
-                  <div class="bch">
-                    <div class="bc"><div class="bcf" style="height:60%"></div><div class="bcl">L</div></div>
-                    <div class="bc"><div class="bcf" style="height:75%"></div><div class="bcl">M</div></div>
-                    <div class="bc"><div class="bcf" style="height:65%"></div><div class="bcl">X</div></div>
-                    <div class="bc"><div class="bcf" style="height:90%"></div><div class="bcl">J</div></div>
-                    <div class="bc"><div class="bcf" style="height:100%"></div><div class="bcl">V</div></div>
-                    <div class="bc"><div class="bcf" style="height:32%"></div><div class="bcl">S</div></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /slides-wrap -->
-
-      <div class="wdots-nav" id="wdots-nav">
-        <div class="ndot on" onclick="gs(0)"></div>
-        <div class="ndot" onclick="gs(1)"></div>
-        <div class="ndot" onclick="gs(2)"></div>
-        <div class="ndot" onclick="gs(3)"></div>
-        <div class="ndot" onclick="gs(4)"></div>
+      <button class="vit-nav vit-next" type="button" aria-label="Video siguiente">&#8250;</button>
+    </div>
+    <div class="vit-info" aria-live="polite">
+      <span class="vit-tag" id="vitTag">Nuevo · Sector público</span>
+      <h3 id="vitTitle">zaZÁ PRESUPUESTO</h3>
+      <p id="vitText">Subes el Excel del SIAF y ves tu presupuesto procesado en segundos.</p>
+      <div class="vit-actions">
+        <button class="vit-btn" id="vitPlay" type="button" data-open-video="zaza">▶ Ver el video</button>
+        <a class="vit-link" id="vitLink" href="presupuesto/" data-o="zaza">Probarlo con mi Excel →</a>
       </div>
-    </div><!-- /app-win -->
-    </div><!-- /hero-stage -->
+    </div>
+    <div class="vit-dots" id="vitDots" role="tablist" aria-label="Elegir video"></div>
   </div><!-- /hero-carousel -->
 </div><!-- /hero-split -->
 
 <!-- 5% gap -->
 <div class="hero-gap"></div>
 
+<!-- ═══════ PRODUCTOS (video + enlace en vivo) ═══════ -->
+<section id="productos" class="sec productos">
+  <div class="wrap">
+    <div class="pr-head">
+      <span class="eyebrow rv">Productos propios</span>
+      <h2 class="rv">Lo que construí. <span class="mag">Ábrelo y pruébalo.</span></h2>
+      <p class="lead rv">Herramientas listas para usar, sin instalar nada y sin crear cuenta. Cada una resuelve un problema que vi de cerca.</p>
+    </div>
+
+    <!-- zaZÁ PRESUPUESTO -->
+    <article class="pr-zaza rv" id="zaza" aria-labelledby="zazaT">
+      <div class="pr-phone">
+        <video id="zazaVideo" controls playsinline preload="none" poster="img/cartel-zaza.webp" aria-label="Video: cómo funciona zaZÁ PRESUPUESTO">
+          <source src="video/zaza.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="pr-zaza-info">
+        <div class="pr-badge"><b>Nuevo</b> Sector público · Presupuesto</div>
+        <h3 id="zazaT">zaZÁ <span>PRESUPUESTO</span></h3>
+        <p class="pr-lead">Subes el Excel que exporta el SIAF WEB y ves tu presupuesto procesado en segundos: avance, riesgo y qué hacer primero.</p>
+        <ol class="pr-steps">
+          <li>Exporta el <b>.xls</b> desde el SIAF WEB.</li>
+          <li>Súbelo tal como sale, sin modificarlo.</li>
+          <li>Decide con el análisis ya hecho.</li>
+        </ol>
+        <ul class="pr-feats">
+          <li>Avance y riesgo de ejecución</li>
+          <li>Vista gerencial y vista operativa</li>
+          <li>9 hallazgos con IA y su acción recomendada</li>
+          <li>Exporta a WhatsApp, PDF, Word y Excel</li>
+          <li>Menos de 3 s con 2,081 registros</li>
+          <li>100 % en tu computadora: tus datos no salen</li>
+        </ul>
+        <div class="pr-cta">
+          <a class="btn-p" href="presupuesto/" data-o="zaza">Probar con mi Excel →</a>
+          <a class="btn-d" href="https://wa.me/51954708174?text=Hola%20Phillyps%2C%20me%20interesa%20zaZ%C3%81%20PRESUPUESTO%20para%20mi%20entidad." target="_blank" rel="noopener">Lo quiero en mi entidad</a>
+        </div>
+        <p class="pr-note">Funciona con el .xls exportado del SIAF WEB. El análisis ocurre en tu navegador.</p>
+      </div>
+    </article>
+
+    <div class="pr-cards stg">
+      <!-- MAIA -->
+      <article class="pr-card">
+        <div class="pr-thumb" data-open-video="maia" role="button" tabindex="0" aria-label="Ver el video de MAIA">
+          <video muted loop playsinline preload="none" poster="img/cartel-maia.webp" data-src="video/adelanto-maia.mp4" aria-hidden="true"></video>
+          <span class="vit-play" aria-hidden="true">▶</span>
+        </div>
+        <div>
+          <span class="pr-tag">En desarrollo · Preparación ante lluvias</span>
+          <h3>MAIA · ¿Dónde prepararnos primero?</h3>
+          <p>Ya tienes la información. Falta cruzarla: MAIA junta padrón, riesgo y decreto de emergencia en un mapa.</p>
+          <ul>
+            <li>43 distritos críticos concentran 44,546 usuarios</li>
+            <li>Cuatro fuentes oficiales en un solo cruce</li>
+          </ul>
+          <div class="pr-btns">
+            <a class="btn-s" href="maia/index2" data-o="maia">Abrir MAIA →</a>
+            <a class="btn-s ghost" href="maia/index5" data-o="maia-simulacion">Simular la lluvia</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- AM -->
+      <article class="pr-card">
+        <div class="pr-thumb" data-open-video="am" role="button" tabindex="0" aria-label="Ver el video de AM">
+          <video muted loop playsinline preload="none" poster="img/cartel-am.webp" data-src="video/adelanto-am.mp4" aria-hidden="true"></video>
+          <span class="vit-play" aria-hidden="true">▶</span>
+        </div>
+        <div>
+          <span class="pr-tag">En uso · Cuna Más</span>
+          <h3>AM · Ayuda Memoria en un clic</h3>
+          <p>Busca cualquier territorio y obtén la ayuda memoria ya redactada, lista para presentar.</p>
+          <ul>
+            <li>Del país al centro poblado, también desde el celular</li>
+            <li>Exporta a Word, Excel, PPT, imagen y WhatsApp</li>
+          </ul>
+          <div class="pr-btns">
+            <a class="btn-s" href="am/" data-o="am">Abrir AM →</a>
+            <a class="btn-s ghost" href="https://wa.me/51954708174?text=Hola%20Phillyps%2C%20me%20interesa%20AM%20%28Ayuda%20Memoria%29%20para%20mi%20equipo." target="_blank" rel="noopener">Lo quiero para mi equipo</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+
 <!-- ═══════ SOLUCIONES (unificada: qué construyo + resultados + portafolio) ═══════ -->
 <section id="soluciones" class="sec-dark">
   <div class="wrap sec">
-    <div class="rv"><div class="sol-badge">Sistemas en producción</div></div>
-    <span class="eyebrow rv" style="color:var(--accent-m)">Soluciones implementadas</span>
-    <h2 class="rv" style="color:#fff">Soluciones que ya están funcionando<br><span style="background:linear-gradient(90deg,var(--accent-m),var(--accent-hi));-webkit-background-clip:text;background-clip:text;color:transparent">en organizaciones reales.</span></h2>
-    <p class="lead rv" style="color:rgba(255,255,255,.38);margin-top:10px">Sin buzzwords. Cada solución resuelve un problema específico y su resultado se mide. Los sistemas, en vivo, arriba.</p>
+    <div class="rv"><div class="sol-badge">Casos reales</div></div>
+    <span class="eyebrow rv" style="color:var(--accent-m)">Soluciones</span>
+    <h2 class="rv" style="color:#fff">Soluciones que ya funcionan<br><span style="background:linear-gradient(90deg,var(--accent-m),var(--accent-hi));-webkit-background-clip:text;background-clip:text;color:transparent">en instituciones reales.</span></h2>
+    <p class="lead rv" style="color:rgba(255,255,255,.38);margin-top:10px">Sin buzzwords. Cada caso parte de un problema real y deja algo en uso.</p>
 
     <div class="sol-grid">
 
@@ -395,57 +274,51 @@
         <div class="sol-card">
           <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg></div>
           <div class="sol-body">
-            <div class="sol-name">Aplicaciones Web a Medida</div>
-            <div class="sol-desc">Sistemas para operar con control. Sin hojas de cálculo, sin WhatsApp.</div>
+            <div class="sol-name">Aplicaciones web accionables</div>
+            <div class="sol-desc">Sistemas hechos para tu flujo real: la información en un solo lugar, sin hojas sueltas.</div>
           </div>
-          <div class="sol-metric"><span class="sol-mn"><span data-target="5" data-suffix="+">0+</span></span><span class="sol-ml">sistemas activos</span><span class="sol-mp">En producción</span></div>
+          <div class="sol-metric"><span class="sol-mn">2019</span><span class="sol-ml">Premio a las Buenas Prácticas en Gestión Pública</span><span class="sol-mp">Mi Mantenimiento · PRONIED</span></div>
         </div>
-
         <div class="sol-card">
           <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
           <div class="sol-body">
-            <div class="sol-name">Dashboards e Indicadores</div>
-            <div class="sol-desc">Los datos que importan, visibles en tiempo real. Sin esperas, sin reportes manuales.</div>
+            <div class="sol-name">Dashboards e indicadores</div>
+            <div class="sol-desc">Los datos que importan, visibles sin esperar el reporte de nadie.</div>
           </div>
-          <div class="sol-metric"><span class="sol-mn"><span data-target="4" data-suffix="h">0h</span></span><span class="sol-ml">semanales recuperadas</span><span class="sol-mp">Ayudas Memoria</span></div>
+          <div class="sol-metric"><span class="sol-mn"><span data-target="33">0</span></span><span class="sol-ml">Unidades Territoriales usan el tablero</span><span class="sol-mp">Potenciales Usuarios · Cuna Más</span></div>
         </div>
-
         <div class="sol-card">
           <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke-linejoin="round"/></svg></div>
           <div class="sol-body">
-            <div class="sol-name">Automatización de Procesos</div>
-            <div class="sol-desc">Lo que tomaba horas ocurre solo. Sin intervención, sin errores.</div>
+            <div class="sol-name">Automatización de procesos</div>
+            <div class="sol-desc">Lo que tomaba horas ocurre solo, con controles de calidad.</div>
           </div>
-          <div class="sol-metric"><span class="sol-mn"><span data-target="85" data-suffix="%">0%</span></span><span class="sol-ml">menos tiempo de respuesta</span><span class="sol-mp">Mi Mantenimiento</span></div>
+          <div class="sol-metric"><span class="sol-mn"><span data-target="14" data-suffix=" min">0 min</span></span><span class="sol-ml">para cargar el padrón (antes, 4 h)</span><span class="sol-mp">ETL · Cuna Más</span></div>
         </div>
-
         <div class="sol-card">
           <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
           <div class="sol-body">
-            <div class="sol-name">Gestión Documental</div>
-            <div class="sol-desc">Flujos con validación, firma digital y trazabilidad. Sin papel, sin colas.</div>
+            <div class="sol-name">Reportes automáticos</div>
+            <div class="sol-desc">Informes institucionales que salen solos, con datos validados.</div>
           </div>
-          <div class="sol-metric"><span class="sol-mn"><span data-target="96" data-suffix="%">0%</span></span><span class="sol-ml">menos tiempo por trámite</span><span class="sol-mp">Sello Municipal</span></div>
+          <div class="sol-metric"><span class="sol-mn"><span data-target="7">0</span></span><span class="sol-ml">reportes institucionales automáticos</span><span class="sol-mp">Cuna Más · MIDIS</span></div>
         </div>
-
         <div class="sol-card">
           <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
           <div class="sol-body">
-            <div class="sol-name">Sistemas de Seguimiento</div>
-            <div class="sol-desc">Tickets, compromisos y pipeline bajo control. Nada se pierde.</div>
+            <div class="sol-name">Capacitación y adopción</div>
+            <div class="sol-desc">Un sistema vale si la gente lo usa: capacito a quienes lo operan.</div>
           </div>
-          <div class="sol-metric"><span class="sol-mn">+<span data-target="40" data-suffix="%">0%</span></span><span class="sol-ml">cierre de oportunidades</span><span class="sol-mp">Potenciales</span></div>
+          <div class="sol-metric"><span class="sol-mn">+<span data-target="200">0</span></span><span class="sol-ml">especialistas de UGEL y DRE capacitados</span><span class="sol-mp">Mi Mantenimiento · PRONIED</span></div>
         </div>
-
         <div class="sol-card">
           <div class="sol-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
           <div class="sol-body">
-            <div class="sol-name">Integración de Información</div>
-            <div class="sol-desc">Tus sistemas se hablan entre sí: la información fluye y se consolida sola, sin copiar y pegar.</div>
+            <div class="sol-name">Integración de información</div>
+            <div class="sol-desc">Tus fuentes se cruzan solas: la información fluye, sin copiar y pegar.</div>
           </div>
-          <div class="sol-metric"><span class="sol-mn"><span data-target="0" data-suffix="">0</span></span><span class="sol-ml">errores de validación</span><span class="sol-mp">zaZÁ</span></div>
+          <div class="sol-metric"><span class="sol-mn"><span data-target="4">0</span></span><span class="sol-ml">fuentes oficiales en un solo cruce</span><span class="sol-mp">MAIA</span></div>
         </div>
-
       </div><!-- /sol-list -->
 
       <!-- DERECHA: cómo trabajamos + CTA -->
@@ -476,6 +349,30 @@
       </aside>
 
     </div><!-- /sol-grid -->
+  </div>
+</section>
+
+<!-- ═══════ ACADEMIA ═══════ -->
+<section id="academia" class="sec academia">
+  <div class="wrap">
+    <div class="ac-card rv">
+      <div>
+        <span class="eyebrow" style="color:var(--accent-hi)">Lo más nuevo</span>
+        <h2>BRAVO <span>ACADEMY</span></h2>
+        <p class="ac-lead">Tu página web .com, con IA, en 3 horas. Voy a tu casa y salimos con tu web publicada: tú la creas, yo te guío.</p>
+        <div class="ac-chips"><span>Para negocios</span><span>Para familias</span><span>Para profesionales</span></div>
+        <div class="pr-cta">
+          <a class="btn-p" href="bravo-academy/" data-o="academia">Conocer la academia →</a>
+          <a class="btn-d" href="https://wa.me/51954708174?text=Hola%2C%20quiero%20reservar%20mi%20cupo%20en%20BRAVO%20ACADEMY" target="_blank" rel="noopener">Reservar por WhatsApp</a>
+        </div>
+      </div>
+      <div class="pr-phone">
+        <div class="pr-thumb" data-open-video="academia" role="button" tabindex="0" aria-label="Ver el video de BRAVO ACADEMY" style="border-radius:26px;border:none">
+          <video muted loop playsinline preload="none" poster="img/cartel-academia.webp" data-src="video/adelanto-academia.mp4" aria-hidden="true"></video>
+          <span class="vit-play" aria-hidden="true">▶</span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -522,6 +419,15 @@
           <div class="sv2-img-fb" style="display:none">PB</div>
         </div>
 
+        <!-- Mi historia en video -->
+        <div class="sv2-story" data-open-video="historia" role="button" tabindex="0" aria-label="Ver mi historia en video">
+          <div class="pr-thumb">
+            <img src="img/cartel-historia.webp" alt="" loading="lazy">
+            <span class="vit-play" aria-hidden="true">▶</span>
+          </div>
+          <div><strong>Mi historia en 43 s</strong><span>Del dato a la acción, en video.</span></div>
+        </div>
+
       </div><!-- /photo-col -->
 
       <!-- ── COLUMNA DERECHA: nombre + features + stats ── -->
@@ -529,10 +435,14 @@
 
         <!-- Nombre -->
         <div class="sv2-name-block">
-          <p class="sv2-tag">Diseño y construyo soluciones digitales</p>
+          <p class="sv2-tag">Ingeniero de Sistemas e Informática</p>
           <h2 class="sv2-nombre">Phillyps <span class="sv2-grad">Bravo</span></h2>
-          <p class="sv2-bio">Construyo soluciones que funcionan desde el primer día.
-            Mi enfoque: entender el problema real, diseñar lo más simple posible y construirlo.</p>
+          <p class="sv2-bio">Aprendo el proceso y el ciclo de vida de tus datos, encuentro dónde se pierde el tiempo y construyo la herramienta que lo resuelve.
+            Más de 17 años de trayectoria, más de 10 en datos.</p>
+          <div class="sv2-creds" style="margin-top:16px">
+            <span class="sv2-cred">Premio a las Buenas Prácticas en Gestión Pública 2019</span>
+            <span class="sv2-cred">Premio a la Ingeniería Aplicada, IGP 2015</span>
+          </div>
         </div>
 
         <!-- Features con hover -->
@@ -582,6 +492,12 @@
           </div>
 
         </div><!-- /features -->
+
+        <div class="sv2-links">
+          <a class="btn-p" href="cv/" style="font-size:13px;padding:11px 22px">Ver mi CV →</a>
+          <a class="btn-g" href="cv/Phillyps-Bravo-CV.pdf" download style="font-size:13px;padding:11px 22px">Descargar PDF</a>
+          <a class="btn-g" href="https://pe.linkedin.com/in/phillyps" target="_blank" rel="noopener" style="font-size:13px;padding:11px 22px">LinkedIn</a>
+        </div>
 
       </div><!-- /content -->
     </div><!-- /grid -->
@@ -653,18 +569,40 @@
   </div>
 </div>
 
+<!-- ═══════ REPRODUCTOR DE VIDEO ═══════ -->
+<div class="vm" id="vm" role="dialog" aria-modal="true" aria-labelledby="vmTitle" hidden>
+  <div class="vm-bg" data-close></div>
+  <div class="vm-card">
+    <button class="vm-x" type="button" data-close aria-label="Cerrar video">✕</button>
+    <video id="vmVideo" controls playsinline preload="none"></video>
+    <div class="vm-info">
+      <strong id="vmTitle"></strong>
+      <a class="btn-p" id="vmLink" href="#" style="font-size:13px;padding:10px 22px"></a>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════ FOOTER ═══════ -->
 <footer>
   <div class="wrap">
           <div class="ft-hero"><div class="ft-sparkle-a"></div><div class="ft-sparkle-b"></div><div class="ft-sparkle-c"></div>
         <div class="ft-lockup">
-          <img class="hat" src="img/hat.png" alt="BRAVO — sombrero de transformación">
+          <img class="hat" src="img/hat.webp" alt="BRAVO — sombrero de transformación">
           <div class="ft-wm"><span class="w">BRAV</span><span class="brk">[</span><span class="o">O</span><span class="brk">]</span></div>
           <div class="wm-rule"><span class="star">✦</span></div>
           <div class="ft-slogan"><span class="br">&lt;</span> Hacemos que funcione<span class="cur">_</span> <span class="br">&gt;</span></div>
         </div>
         <a class="c-call" href="#contacto">Agendemos una llamada →</a>
       </div>
+      <nav class="ft-nav" aria-label="Enlaces del sitio">
+        <a href="#productos">Productos</a>
+        <a href="#academia">Academia</a>
+        <a href="presupuesto/">zaZÁ PRESUPUESTO</a>
+        <a href="maia/index2">MAIA</a>
+        <a href="am/">AM</a>
+        <a href="cv/">CV</a>
+        <a href="https://pe.linkedin.com/in/phillyps" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
       <div class="ft-bottom">
         <div class="ft-copy">© 2026 BRAVO · Lima, Perú</div>
         <div class="ft-made">Hacemos que funcione.</div>
@@ -678,12 +616,12 @@
      JS — orden:
      nav.js      → hamburguesa mobile
      cursor.js   → cursor diamante
-     carousel.js → hero slides
+     vitrina.js  → videos del hero, miniaturas y reproductor
      app.js      → reveals, contadores, form, scroll
 ════════════════════════════════════════════════ -->
 <script src="js/nav.js" defer></script>
 <script src="js/cursor.js" defer></script>
-<script src="js/carousel.js" defer></script>
+<script src="js/vitrina.js" defer></script>
 <script src="js/app.js" defer></script>
 <script src="js/modal.js" defer></script>
 <script src="js/hatbot.js" defer></script>

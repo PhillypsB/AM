@@ -24,13 +24,13 @@
 
     /* Botón flotante */
     '<button id="hatbot-btn" aria-label="Chatear con BRAV[O]" aria-expanded="false">',
-    '  <img src="img/hat.png" alt="BRAV[O] bot">',
+    '  <img src="img/hat.webp" alt="BRAV[O] bot">',
     '</button>',
 
     /* Chat popup */
     '<div id="hatbot-chat" role="dialog" aria-label="Chat BRAV[O]" aria-hidden="true">',
     '  <div class="hbc-header">',
-    '    <div class="hbc-avatar"><img src="img/hat.png" alt=""></div>',
+    '    <div class="hbc-avatar"><img src="img/hat.webp" alt=""></div>',
     '    <div class="hbc-info">',
     '      <div class="hbc-name">BRAV[O]</div>',
     '      <div class="hbc-status">● En línea · responde rápido</div>',

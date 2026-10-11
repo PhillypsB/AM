@@ -143,3 +143,8 @@ body.nav-open .nav-drawer{
   .nav-drawer{display:flex}
   .theme-toggle{width:36px;height:36px;min-width:36px}
 }
+@media(max-width:420px){
+  .nav-i{gap:10px}
+  .nav-right{gap:8px}
+  .nav-btn{padding-left:14px;padding-right:14px}
+}

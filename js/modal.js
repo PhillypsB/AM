@@ -1,50 +1,50 @@
-/* modal.js — Detalle de cada solución (click en .sol-card)
+/* modal.js — Detalle de cada caso (click en .sol-card). Cifras: las del CV (09 CV/CV_MAESTRO.md); no inventar otras.
    Accesible: ESC, click en fondo, botón ✕, navegable por teclado.
 */
 (function(){
 
   var DATA = [
     {
-      tag: 'Sistemas en producción',
-      title: 'Aplicaciones Web a Medida',
-      prob: 'Las hojas de cálculo y los chats funcionan… hasta que la operación crece. Entonces la información se duplica, se pierde, o depende de la memoria de una sola persona.',
-      sol: 'Construyo sistemas web hechos para tu flujo real de trabajo: cada quien ve lo que necesita, la información vive en un solo lugar y la operación deja de depender de nadie en particular.',
-      num: '5+', lbl: 'sistemas activos, todos en uso diario'
+      tag: 'Caso · Mi Mantenimiento · PRONIED',
+      title: 'Aplicaciones web accionables',
+      prob: 'El Programa de Mantenimiento de locales escolares vivía en Excel y en un sistema que solo veía una parte del ciclo. La información se duplicaba y era difícil seguir el dinero.',
+      sol: 'Fui parte del equipo de «Mi Mantenimiento», que integra el ciclo completo en una sola plataforma: responsables, transferencias, ejecución y devoluciones, con automatización y trazabilidad para la gestión interna y para los usuarios de todo el país. Lo diseñé y lideré con la oficina de TI. Sigue en uso desde 2019.',
+      num: '2019', lbl: 'Premio a las Buenas Prácticas en Gestión Pública (Ciudadanos al Día)'
     },
     {
-      tag: 'Caso · Ayudas Memoria',
-      title: 'Dashboards e Indicadores',
-      prob: 'Para saber cómo va la semana había que pedir el reporte, esperar a que alguien lo armara y confiar en que estuviera al día.',
-      sol: 'Un tablero que se actualiza solo: compromisos, vencimientos y cumplimiento visibles en el momento, con alertas antes de que algo se venza.',
-      num: '4h', lbl: 'semanales recuperadas por el equipo'
+      tag: 'Caso · Potenciales Usuarios · Cuna Más',
+      title: 'Dashboards e indicadores',
+      prob: 'Las Unidades Territoriales esperaban un Excel con los potenciales usuarios del programa y dependían de que alguien lo armara y lo enviara.',
+      sol: 'Entregué un tablero que se actualiza solo cada semana, con filtros por unidad territorial, provincia y distrito, y descarga a Excel. Esperaban un Excel; recibieron una herramienta que hoy usan.',
+      num: '33', lbl: 'Unidades Territoriales usan el tablero'
     },
     {
-      tag: 'Caso · Mi Mantenimiento',
-      title: 'Automatización de Procesos',
-      prob: 'Cada solicitud de mantenimiento pasaba por llamadas, papeles y re-tipeo. Horas de trabajo manual y solicitudes que se perdían en el camino.',
-      sol: 'Las solicitudes entran solas al sistema, se asignan automáticamente al técnico correcto y todos ven el estado en tiempo real. Lo que tomaba horas, ocurre sin intervención.',
-      num: '85%', lbl: 'menos tiempo de respuesta'
+      tag: 'Caso · Padrones SAF y SCD · Cuna Más',
+      title: 'Automatización de procesos',
+      prob: 'Cargar y procesar el padrón del servicio de acompañamiento a familias tomaba 4 horas con dedicación plena, y los reportes se emitían a lo largo de la semana.',
+      sol: 'Construí un ETL en Python y SQL Server, con controles de consistencia, que valida y carga el padrón. Hoy la carga toma 14 minutos y los reportes salen el mismo día en que llega el padrón.',
+      num: '14 min', lbl: 'para cargar el padrón SAF (antes, 4 horas)'
     },
     {
-      tag: 'Caso · Sello Municipal',
-      title: 'Gestión Documental',
-      prob: 'Un trámite tomaba 3 días: papel, colas, sellos físicos y expedientes que había que buscar a mano.',
-      sol: 'Flujo 100% digital con validaciones, firma electrónica y trazabilidad completa. El mismo trámite hoy toma 2 horas y no usa una sola hoja de papel.',
-      num: '96%', lbl: 'menos tiempo por trámite (3 días → 2 horas)'
+      tag: 'Caso · Reportes institucionales · Cuna Más',
+      title: 'Reportes automáticos',
+      prob: 'Cada informe para el programa, el MIDIS y los organismos de control había que armarlo a mano, y cada pedido de información reiniciaba la cadena de pedir, esperar, cruzar y dar formato.',
+      sol: 'Dejé 7 reportes institucionales generándose de forma automática, con trazabilidad hasta el MIDIS y la Contraloría. Y AM: la ayuda memoria de cualquier territorio sale ya redactada, en un clic.',
+      num: '7', lbl: 'reportes institucionales generados automáticamente'
     },
     {
-      tag: 'Caso · Potenciales',
-      title: 'Sistemas de Seguimiento',
-      prob: 'Las oportunidades comerciales vivían en cuadernos y correos. Los seguimientos se olvidaban y nadie sabía cuánto había realmente en el pipeline.',
-      sol: 'Un CRM adaptado al flujo comercial real: pipeline visible, recordatorios automáticos de seguimiento y cada oportunidad con su historia completa.',
-      num: '+40%', lbl: 'cierre de oportunidades'
+      tag: 'Caso · Mi Mantenimiento · PRONIED',
+      title: 'Capacitación y adopción',
+      prob: 'Un sistema nuevo no sirve si quienes lo operan no lo adoptan, sobre todo cuando hay que llegar a todo el país.',
+      sol: 'Capacité a más de 200 especialistas de UGEL y DRE a nivel nacional y coordiné un equipo técnico de 4 personas en el seguimiento de metas y el control presupuestal.',
+      num: '+200', lbl: 'especialistas de UGEL y DRE capacitados'
     },
     {
-      tag: 'Caso · zaZÁ',
-      title: 'Integración de Información',
-      prob: 'Entradas vendidas por varios canales, listas en Excel y control de acceso a mano: duplicados, colas y discusiones en la puerta.',
-      sol: 'Toda la información conectada en una sola fuente. Cada entrada se valida por QR en tiempo real contra el sistema: ni duplicados ni entradas falsas.',
-      num: '0', lbl: 'errores de validación en eventos con cientos de asistentes'
+      tag: 'Producto · MAIA',
+      title: 'Integración de información',
+      prob: 'El padrón, el escenario de riesgo, el decreto de emergencia y los límites territoriales viven en lugares distintos. Ya tienes la información; falta cruzarla.',
+      sol: 'MAIA cruza cuatro fuentes oficiales en un solo paso y muestra en un mapa dónde conviene preparar primero: coinciden mucha exposición a inundaciones y mucha gente atendida.',
+      num: '4', lbl: 'fuentes oficiales en un solo cruce'
     }
   ];
 

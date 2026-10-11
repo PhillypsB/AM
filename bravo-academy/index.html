@@ -657,5 +657,22 @@ window.BA_CONFIG = {
 
 </script>
 <script>BravoAcademy.render(document.getElementById('app'));</script>
+<script>
+/* Cuenta los clics hacia WhatsApp (reserva o consulta) y desde qué zona de la página; sin datos personales. */
+(function () {
+  function zona(el) {
+    var z = el.closest('.ba-bar,.ba-fab,.ba-nav,.ba-menu,.ba-card,.ba-midcta,.ba-reserve,section,header');
+    if (!z) return 'pagina';
+    var c = [].filter.call(z.classList, function (x) { return x.indexOf('ba-') === 0; })[0] || '';
+    return (z.id || c.replace(/^ba-/, '') || z.tagName).toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 30);
+  }
+  function enviar(e, o) { try { navigator.sendBeacon('/_avisos/evento', new Blob([JSON.stringify({ e: e, o: o })], { type: 'application/json' })); } catch (x) {} }
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href^="https://wa.me/"]');
+    if (a) enviar(/reserv/i.test(a.textContent) ? 'reserva' : 'whatsapp', zona(a));
+  });
+  document.addEventListener('submit', function (ev) { if (ev.target.matches && ev.target.matches('form[data-ask]')) enviar('crear', zona(ev.target)); });
+})();
+</script>
 </body>
 </html>
