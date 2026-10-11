@@ -438,6 +438,8 @@ window.BA_CONFIG = {
       hat: 'img/sombrero-voltaje.webp',
       poster: 'img/hero-poster.webp'
     },
+    // Los botones de reserva llevan al módulo de reservas (elige fecha y horario). Vacío = vuelve a WhatsApp.
+    reservaUrl: 'https://reservas.phillyps-bravo.site/academia/',
     msgReserva: 'Hola, quiero reservar mi cupo en BRAVO ACADEMY',
     msgInfo: 'Hola, quiero información de BRAVO ACADEMY',
     msgDetalle: 'Hola, quiero el detalle de BRAVO ACADEMY'
@@ -460,7 +462,7 @@ window.BA_CONFIG = {
 
   function wm(acad) { return '<span class="ba-wm"><span class="w">BRAV</span><span class="brk">[</span><span class="o">O</span><span class="brk">]</span>' + (acad ? '<span class="acad">ACADEMY</span>' : '') + '</span>'; }
   function tagline() { return '<span class="ba-tagline"><span class="br">&lt;</span> Hacemos que funcione<span class="cur">_</span> <span class="br">&gt;</span></span>'; }
-  function btn(c, label, opts) { opts = opts || {}; return '<a class="ba-btn ' + (opts.cls || 'ba-btn--primary') + '" href="' + (opts.href || wa(c, c.msgReserva)) + '"' + (opts.href && opts.href.charAt(0) === '#' ? '' : ' target="_blank" rel="noopener"') + '>' + (opts.icon || '') + label + '</a>'; }
+  function btn(c, label, opts) { opts = opts || {}; var href = opts.href || c.reservaUrl || wa(c, c.msgReserva); var same = href.charAt(0) === '#' || (c.reservaUrl && href === c.reservaUrl); return '<a class="ba-btn ' + (opts.cls || 'ba-btn--primary') + '" href="' + href + '"' + (same ? '' : ' target="_blank" rel="noopener"') + '>' + (opts.icon || '') + label + '</a>'; }
   function eyebrow(t) { return '<p class="ba-eyebrow">' + t + '</p>'; }
 
   var NAV = [['#crear', 'Qué crearás'], ['#garantia', 'Garantía'], ['#preguntas', 'Preguntas']];
@@ -500,7 +502,7 @@ window.BA_CONFIG = {
       '<h2 class="ba-h2" id="ba-caso">¿Cuál es tu <span class="ba-mag">caso?</span></h2></div>' +
       '<div class="ba-cards ba-cards--3">' + A.map(function (a, i) {
         return '<article class="ba-card ba-reveal"><span class="ba-card__idx">[0' + (i + 1) + '] ' + a[0] + '</span><h3 class="ba-title">' + a[1] + '</h3><p>' + a[2] + '</p>' +
-          '<a class="ba-card__cta" href="' + wa(c, 'Hola, quiero reservar mi fecha en BRAVO ACADEMY. ' + a[4]) + '" target="_blank" rel="noopener">' + a[3] + ' →</a></article>';
+          '<a class="ba-card__cta" href="' + (c.reservaUrl || wa(c, 'Hola, quiero reservar mi fecha en BRAVO ACADEMY. ' + a[4])) + '"' + (c.reservaUrl ? '' : ' target="_blank" rel="noopener"') + '>' + a[3] + ' →</a></article>';
       }).join('') + '</div>' +
       '<p class="ba-closing ba-reveal">Vamos. Yo te acompaño. <span class="ba-glowtext">No estás solo.</span></p><p class="ba-reveal" style="margin:var(--space-4) 0 0">' + tagline() + '</p></div></section>';
   };
@@ -532,7 +534,7 @@ window.BA_CONFIG = {
       '<h2 class="ba-h2" id="ba-sorp">El cómo no te lo cuento <span class="ba-glowtext">aquí.</span></h2><p class="ba-lede">En la primera hora lo ves. En la segunda, lo haces tú.</p></div></div></section>';
   };
   S.cta = function (c) {
-    return '<section class="ba-midcta"><div class="ba-wrap ba-reveal">' + btn(c, 'Reserva tu fecha', { cls: 'ba-btn--primary ba-btn--lg', icon: I.wa }) + '<p class="ba-small" style="margin:var(--space-3) 0 0">Te respondo en menos de 24 horas.</p></div></section>';
+    return '<section class="ba-midcta"><div class="ba-wrap ba-reveal">' + btn(c, 'Reserva tu fecha', { cls: 'ba-btn--primary ba-btn--lg' }) + '<p class="ba-small" style="margin:var(--space-3) 0 0">Te respondo en menos de 24 horas.</p></div></section>';
   };
   S.guarantee = function () {
     return '<section class="ba-section" id="garantia" aria-labelledby="ba-gar"><div class="ba-wrap"><div class="ba-guarantee ba-reveal">' + eyebrow('Garantía de aprendizaje') +
@@ -563,9 +565,9 @@ window.BA_CONFIG = {
   };
   S.reserve = function (c) {
     return '<section class="ba-section" id="reserva" aria-labelledby="ba-res"><div class="ba-wrap"><div class="ba-reserve ba-reveal"><img class="ba-reserve__hat" src="' + c.img.hat + '" alt="" loading="lazy">' +
-      '<h2 class="ba-h2" id="ba-res">¿Qué quieres crear? <span class="ba-glowtext">Escríbeme y vemos tu fecha.</span></h2>' +
-      '<ol><li>Elige fecha y horario.</li><li>Te paso el detalle por WhatsApp.</li><li>Separas tu cupo.</li><li>Recibes tu confirmación.</li></ol>' +
-      btn(c, 'Reserva tu fecha', { cls: 'ba-btn--primary ba-btn--lg', icon: I.wa }) +
+      '<h2 class="ba-h2" id="ba-res">¿Qué quieres crear? <span class="ba-glowtext">Elige tu fecha y horario.</span></h2>' +
+      '<ol><li>Elige fecha y horario en el calendario.</li><li>Te paso el detalle por WhatsApp.</li><li>Separas tu cupo.</li><li>Recibes tu confirmación.</li></ol>' +
+      btn(c, 'Reserva tu fecha', { cls: 'ba-btn--primary ba-btn--lg' }) +
       '<form class="ba-ask" data-ask><label for="ba-ask-in">¿Qué página quieres crear?</label><input id="ba-ask-in" name="q" type="text" placeholder="¿Qué página quieres crear?" autocomplete="off">' +
       '<button type="submit" aria-label="Enviar por WhatsApp">' + I.arrow + '</button></form>' +
       '<p class="ba-small" style="margin-top:12px">Se abre WhatsApp con tu mensaje ya escrito.</p></div></div></section>';
@@ -668,8 +670,8 @@ window.BA_CONFIG = {
   }
   function enviar(e, o) { try { navigator.sendBeacon('/_avisos/evento', new Blob([JSON.stringify({ e: e, o: o })], { type: 'application/json' })); } catch (x) {} }
   document.addEventListener('click', function (ev) {
-    var a = ev.target.closest && ev.target.closest('a[href^="https://wa.me/"]');
-    if (a) enviar(/reserv/i.test(a.textContent) ? 'reserva' : 'whatsapp', zona(a));
+    var a = ev.target.closest && ev.target.closest('a[href^="https://wa.me/"],a[href^="https://reservas.phillyps-bravo.site/"]');
+    if (a) enviar(a.href.indexOf('https://reservas.') === 0 || /reserv/i.test(a.textContent) ? 'reserva' : 'whatsapp', zona(a));
   });
   document.addEventListener('submit', function (ev) { if (ev.target.matches && ev.target.matches('form[data-ask]')) enviar('crear', zona(ev.target)); });
 })();
