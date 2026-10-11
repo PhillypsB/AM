@@ -109,7 +109,7 @@
   <div class="video" id="box" hidden>
     <video id="v" playsinline preload="auto" aria-label="Video de BRAVO ACADEMY"></video>
     <button class="play" id="play" type="button" aria-label="Reproducir el video con sonido" hidden>▶</button>
-    <button class="sound" id="sound" type="button" hidden>🔊 Toca para activar el sonido</button>
+    <button class="sound" id="sound" type="button" hidden>🔊 Toca la pantalla para el sonido</button>
   </div>
 </div>
 
@@ -165,7 +165,7 @@
   function enable() {
     if (ready) return; ready = true;
     go.setAttribute('aria-disabled', 'false'); go.textContent = 'Continuar'; go.classList.add('ready');
-    msg1.textContent = 'Listo: ya puedes continuar'; sound.hidden = true;
+    msg1.textContent = 'Listo: ya puedes continuar';
   }
   function lock() { go.setAttribute('aria-disabled', 'true'); go.textContent = 'Espera el final'; }
 
@@ -180,15 +180,34 @@
   box.style.backgroundImage = 'url(' + POSTER + ')';
   v.poster = POSTER; v.src = VIDEO; box.hidden = false; lock();
 
-  var sawEnd = false;
-  v.addEventListener('timeupdate', function () { if (v.duration) bar.style.width = (100 * v.currentTime / v.duration) + '%'; });
-  v.addEventListener('ended', function () { if (!sawEnd) { sawEnd = true; send('mudanza_fin'); } bar.style.width = '100%'; enable(); });
-  v.addEventListener('playing', function () { play.hidden = true; sound.hidden = ready || !v.muted; });
+  // El video se repite sin parar hasta que la persona pulse Continuar. Con loop el evento 'ended' no se dispara,
+  // así que el final de la primera vuelta se detecta por el tiempo (o cuando el video vuelve a empezar).
+  v.loop = true;
+  var sawEnd = false, last = 0;
+  function finished() {
+    if (!sawEnd) { sawEnd = true; send('mudanza_fin'); }
+    bar.style.width = '100%'; enable();
+  }
+  v.addEventListener('timeupdate', function () {
+    if (!v.duration) return;
+    if (!sawEnd) bar.style.width = (100 * v.currentTime / v.duration) + '%';
+    if (v.currentTime >= v.duration - 0.4 || v.currentTime < last - 1) finished();
+    last = v.currentTime;
+  });
+  v.addEventListener('ended', finished);
+  v.addEventListener('playing', function () { play.hidden = true; sound.hidden = !v.muted; });
 
   // Con audio desde el primer momento. Los navegadores solo lo permiten a veces sin un toque previo:
   // si lo bloquean, arranca en silencio y cualquier toque sobre el video activa el sonido.
   function unmute() { v.muted = false; sound.hidden = true; if (v.paused) v.play(); }
-  box.addEventListener('click', function () { if (v.muted || v.paused) unmute(); });
+  // El primer toque, clic o tecla en CUALQUIER parte de la página enciende el sonido (no hace falta buscar el botón).
+  ['pointerdown', 'touchstart', 'keydown', 'click'].forEach(function (ev) {
+    document.addEventListener(ev, function once(e) {
+      if (e.target === go || go.contains(e.target)) return;
+      if (v.muted || v.paused) unmute();
+      if (!v.muted && !v.paused) ['pointerdown', 'touchstart', 'keydown', 'click'].forEach(function (x) { document.removeEventListener(x, once, true); });
+    }, true);
+  });
   var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (calm) { play.hidden = false; }
   else {
