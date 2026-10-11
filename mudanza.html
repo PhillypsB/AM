@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#070708">
+<title>Nos mudamos · BRAVO</title>
+<meta name="description" content="BRAVO ya tiene casa propia: phillyps-bravo.site. Mira la academia y sigue a tu enlace.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23070708'/%3E%3Cpath d='M16 3l1.4 2.9 3.1.5-2.3 2.2.6 3.1L16 10.2l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5z' fill='%23FF4D94'/%3E%3Cpath d='M10.5 13h11l1.3 10h-13.6z' fill='%23141418' stroke='%23FF0A6C' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M9.8 20h12.4l.4 3H9.4z' fill='%23FF0A6C'/%3E%3Cellipse cx='16' cy='24' rx='11' ry='3' fill='%23141418' stroke='%23FF0A6C' stroke-width='1.6'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #070708; --bg2: #0d0d10; --ink: #FDF7FA; --soft: #c9c0c5; --faint: #9A8F95;
+    --magenta: #FF0A6C; --rose: #FF4D94; --plum: #5C0029;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    min-height: 100svh; background: var(--bg); color: var(--ink);
+    font-family: Manrope, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5; -webkit-font-smoothing: antialiased;
+    display: grid; place-items: center; padding: 20px 16px calc(28px + env(safe-area-inset-bottom));
+    background-image:
+      radial-gradient(ellipse 70% 45% at 50% 0%, rgba(255, 10, 108, .22), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(92, 0, 41, .35), transparent 70%);
+  }
+  main { width: 100%; max-width: 440px; display: grid; justify-items: center; gap: 18px; text-align: center; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; font: 400 18px/1 'Archivo Black', Impact, system-ui, sans-serif; letter-spacing: .02em; }
+  .hat { width: 34px; height: 34px; overflow: visible; }
+  .hat .star { transform-origin: 14px 5px; animation: star 4.5s var(--ease) .3s both; }
+  @keyframes star {
+    0% { transform: translateY(-16px) scale(.4); opacity: 0; }
+    30% { opacity: 1; }
+    60% { transform: translateY(2px) scale(1); }
+    100% { transform: none; opacity: 1; filter: drop-shadow(0 0 5px var(--magenta)); }
+  }
+  h1 {
+    font: 400 clamp(2.6rem, 11vw, 3.6rem)/1 'Archivo Black', Impact, system-ui, sans-serif; letter-spacing: -.015em;
+    animation: rise .8s var(--ease) both;
+  }
+  h1 em { font-style: normal; color: var(--magenta); text-shadow: 0 0 28px rgba(255, 10, 108, .45); }
+  .lede { color: var(--soft); max-width: 36ch; animation: rise .8s var(--ease) .12s both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  .video {
+    position: relative; height: min(54svh, 520px); width: auto; max-width: 100%; aspect-ratio: 9 / 16; justify-self: center;
+    border-radius: 22px; overflow: hidden; background: var(--bg2) center / cover no-repeat;
+    border: 1px solid rgba(253, 247, 250, .14);
+    box-shadow: 0 0 0 6px rgba(255, 10, 108, .06), 0 30px 80px rgba(255, 10, 108, .22);
+    animation: rise .9s var(--ease) .2s both;
+  }
+  .video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .video .bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--magenta); transition: width .25s linear; }
+  .video button.sound, .video button.play {
+    position: absolute; border: 0; cursor: pointer; color: var(--ink); font: 600 13px/1 Manrope, system-ui, sans-serif;
+    background: rgba(7, 7, 8, .72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(253, 247, 250, .2);
+  }
+  .video button.sound { right: 10px; bottom: 14px; padding: 9px 13px; border-radius: 999px; }
+  .video button.play { inset: 0; margin: auto; width: 72px; height: 72px; border-radius: 50%; font-size: 26px; }
+  [hidden] { display: none !important; }
+
+  .actions { display: grid; gap: 12px; width: min(100%, 340px); justify-items: center; animation: rise .9s var(--ease) .3s both; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 52px;
+    padding: .8em 1.4em; border-radius: 999px; border: 0; cursor: pointer; text-decoration: none;
+    font: 700 16px/1 Manrope, system-ui, sans-serif; background: var(--magenta); color: #070708;
+    box-shadow: 0 12px 36px rgba(255, 10, 108, .35); transition: transform .35s var(--ease), box-shadow .35s var(--ease), opacity .35s;
+  }
+  .btn:hover:not([aria-disabled=true]) { transform: translateY(-2px); box-shadow: 0 18px 48px rgba(255, 10, 108, .5); }
+  .btn[aria-disabled=true] { background: rgba(253, 247, 250, .08); color: var(--faint); box-shadow: none; cursor: default; border: 1px solid rgba(253, 247, 250, .14); }
+  .btn.ready { animation: pulse 1.8s var(--ease) 2; }
+  @keyframes pulse { 50% { transform: scale(1.04); } }
+  .dest { font-size: 13px; color: var(--faint); word-break: break-all; }
+  .dest b { color: var(--ink); font-weight: 600; }
+  .links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; font-size: 14px; }
+  .links a { color: var(--rose); font-weight: 600; text-decoration: none; padding: 8px 2px; }
+  .links a:hover, .links a:focus-visible { text-decoration: underline; }
+  .note { font-size: 13px; color: var(--faint); max-width: 38ch; }
+  .note a { color: var(--rose); }
+  :focus-visible { outline: 2px solid var(--magenta); outline-offset: 3px; border-radius: 8px; }
+  @media (max-height: 700px) { .video { height: 44svh; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">
+    <svg class="hat" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <path class="star" d="M14 1l1.2 2.5 2.7.4-2 1.9.5 2.7L14 7.2l-2.4 1.3.5-2.7-2-1.9 2.7-.4z" fill="#FF4D94"/>
+      <path d="M8.5 11h11l1.2 10H7.3z" fill="#141418" stroke="#FF0A6C" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M7.7 18h12.6l.4 3H7.3z" fill="#FF0A6C"/>
+      <ellipse cx="14" cy="22" rx="11.5" ry="3.2" fill="#141418" stroke="#FF0A6C" stroke-width="1.6"/>
+    </svg>
+    BRAVO
+  </div>
+
+  <h1>Nos <em>mudamos</em>.</h1>
+  <p class="lede">BRAVO ya tiene casa propia. Mira la academia y te llevamos a tu enlace en el sitio nuevo.</p>
+
+  <div class="video" id="box" hidden>
+    <video id="v" muted playsinline preload="auto" aria-label="Video de BRAVO ACADEMY"></video>
+    <button class="play" id="play" type="button" aria-label="Reproducir el video" hidden>▶</button>
+    <button class="sound" id="sound" type="button" hidden>🔊 Activar sonido</button>
+    <i class="bar" id="bar"></i>
+  </div>
+
+  <div class="actions">
+    <a class="btn" id="go" href="https://phillyps-bravo.site/" aria-disabled="false">Continuar</a>
+    <p class="dest">Te llevamos a <b id="dest">phillyps-bravo.site</b></p>
+    <div class="links">
+      <a id="skip" href="https://phillyps-bravo.site/" hidden>Saltar el video</a>
+      <a id="acad" href="https://phillyps-bravo.site/bravo-academy/">Conocer BRAVO ACADEMY →</a>
+    </div>
+    <p class="note" id="maia" hidden>
+      ¿Guardaste cosas en MAIA? Quedaron en este navegador, en el enlace anterior.
+      <a id="viejo" href="/maia/?viejo=1">Abrir MAIA anterior</a> para copiarlas.
+    </p>
+  </div>
+</main>
+
+<noscript><p style="text-align:center;padding:16px"><a style="color:#FF4D94" href="https://phillyps-bravo.site/">Continuar a phillyps-bravo.site</a></p></noscript>
+
+<script>
+(function () {
+  var NEW = 'https://phillyps-bravo.site';
+  var VIDEO = NEW + '/bravo-academy/video/bravo-academy-truco.mp4';
+  var POSTER = NEW + '/bravo-academy/img/hero-poster.webp';
+  var APPS = ['am', 'bravo-academy', 'uppm', 'maia', 'mapa', 'cv', 'convenios', 'presupuesto'];
+
+  // Dónde quería ir la persona: viene en ?de=/ruta/ (lo pone vercel.json). Solo rutas del propio sitio.
+  var q = new URLSearchParams(location.search);
+  var de = q.get('de') || '/';
+  if (!/^\/(?!\/)[A-Za-z0-9._~!$&'()*+,;=:@%\/-]{0,300}$|^\/$/.test(de) || /^\/mudanza/.test(de)) de = '/';
+  q.delete('de'); q.delete('viejo');
+  var rest = q.toString();
+  var target = NEW + de + (rest ? (de.indexOf('?') < 0 ? '?' : '&') + rest : '') + location.hash;
+  var seg = (de.split('/')[1] || '').toLowerCase();
+  var app = seg === '' ? 'inicio' : (APPS.indexOf(seg) >= 0 ? seg : 'otros');
+
+  // Si esta misma página se abre ya en el sitio nuevo, no hay nada que avisar.
+  if (location.hostname === 'phillyps-bravo.site' || location.hostname === 'www.phillyps-bravo.site') { location.replace(target); return; }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var go = $('go'), skip = $('skip'), box = $('box'), v = $('v'), play = $('play'), sound = $('sound'), bar = $('bar');
+  go.href = target; skip.href = target;
+  $('dest').textContent = 'phillyps-bravo.site' + de;
+  if (app === 'maia') $('maia').hidden = false;
+
+  // Estadísticas sin cookies ni datos personales: se cuentan en el Worker de monitoreo (resumen semanal).
+  function send(e, o) {
+    try {
+      var body = JSON.stringify(o ? { e: e, o: o } : { e: e });
+      navigator.sendBeacon(NEW + '/_avisos/evento', new Blob([body], { type: 'text/plain' }));
+    } catch (x) {}
+  }
+  send('mudanza_vista', app);
+
+  var ready = false;
+  function enable() {
+    if (ready) return; ready = true;
+    go.setAttribute('aria-disabled', 'false'); go.textContent = 'Continuar'; go.classList.add('ready'); skip.hidden = true;
+  }
+  function lock() { go.setAttribute('aria-disabled', 'true'); go.textContent = 'Continuar · al terminar el video'; }
+
+  go.addEventListener('click', function (ev) {
+    if (go.getAttribute('aria-disabled') === 'true') { ev.preventDefault(); return; }
+    send('mudanza_continuar', app);
+  });
+  skip.addEventListener('click', function () { send('mudanza_saltar'); });
+  $('acad').addEventListener('click', function () { send('mudanza_academia'); });
+
+  // Sin video (sin JS, sin conexión o bloqueado) la persona nunca queda atrapada: Continuar queda activo.
+  v.addEventListener('error', function () { box.hidden = true; enable(); });
+  box.style.backgroundImage = 'url(' + POSTER + ')';
+  v.poster = POSTER; v.src = VIDEO; box.hidden = false; lock();
+
+  var sawEnd = false, skipTimer = setTimeout(function () { if (!ready) skip.hidden = false; }, 5000);
+  v.addEventListener('timeupdate', function () { if (v.duration) bar.style.width = (100 * v.currentTime / v.duration) + '%'; });
+  v.addEventListener('ended', function () { if (!sawEnd) { sawEnd = true; send('mudanza_fin'); } bar.style.width = '100%'; enable(); });
+  v.addEventListener('playing', function () { play.hidden = true; sound.hidden = false; });
+
+  play.addEventListener('click', function () { v.muted = false; sound.textContent = '🔇 Silenciar'; v.play(); });
+  sound.addEventListener('click', function () {
+    v.muted = !v.muted; sound.textContent = v.muted ? '🔊 Activar sonido' : '🔇 Silenciar';
+  });
+
+  // Con "reducir movimiento" no arranca solo: la persona decide darle play.
+  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (calm) { play.hidden = false; }
+  else {
+    var p = v.play();
+    if (p && p.catch) p.catch(function () { play.hidden = false; });
+  }
+  window.addEventListener('pagehide', function () { clearTimeout(skipTimer); });
+})();
+</script>
+</body>
+</html>

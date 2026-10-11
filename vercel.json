@@ -19,6 +19,29 @@
       "source": "/convenios",
       "destination": "/convenios/",
       "permanent": false
+    },
+    {
+      "source": "/((?!mudanza\\.html|favicon\\.svg|_vercel/).*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawl|spider|slurp|facebookexternalhit|whatsapp|telegram|discord|embedly|preview).*"
+        }
+      ],
+      "destination": "https://phillyps-bravo.site/$1",
+      "permanent": true
+    },
+    {
+      "source": "/((?!mudanza\\.html|favicon\\.svg|_vercel/).*)",
+      "missing": [
+        {
+          "type": "query",
+          "key": "viejo"
+        }
+      ],
+      "destination": "/mudanza.html?de=/$1",
+      "permanent": false
     }
   ],
   "headers": [
