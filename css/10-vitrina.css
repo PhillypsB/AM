@@ -273,5 +273,3 @@
 
 /* ── El Constructor: el video en lugar de la foto ── */
 .sv2-video{max-width:300px;margin:0 auto}
-.sv2-video .pr-thumb{aspect-ratio:9/16}
-.sv2-cap{text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:14px}

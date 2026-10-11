@@ -104,7 +104,7 @@
 
   /* ───────── Carrusel del hero ───────── */
   var deck = $('#vitDeck');
-  var cards = deck ? $$('.vit-card', deck) : [];
+  var cards = deck ? $$('.vit-card', deck).filter(function(c){ return VIDEOS[c.dataset.v]; }) : [];
   var cur = 0, ptrX = null;
 
   function pos(i){ var n = cards.length, d = i - cur; if(d > n / 2) d -= n; if(d < -n / 2) d += n; return d; }
@@ -257,11 +257,11 @@
     if(l && l.tagName === 'A'){ track('abrir', l.dataset.o); }
   });
 
-  /* Video de zaZÁ con controles dentro de la sección: cuenta la primera reproducción */
-  var zv = $('#zazaVideo');
-  if(zv){
-    zv.addEventListener('play', function once(){ zv.removeEventListener('play', once); track('video', 'zaza'); silenciarOtros(zv); });
-  }
+  /* Videos con reproductor propio dentro de la página (zaZÁ, mi historia): cuentan la primera reproducción y silencian a los demás */
+  $$('video[data-inline]').forEach(function(v){
+    v.addEventListener('play', function once(){ v.removeEventListener('play', once); track('video', v.dataset.id); });
+    v.addEventListener('play', function(){ silenciarOtros(v); $$('video[data-inline]').forEach(function(o){ if(o !== v) o.pause(); }); });
+  });
 
   window.BravoVideo = { open: abrir, close: cerrar };
 })();

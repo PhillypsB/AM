@@ -41,23 +41,23 @@
      07 → contact/ft  (contacto + footer)
      08 → responsive  (mobile-first)
 ════════════════════════════════════════════════ -->
-<link rel="stylesheet" href="css/01-tokens.css">
-<link rel="stylesheet" href="css/02-base.css">
-<link rel="stylesheet" href="css/03-cursor.css">
-<link rel="stylesheet" href="css/04-nav.css">
-<link rel="stylesheet" href="css/05-hero.css">
-<link rel="stylesheet" href="css/06-sections.css">
-<link rel="stylesheet" href="css/07-contacto-footer.css">
-<link rel="stylesheet" href="css/08-responsive.css">
-<link rel="stylesheet" href="css/09-hatbot.css">
-<link rel="stylesheet" href="css/10-vitrina.css">
+<link rel="stylesheet" href="css/01-tokens.css?v=202610102347">
+<link rel="stylesheet" href="css/02-base.css?v=202610102347">
+<link rel="stylesheet" href="css/03-cursor.css?v=202610102347">
+<link rel="stylesheet" href="css/04-nav.css?v=202610102347">
+<link rel="stylesheet" href="css/05-hero.css?v=202610102347">
+<link rel="stylesheet" href="css/06-sections.css?v=202610102347">
+<link rel="stylesheet" href="css/07-contacto-footer.css?v=202610102347">
+<link rel="stylesheet" href="css/08-responsive.css?v=202610102347">
+<link rel="stylesheet" href="css/09-hatbot.css?v=202610102347">
+<link rel="stylesheet" href="css/10-vitrina.css?v=202610102347">
 
 <!-- GSAP (contadores + scroll horizontal del método) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 
 <!-- ═══ JS — theme primero (evita flash) ═══ -->
-<script src="js/theme.js"></script>
+<script src="js/theme.js?v=202610102347"></script>
 </head>
 
 <body>
@@ -138,23 +138,23 @@
       <button class="vit-nav vit-prev" type="button" aria-label="Video anterior">&#8249;</button>
       <div class="vit-deck" id="vitDeck">
       <article class="vit-card" data-v="zaza" role="group" aria-roledescription="video" aria-label="zaZÁ PRESUPUESTO">
-        <video muted loop playsinline preload="none" poster="img/cartel-zaza.webp" data-src="video/adelanto-zaza.mp4" aria-hidden="true"></video>
+        <video muted loop playsinline preload="none" poster="img/cartel-zaza.webp" data-src="video/adelanto-zaza.mp4?v=c" aria-hidden="true"></video>
         <span class="vit-play" aria-hidden="true">▶</span>
       </article>
       <article class="vit-card" data-v="maia" role="group" aria-roledescription="video" aria-label="MAIA">
-        <video muted loop playsinline preload="none" poster="img/cartel-maia.webp" data-src="video/adelanto-maia.mp4" aria-hidden="true"></video>
+        <video muted loop playsinline preload="none" poster="img/cartel-maia.webp" data-src="video/adelanto-maia.mp4?v=c" aria-hidden="true"></video>
         <span class="vit-play" aria-hidden="true">▶</span>
       </article>
       <article class="vit-card" data-v="am" role="group" aria-roledescription="video" aria-label="AM · Ayuda Memoria">
-        <video muted loop playsinline preload="none" poster="img/cartel-am.webp" data-src="video/adelanto-am.mp4" aria-hidden="true"></video>
+        <video muted loop playsinline preload="none" poster="img/cartel-am.webp" data-src="video/adelanto-am.mp4?v=c" aria-hidden="true"></video>
         <span class="vit-play" aria-hidden="true">▶</span>
       </article>
       <article class="vit-card" data-v="reservas" role="group" aria-roledescription="video" aria-label="Reservas online">
-        <video muted loop playsinline preload="none" poster="img/cartel-reservas.webp" data-src="video/adelanto-reservas.mp4" aria-hidden="true"></video>
+        <video muted loop playsinline preload="none" poster="img/cartel-reservas.webp" data-src="video/adelanto-reservas.mp4?v=c" aria-hidden="true"></video>
         <span class="vit-play" aria-hidden="true">▶</span>
       </article>
       <article class="vit-card" data-v="academia" role="group" aria-roledescription="video" aria-label="BRAVO ACADEMY">
-        <video muted loop playsinline preload="none" poster="img/cartel-academia.webp" data-src="video/adelanto-academia.mp4" aria-hidden="true"></video>
+        <video muted loop playsinline preload="none" poster="img/cartel-academia.webp" data-src="video/adelanto-academia.mp4?v=c" aria-hidden="true"></video>
         <span class="vit-play" aria-hidden="true">▶</span>
       </article>
       </div>
@@ -188,7 +188,7 @@
     <!-- zaZÁ PRESUPUESTO -->
     <article class="pr-zaza rv" id="zaza" aria-labelledby="zazaT">
       <div class="pr-phone">
-        <video id="zazaVideo" controls playsinline preload="none" poster="img/cartel-zaza.webp" aria-label="Video: cómo funciona zaZÁ PRESUPUESTO">
+        <video id="zazaVideo" data-inline data-id="zaza" controls playsinline preload="none" poster="img/cartel-zaza.webp" aria-label="Video: cómo funciona zaZÁ PRESUPUESTO">
           <source src="video/zaza.mp4" type="video/mp4">
         </video>
       </div>
@@ -221,7 +221,7 @@
       <!-- MAIA -->
       <article class="pr-card">
         <div class="pr-thumb" data-open-video="maia" role="button" tabindex="0" aria-label="Ver el video de MAIA">
-          <video muted loop playsinline preload="none" poster="img/cartel-maia.webp" data-src="video/adelanto-maia.mp4" aria-hidden="true"></video>
+          <video muted loop playsinline preload="none" poster="img/cartel-maia.webp" data-src="video/adelanto-maia.mp4?v=c" aria-hidden="true"></video>
           <span class="vit-play" aria-hidden="true">▶</span>
         </div>
         <div>
@@ -242,7 +242,7 @@
       <!-- AM -->
       <article class="pr-card">
         <div class="pr-thumb" data-open-video="am" role="button" tabindex="0" aria-label="Ver el video de AM">
-          <video muted loop playsinline preload="none" poster="img/cartel-am.webp" data-src="video/adelanto-am.mp4" aria-hidden="true"></video>
+          <video muted loop playsinline preload="none" poster="img/cartel-am.webp" data-src="video/adelanto-am.mp4?v=c" aria-hidden="true"></video>
           <span class="vit-play" aria-hidden="true">▶</span>
         </div>
         <div>
@@ -263,7 +263,7 @@
       <!-- Reservas (PhillRobs) -->
       <article class="pr-card wide">
         <div class="pr-thumb" data-open-video="reservas" role="button" tabindex="0" aria-label="Ver el video de Reservas online">
-          <video muted loop playsinline preload="none" poster="img/cartel-reservas.webp" data-src="video/adelanto-reservas.mp4" aria-hidden="true"></video>
+          <video muted loop playsinline preload="none" poster="img/cartel-reservas.webp" data-src="video/adelanto-reservas.mp4?v=c" aria-hidden="true"></video>
           <span class="vit-play" aria-hidden="true">▶</span>
         </div>
         <div>
@@ -398,7 +398,7 @@
       </div>
       <div class="pr-phone">
         <div class="pr-thumb" data-open-video="academia" role="button" tabindex="0" aria-label="Ver el video de BRAVO ACADEMY" style="border-radius:26px;border:none">
-          <video muted loop playsinline preload="none" poster="img/cartel-academia.webp" data-src="video/adelanto-academia.mp4" aria-hidden="true"></video>
+          <video muted loop playsinline preload="none" poster="img/cartel-academia.webp" data-src="video/adelanto-academia.mp4?v=c" aria-hidden="true"></video>
           <span class="vit-play" aria-hidden="true">▶</span>
         </div>
       </div>
@@ -443,12 +443,10 @@
 
         <!-- Mi historia en video (43 s) -->
         <div class="pr-phone sv2-video">
-          <div class="pr-thumb" data-open-video="historia" role="button" tabindex="0" aria-label="Ver mi historia en video, 43 segundos" style="border-radius:26px;border:none">
-            <video muted loop playsinline preload="none" poster="img/cartel-historia.webp" data-src="video/adelanto-historia.mp4" aria-hidden="true"></video>
-            <span class="vit-play" aria-hidden="true">▶</span>
-          </div>
+          <video id="historiaVideo" data-inline data-id="historia" controls playsinline preload="none" poster="img/cartel-historia.webp" aria-label="Video: mi trayectoria en 43 segundos">
+            <source src="video/historia.mp4" type="video/mp4">
+          </video>
         </div>
-        <p class="sv2-cap">Mi historia en 43 segundos</p>
 
       </div><!-- /photo-col -->
 
@@ -641,10 +639,10 @@
      vitrina.js  → videos del hero, miniaturas y reproductor
      app.js      → reveals, contadores, form, scroll
 ════════════════════════════════════════════════ -->
-<script src="js/nav.js" defer></script>
-<script src="js/cursor.js" defer></script>
-<script src="js/vitrina.js" defer></script>
-<script src="js/app.js" defer></script>
-<script src="js/modal.js" defer></script>
-<script src="js/hatbot.js" defer></script>
+<script src="js/nav.js?v=202610102347" defer></script>
+<script src="js/cursor.js?v=202610102347" defer></script>
+<script src="js/vitrina.js?v=202610102347" defer></script>
+<script src="js/app.js?v=202610102347" defer></script>
+<script src="js/modal.js?v=202610102347" defer></script>
+<script src="js/hatbot.js?v=202610102347" defer></script>
 </html>
